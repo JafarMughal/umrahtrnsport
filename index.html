@@ -1,388 +1,468 @@
 <!DOCTYPE html>
 <html lang="ur" dir="rtl">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Umrah Transport System</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Umrah Transport System</title>
 
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="lang-ur">
 
-<!-- ══ TRANSLATIONS ══ -->
+  <!-- ══ TRANSLATIONS ══ -->
 
-<header>
-  <div class="header-inner">
-    <div class="header-left">
-      <div class="header-icon" id="header-logo-wrap" onclick="document.getElementById('logo-file-input').click()" title="لوگو تبدیل کریں" style="cursor:pointer;overflow:hidden;position:relative;">
-        <span id="header-logo-emoji">🕋</span>
-        <img id="header-logo-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;">
-        <div style="position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border-radius:50%;" class="logo-hover-overlay">
-          <span style="font-size:18px;">📷</span>
-        </div>
-      </div>
-      <input type="file" id="logo-file-input" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)">
-      <div class="header-text">
-        <h1 id="app-title"></h1>
-        <p id="app-sub"></p>
-      </div>
-    </div>
-    <div class="lang-switcher">
-      <button class="lang-btn" id="lb-ur" onclick="setLang('ur')">اردو</button>
-      <button class="lang-btn" id="lb-en" onclick="setLang('en')">English</button>
-      <button class="lang-btn" id="lb-ar" onclick="setLang('ar')">العربية</button>
-    </div>
-  </div>
-</header>
+  <header>
 
-<nav id="main-nav">
-  <button class="active" onclick="showPage('entry',this)"></button>
-  <button onclick="showPage('payment',this)"></button>
-  <button onclick="showPage('ledger',this)"></button>
-  <button onclick="showPage('records',this)"></button>
-  <button onclick="showPage('report',this)"></button>
-  <button onclick="showPage('update',this)"></button>
-  <button onclick="showPage('settings',this)"></button>
-</nav>
 
-<div class="wrap">
+    <div class="header-inner">
 
-<!-- ENTRY -->
-<div id="page-entry" class="page active">
-  <div class="card">
-    <div class="card-title" id="lbl-entry"></div>
-    <div id="al-entry"></div>
-    <div class="grid">
-      <div class="fg"><label id="lbl-date"></label><input type="date" id="e-date"></div>
-      <div class="fg">
-        <label id="lbl-voucher"></label>
-        <input type="text" id="e-voucher" readonly style="background:#f0faf0;font-weight:700;color:var(--green-dark);letter-spacing:1px;font-family:'Noto Sans',monospace;">
-      </div>
-      <div class="fg">
-        <label><span id="lbl-party"></span> <span id="lbl-newparty" style="color:var(--gold-dark);font-size:10px;"></span></label>
-        <div class="sd-wrap">
-          <div class="sd-input-row">
-            <input type="text" class="sd-input" id="e-party-input" autocomplete="off" oninput="sdFilter('e-party')" onfocus="sdOpen('e-party')" onblur="sdBlur('e-party')">
-            <button class="pb" onclick="openModal('party','entry')">+</button>
+      <div class="header-left">
+        <div class="header-icon" id="header-logo-wrap" onclick="document.getElementById('logo-file-input').click()"
+          title="لوگو تبدیل کریں" style="cursor:pointer;overflow:hidden;position:relative;">
+          <span id="header-logo-emoji">🕋</span>
+          <img id="header-logo-img" src="" alt=""
+            style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;">
+          <div
+            style="position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border-radius:50%;"
+            class="logo-hover-overlay">
+            <span style="font-size:18px;">📷</span>
           </div>
-          <input type="hidden" id="e-party">
-          <div class="sd-dropdown" id="sd-e-party"></div>
+        </div>
+        <input type="file" id="logo-file-input" accept="image/*" style="display:none;"
+          onchange="handleLogoUpload(this)">
+        <div class="header-text">
+          <h1 id="app-title"></h1>
+          <p id="app-sub"></p>
         </div>
       </div>
-      <div class="fg">
-        <label><span id="lbl-sector"></span> <span id="lbl-newsector" style="color:var(--gold-dark);font-size:10px;"></span></label>
-        <div class="ddr"><select id="e-sector"></select><button class="pb" onclick="openModal('sector','entry')">+</button></div>
-      </div>
-      <div class="fg">
-        <label><span id="lbl-transport"></span> <span id="lbl-newtransport" style="color:var(--gold-dark);font-size:10px;"></span></label>
-        <div class="ddr">
-          <select id="e-transport" onchange="onTransportChange('e')"><option value="">-- منتخب کریں --</option></select>
-          <button class="pb" onclick="openModal('transport','entry')" title="نئی ٹرانسپورٹ">+</button>
-        </div>
+      <div class="lang-switcher">
+        <button class="lang-btn" id="lb-ur" onclick="setLang('ur')">اردو</button>
+        <button class="lang-btn" id="lb-en" onclick="setLang('en')">English</button>
+        <button class="lang-btn" id="lb-ar" onclick="setLang('ar')">العربية</button>
       </div>
     </div>
-    <div class="grid">
-      <div class="fg"><label id="lbl-count"></label><input type="number" id="e-count" min="1" placeholder="0" oninput="calcE()"></div>
-      <div class="fg"><label id="lbl-fare"></label><input type="number" id="e-fare" min="0" placeholder="0" oninput="calcE()"></div>
-      <div class="fg"><label id="lbl-total"></label><input type="number" id="e-total" readonly style="background:#f0faf0;font-weight:700;color:var(--green-dark);"></div>
-      <!-- Whole vehicle amount (shown when NOT sharing) -->
-      <div class="fg" id="e-vehicle-wrap" style="display:none;">
-        <label id="lbl-vehicletotal"></label>
-        <input type="number" id="e-vehicle-total" min="0" placeholder="0" oninput="calcE()">
-      </div>
-    </div>
-    <!-- Transport type indicator -->
-    <div id="e-transport-hint" style="display:none;margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:13px;"></div>
-    <div class="fg" style="margin-bottom:15px;"><label id="lbl-notes"></label><textarea id="e-notes" rows="2"></textarea></div>
-    <div class="btn-row">
-      <button class="btn btn-p" id="btn-save" onclick="addEntry()"></button>
-      <button class="btn btn-o" id="btn-clear" onclick="clearEntryForm()"></button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title" id="lbl-todaysum"></div>
-    <div class="sg">
-      <div class="sc"><div class="num" id="ts-p">0</div><div class="lbl" id="lbl-ts-p"></div></div>
-      <div class="sc"><div class="num" id="ts-h">0</div><div class="lbl" id="lbl-ts-h"></div></div>
-      <div class="sc"><div class="num" id="ts-a">0</div><div class="lbl" id="lbl-ts-a"></div></div>
-      <div class="sc"><div class="num" id="ts-t">0</div><div class="lbl" id="lbl-ts-t"></div></div>
-    </div>
-  </div>
-</div>
+  </header>
 
-<!-- PAYMENT -->
-<div id="page-payment" class="page">
-  <div class="card">
-    <div class="card-title" id="lbl-payTitle"></div>
-    <div id="al-pay"></div>
-    <div class="grid">
-      <div class="fg"><label id="lbl-paydate"></label><input type="date" id="p-date"></div>
-      <div class="fg"><label id="lbl-payparty"></label>
-        <div class="sd-wrap">
-          <div class="sd-input-row">
-            <input type="text" class="sd-input" id="p-party-input" autocomplete="off" oninput="sdFilter('p-party')" onfocus="sdOpen('p-party')" onblur="sdBlur('p-party')">
-            <button class="pb" onclick="openModal('party','payment')">+</button>
+  <nav id="main-nav">
+    <button class="active" onclick="showPage('entry',this)"></button>
+    <button onclick="showPage('payment',this)"></button>
+    <button onclick="showPage('ledger',this)"></button>
+    <button onclick="showPage('records',this)"></button>
+    <button onclick="showPage('report',this)"></button>
+    <button onclick="showPage('update',this)"></button>
+    <button onclick="showPage('settings',this)"></button>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- ENTRY -->
+    <div id="page-entry" class="page active">
+      <div class="card">
+        <div class="card-title" id="lbl-entry"></div>
+        <div id="al-entry"></div>
+        <div class="grid">
+          <div class="fg"><label id="lbl-date"></label><input type="date" id="e-date"></div>
+          <div class="fg">
+            <label id="lbl-voucher"></label>
+            <input type="text" id="e-voucher" readonly
+              style="background:#f0faf0;font-weight:700;color:var(--green-dark);letter-spacing:1px;font-family:'Noto Sans',monospace;">
           </div>
-          <input type="hidden" id="p-party">
-          <div class="sd-dropdown" id="sd-p-party"></div>
-        </div>
-      </div>
-      <div class="fg"><label id="lbl-received"></label><input type="number" id="p-amount" min="1" placeholder="0"></div>
-      <div class="fg"><label id="lbl-method"></label>
-        <select id="p-method">
-          <option value="cash" id="opt-cash"></option>
-          <option value="bank" id="opt-bank"></option>
-          <option value="cheque" id="opt-cheque"></option>
-          <option value="online" id="opt-online"></option>
-        </select>
-      </div>
-    </div>
-    <div class="fg" style="margin-bottom:15px;"><label id="lbl-paynotes"></label><textarea id="p-notes" rows="2"></textarea></div>
-    <button class="btn btn-p" id="btn-savepay" onclick="addPayment()"></button>
-  </div>
-  <div class="card">
-    <div class="card-title" id="lbl-recentpay"></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr id="pay-head"></tr></thead>
-      <tbody id="pay-tbody"></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- LEDGER -->
-<div id="page-ledger" class="page">
-  <div class="card">
-    <div class="card-title" id="lbl-ledgerTitle"></div>
-    <div class="fb">
-      <div class="fg"><label id="lbl-ledparty"></label><select id="l-party" onchange="renderLedger()"></select></div>
-      <div class="fg"><label id="lbl-ledfrom"></label><input type="date" id="l-from" onchange="renderLedger()"></div>
-      <div class="fg"><label id="lbl-ledto"></label><input type="date" id="l-to" onchange="renderLedger()"></div>
-      <div style="margin-top:auto;display:flex;gap:7px;">
-        <button class="btn btn-g no-print" id="btn-print" onclick="window.print()"></button>
-        <button class="btn btn-o no-print" id="btn-resetled" onclick="clearLedgerFilter()"></button>
-      </div>
-    </div>
-    <div id="ledger-output"></div>
-  </div>
-</div>
-
-<!-- RECORDS -->
-<div id="page-records" class="page">
-  <div class="card">
-    <div class="card-title" id="lbl-recTitle"></div>
-    <div class="fb">
-      <div class="fg"><label id="lbl-recfrom"></label><input type="date" id="f-from"></div>
-      <div class="fg"><label id="lbl-recto"></label><input type="date" id="f-to"></div>
-      <div class="fg"><label id="lbl-recparty"></label><select id="f-party"></select></div>
-      <div class="fg"><label id="lbl-recsector"></label><select id="f-sector"></select></div>
-      <div style="margin-top:auto;display:flex;gap:7px;">
-        <button class="btn btn-g" id="btn-filter" onclick="filterRecords()"></button>
-        <button class="btn btn-o" id="btn-clearfilter" onclick="clearFilter()"></button>
-      </div>
-    </div>
-    <div id="rec-totals" class="totbox" style="display:none;">
-      <div class="ti"><div class="tl" id="lbl-totalrec"></div><div class="tv" id="rt-c">0</div></div>
-      <div class="ti"><div class="tl" id="lbl-totalhj"></div><div class="tv" id="rt-h">0</div></div>
-      <div class="ti"><div class="tl" id="lbl-totalamt"></div><div class="tv" id="rt-a">0</div></div>
-    </div>
-    <div class="tbl-wrap"><table>
-      <thead><tr id="rec-head"></tr></thead>
-      <tbody id="rec-tbody"></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- REPORT -->
-<div id="page-report" class="page">
-  <div class="card">
-    <div class="card-title" id="lbl-repTitle"></div>
-    <div class="fb">
-      <div class="fg"><label id="lbl-repfrom"></label><input type="date" id="r-from"></div>
-      <div class="fg"><label id="lbl-repto"></label><input type="date" id="r-to"></div>
-      <div class="fg"><label id="lbl-reptype"></label>
-        <select id="r-type">
-          <option value="date" id="opt-bydate"></option>
-          <option value="party" id="opt-byparty"></option>
-          <option value="sector" id="opt-bysector"></option>
-        </select>
-      </div>
-      <div style="margin-top:auto;display:flex;gap:7px;">
-        <button class="btn btn-p" id="btn-genrep" onclick="genReport()"></button>
-        <button class="btn btn-g no-print" onclick="window.print()">🖨️</button>
-      </div>
-    </div>
-    <div id="rep-out"></div>
-  </div>
-</div>
-
-<!-- UPDATE -->
-<div id="page-update" class="page">
-  <div class="card">
-    <div class="card-title" id="lbl-updTitle"></div>
-    <div id="al-upd"></div>
-    <div id="upd-form" style="display:none;">
-      <input type="hidden" id="u-id">
-      <div class="grid">
-        <div class="fg"><label id="lbl-udate"></label><input type="date" id="u-date"></div>
-        <div class="fg">
-          <label id="lbl-uvoucher"></label>
-          <input type="text" id="u-voucher" readonly style="background:#f0faf0;font-weight:700;color:var(--green-dark);letter-spacing:1px;font-family:'Noto Sans',monospace;">
-        </div>
-        <div class="fg"><label id="lbl-uparty"></label>
-          <div class="sd-wrap">
-            <div class="sd-input-row">
-              <input type="text" class="sd-input" id="u-party-input" autocomplete="off" oninput="sdFilter('u-party')" onfocus="sdOpen('u-party')" onblur="sdBlur('u-party')">
-              <button class="pb" onclick="openModal('party','update')">+</button>
+          <div class="fg">
+            <label><span id="lbl-party"></span> <span id="lbl-newparty"
+                style="color:var(--gold-dark);font-size:10px;"></span></label>
+            <div class="sd-wrap">
+              <div class="sd-input-row">
+                <input type="text" class="sd-input" id="e-party-input" autocomplete="off" oninput="sdFilter('e-party')"
+                  onfocus="sdOpen('e-party')" onblur="sdBlur('e-party')">
+                <button class="pb" onclick="openModal('party','entry')">+</button>
+              </div>
+              <input type="hidden" id="e-party">
+              <div class="sd-dropdown" id="sd-e-party"></div>
             </div>
-            <input type="hidden" id="u-party">
-            <div class="sd-dropdown" id="sd-u-party"></div>
+          </div>
+          <div class="fg">
+            <label><span id="lbl-sector"></span> <span id="lbl-newsector"
+                style="color:var(--gold-dark);font-size:10px;"></span></label>
+            <div class="ddr"><select id="e-sector"></select><button class="pb"
+                onclick="openModal('sector','entry')">+</button></div>
+          </div>
+          <div class="fg">
+            <label><span id="lbl-transport"></span> <span id="lbl-newtransport"
+                style="color:var(--gold-dark);font-size:10px;"></span></label>
+            <div class="ddr">
+              <select id="e-transport" onchange="onTransportChange('e')">
+                <option value="">-- منتخب کریں --</option>
+              </select>
+              <button class="pb" onclick="openModal('transport','entry')" title="نئی ٹرانسپورٹ">+</button>
+            </div>
           </div>
         </div>
-        <div class="fg"><label id="lbl-usector"></label>
-          <div class="ddr"><select id="u-sector"></select><button class="pb" onclick="openModal('sector','update')">+</button></div>
+        <div class="grid">
+          <div class="fg"><label id="lbl-count"></label><input type="number" id="e-count" min="1" placeholder="0"
+              oninput="calcE()"></div>
+          <div class="fg"><label id="lbl-fare"></label><input type="number" id="e-fare" min="0" placeholder="0"
+              oninput="calcE()"></div>
+          <div class="fg"><label id="lbl-total"></label><input type="number" id="e-total" readonly
+              style="background:#f0faf0;font-weight:700;color:var(--green-dark);"></div>
+          <!-- Whole vehicle amount (shown when NOT sharing) -->
+          <div class="fg" id="e-vehicle-wrap" style="display:none;">
+            <label id="lbl-vehicletotal"></label>
+            <input type="number" id="e-vehicle-total" min="0" placeholder="0" oninput="calcE()">
+          </div>
         </div>
-        <div class="fg">
-          <label><span id="lbl-utransport"></span></label>
-          <div class="ddr">
-            <select id="u-transport" onchange="onTransportChange('u')"><option value="">-- منتخب کریں --</option></select>
-            <button class="pb" onclick="openModal('transport','update')" title="نئی ٹرانسپورٹ">+</button>
+        <!-- Transport type indicator -->
+        <div id="e-transport-hint"
+          style="display:none;margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:13px;"></div>
+        <div class="fg" style="margin-bottom:15px;"><label id="lbl-notes"></label><textarea id="e-notes"
+            rows="2"></textarea></div>
+        <div class="btn-row">
+          <button class="btn btn-p" id="btn-save" onclick="addEntry()"></button>
+          <button class="btn btn-o" id="btn-clear" onclick="clearEntryForm()"></button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="lbl-todaysum"></div>
+        <div class="sg">
+          <div class="sc">
+            <div class="num" id="ts-p">0</div>
+            <div class="lbl" id="lbl-ts-p"></div>
+          </div>
+          <div class="sc">
+            <div class="num" id="ts-h">0</div>
+            <div class="lbl" id="lbl-ts-h"></div>
+          </div>
+          <div class="sc">
+            <div class="num" id="ts-a">0</div>
+            <div class="lbl" id="lbl-ts-a"></div>
+          </div>
+          <div class="sc">
+            <div class="num" id="ts-t">0</div>
+            <div class="lbl" id="lbl-ts-t"></div>
           </div>
         </div>
       </div>
-      <div class="grid">
-        <div class="fg"><label id="lbl-ucount"></label><input type="number" id="u-count" min="1" oninput="calcU()"></div>
-        <div class="fg"><label id="lbl-ufare"></label><input type="number" id="u-fare" min="0" oninput="calcU()"></div>
-        <div class="fg"><label id="lbl-utotal"></label><input type="number" id="u-total" readonly style="background:#f0faf0;font-weight:700;color:var(--green-dark);"></div>
-        <div class="fg" id="u-vehicle-wrap" style="display:none;">
-          <label id="lbl-uvehicletotal"></label>
-          <input type="number" id="u-vehicle-total" min="0" placeholder="0" oninput="calcU()">
-        </div>
-      </div>
-      <div id="u-transport-hint" style="display:none;margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:13px;"></div>
-      <div class="fg" style="margin-bottom:15px;"><label id="lbl-unotes"></label><textarea id="u-notes" rows="2"></textarea></div>
-      <div class="btn-row">
-        <button class="btn btn-p" id="btn-saveupd" onclick="saveUpdate()"></button>
-        <button class="btn btn-o" id="btn-cancel" onclick="cancelUpdate()"></button>
-      </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-title" id="lbl-selrec"></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr id="upd-head"></tr></thead>
-      <tbody id="upd-tbody"></tbody>
-    </table></div>
-  </div>
-</div>
 
-<!-- SETTINGS -->
-<div id="page-settings" class="page">
-
-  <!-- App Settings: Logo + Name -->
-  <div class="card">
-    <div class="card-title" id="lbl-setApp"></div>
-    <div class="sgr">
-      <!-- Logo -->
-      <div>
-        <div class="fg" style="margin-bottom:10px;"><label id="lbl-logoLbl"></label></div>
-        <div id="logo-drop-zone" onclick="document.getElementById('logo-file-input2').click()"
-          style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color .2s;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;"
-          ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
-          ondragleave="this.style.borderColor='var(--border)'"
-          ondrop="handleLogoDrop(event)">
-          <div id="logo-preview-wrap">
-            <div id="logo-preview-emoji" style="font-size:44px;line-height:1;">🕋</div>
-            <img id="logo-preview-img" src="" alt="" style="display:none;width:70px;height:70px;object-fit:cover;border-radius:50%;border:3px solid var(--gold);">
+    <!-- PAYMENT -->
+    <div id="page-payment" class="page">
+      <div class="card">
+        <div class="card-title" id="lbl-payTitle"></div>
+        <div id="al-pay"></div>
+        <div class="grid">
+          <div class="fg"><label id="lbl-paydate"></label><input type="date" id="p-date"></div>
+          <div class="fg"><label id="lbl-payparty"></label>
+            <div class="sd-wrap">
+              <div class="sd-input-row">
+                <input type="text" class="sd-input" id="p-party-input" autocomplete="off" oninput="sdFilter('p-party')"
+                  onfocus="sdOpen('p-party')" onblur="sdBlur('p-party')">
+                <button class="pb" onclick="openModal('party','payment')">+</button>
+              </div>
+              <input type="hidden" id="p-party">
+              <div class="sd-dropdown" id="sd-p-party"></div>
+            </div>
           </div>
-          <div style="font-size:12px;color:var(--muted);" id="lbl-logoHint"></div>
-          <button class="btn btn-o btn-sm no-print" onclick="event.stopPropagation();removeLogo()" id="btn-removeLogo" style="display:none;">✕ حذف</button>
+          <div class="fg"><label id="lbl-received"></label><input type="number" id="p-amount" min="1" placeholder="0">
+          </div>
+          <div class="fg"><label id="lbl-method"></label>
+            <select id="p-method">
+              <option value="cash" id="opt-cash"></option>
+              <option value="bank" id="opt-bank"></option>
+              <option value="cheque" id="opt-cheque"></option>
+              <option value="online" id="opt-online"></option>
+            </select>
+          </div>
         </div>
-        <input type="file" id="logo-file-input2" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)">
+        <div class="fg" style="margin-bottom:15px;"><label id="lbl-paynotes"></label><textarea id="p-notes"
+            rows="2"></textarea></div>
+        <button class="btn btn-p" id="btn-savepay" onclick="addPayment()"></button>
       </div>
-      <!-- App Name / Subtitle -->
-      <div>
-        <div class="fg" style="margin-bottom:11px;">
-          <label id="lbl-appNameLbl"></label>
-          <input type="text" id="set-appname" style="font-size:15px;">
+      <div class="card">
+        <div class="card-title" id="lbl-recentpay"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr id="pay-head"></tr>
+            </thead>
+            <tbody id="pay-tbody"></tbody>
+          </table>
         </div>
-        <div class="fg" style="margin-bottom:14px;">
-          <label id="lbl-appSubLbl"></label>
-          <input type="text" id="set-appsub">
+      </div>
+    </div>
+
+    <!-- LEDGER -->
+    <div id="page-ledger" class="page">
+      <div class="card">
+        <div class="card-title" id="lbl-ledgerTitle"></div>
+        <div class="fb">
+          <div class="fg"><label id="lbl-ledparty"></label><select id="l-party" onchange="renderLedger()"></select>
+          </div>
+          <div class="fg"><label id="lbl-ledfrom"></label><input type="date" id="l-from" onchange="renderLedger()">
+          </div>
+          <div class="fg"><label id="lbl-ledto"></label><input type="date" id="l-to" onchange="renderLedger()"></div>
+          <div style="margin-top:auto;display:flex;gap:7px;">
+            <button class="btn btn-g no-print" id="btn-print" onclick="window.print()"></button>
+            <button class="btn btn-o no-print" id="btn-resetled" onclick="clearLedgerFilter()"></button>
+          </div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button class="btn btn-p" id="btn-saveApp" onclick="saveAppSettings()"></button>
+        <div id="ledger-output"></div>
+      </div>
+    </div>
+
+    <!-- RECORDS -->
+    <div id="page-records" class="page">
+      <div class="card">
+        <div class="card-title" id="lbl-recTitle"></div>
+        <div class="fb">
+          <div class="fg"><label id="lbl-recfrom"></label><input type="date" id="f-from"></div>
+          <div class="fg"><label id="lbl-recto"></label><input type="date" id="f-to"></div>
+          <div class="fg"><label id="lbl-recparty"></label><select id="f-party"></select></div>
+          <div class="fg"><label id="lbl-recsector"></label><select id="f-sector"></select></div>
+          <div style="margin-top:auto;display:flex;gap:7px;">
+            <button class="btn btn-g" id="btn-filter" onclick="filterRecords()"></button>
+            <button class="btn btn-o" id="btn-clearfilter" onclick="clearFilter()"></button>
+          </div>
         </div>
-        <div id="al-app" style="margin-top:8px;"></div>
+        <div id="rec-totals" class="totbox" style="display:none;">
+          <div class="ti">
+            <div class="tl" id="lbl-totalrec"></div>
+            <div class="tv" id="rt-c">0</div>
+          </div>
+          <div class="ti">
+            <div class="tl" id="lbl-totalhj"></div>
+            <div class="tv" id="rt-h">0</div>
+          </div>
+          <div class="ti">
+            <div class="tl" id="lbl-totalamt"></div>
+            <div class="tv" id="rt-a">0</div>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr id="rec-head"></tr>
+            </thead>
+            <tbody id="rec-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="page-report" class="page">
+      <div class="card">
+        <div class="card-title" id="lbl-repTitle"></div>
+        <div class="fb">
+          <div class="fg"><label id="lbl-repfrom"></label><input type="date" id="r-from"></div>
+          <div class="fg"><label id="lbl-repto"></label><input type="date" id="r-to"></div>
+          <div class="fg"><label id="lbl-reptype"></label>
+            <select id="r-type">
+              <option value="date" id="opt-bydate"></option>
+              <option value="party" id="opt-byparty"></option>
+              <option value="sector" id="opt-bysector"></option>
+            </select>
+          </div>
+          <div style="margin-top:auto;display:flex;gap:7px;">
+            <button class="btn btn-p" id="btn-genrep" onclick="genReport()"></button>
+            <button class="btn btn-g no-print" onclick="window.print()">🖨️</button>
+          </div>
+        </div>
+        <div id="rep-out"></div>
+      </div>
+    </div>
+
+    <!-- UPDATE -->
+    <div id="page-update" class="page">
+      <div class="card">
+        <div class="card-title" id="lbl-updTitle"></div>
+        <div id="al-upd"></div>
+        <div id="upd-form" style="display:none;">
+          <input type="hidden" id="u-id">
+          <div class="grid">
+            <div class="fg"><label id="lbl-udate"></label><input type="date" id="u-date"></div>
+            <div class="fg">
+              <label id="lbl-uvoucher"></label>
+              <input type="text" id="u-voucher" readonly
+                style="background:#f0faf0;font-weight:700;color:var(--green-dark);letter-spacing:1px;font-family:'Noto Sans',monospace;">
+            </div>
+            <div class="fg"><label id="lbl-uparty"></label>
+              <div class="sd-wrap">
+                <div class="sd-input-row">
+                  <input type="text" class="sd-input" id="u-party-input" autocomplete="off"
+                    oninput="sdFilter('u-party')" onfocus="sdOpen('u-party')" onblur="sdBlur('u-party')">
+                  <button class="pb" onclick="openModal('party','update')">+</button>
+                </div>
+                <input type="hidden" id="u-party">
+                <div class="sd-dropdown" id="sd-u-party"></div>
+              </div>
+            </div>
+            <div class="fg"><label id="lbl-usector"></label>
+              <div class="ddr"><select id="u-sector"></select><button class="pb"
+                  onclick="openModal('sector','update')">+</button></div>
+            </div>
+            <div class="fg">
+              <label><span id="lbl-utransport"></span></label>
+              <div class="ddr">
+                <select id="u-transport" onchange="onTransportChange('u')">
+                  <option value="">-- منتخب کریں --</option>
+                </select>
+                <button class="pb" onclick="openModal('transport','update')" title="نئی ٹرانسپورٹ">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="fg"><label id="lbl-ucount"></label><input type="number" id="u-count" min="1" oninput="calcU()">
+            </div>
+            <div class="fg"><label id="lbl-ufare"></label><input type="number" id="u-fare" min="0" oninput="calcU()">
+            </div>
+            <div class="fg"><label id="lbl-utotal"></label><input type="number" id="u-total" readonly
+                style="background:#f0faf0;font-weight:700;color:var(--green-dark);"></div>
+            <div class="fg" id="u-vehicle-wrap" style="display:none;">
+              <label id="lbl-uvehicletotal"></label>
+              <input type="number" id="u-vehicle-total" min="0" placeholder="0" oninput="calcU()">
+            </div>
+          </div>
+          <div id="u-transport-hint"
+            style="display:none;margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:13px;"></div>
+          <div class="fg" style="margin-bottom:15px;"><label id="lbl-unotes"></label><textarea id="u-notes"
+              rows="2"></textarea></div>
+          <div class="btn-row">
+            <button class="btn btn-p" id="btn-saveupd" onclick="saveUpdate()"></button>
+            <button class="btn btn-o" id="btn-cancel" onclick="cancelUpdate()"></button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="lbl-selrec"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr id="upd-head"></tr>
+            </thead>
+            <tbody id="upd-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+
+      <!-- App Settings: Logo + Name -->
+      <div class="card">
+        <div class="card-title" id="lbl-setApp"></div>
+        <div class="sgr">
+          <!-- Logo -->
+          <div>
+            <div class="fg" style="margin-bottom:10px;"><label id="lbl-logoLbl"></label></div>
+            <div id="logo-drop-zone" onclick="document.getElementById('logo-file-input2').click()"
+              style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color .2s;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;"
+              ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+              ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLogoDrop(event)">
+              <div id="logo-preview-wrap">
+                <div id="logo-preview-emoji" style="font-size:44px;line-height:1;">🕋</div>
+                <img id="logo-preview-img" src="" alt=""
+                  style="display:none;width:70px;height:70px;object-fit:cover;border-radius:50%;border:3px solid var(--gold);">
+              </div>
+              <div style="font-size:12px;color:var(--muted);" id="lbl-logoHint"></div>
+              <button class="btn btn-o btn-sm no-print" onclick="event.stopPropagation();removeLogo()"
+                id="btn-removeLogo" style="display:none;">✕ حذف</button>
+            </div>
+            <input type="file" id="logo-file-input2" accept="image/*" style="display:none;"
+              onchange="handleLogoUpload(this)">
+          </div>
+          <!-- App Name / Subtitle -->
+          <div>
+            <div class="fg" style="margin-bottom:11px;">
+              <label id="lbl-appNameLbl"></label>
+              <input type="text" id="set-appname" style="font-size:15px;">
+            </div>
+            <div class="fg" style="margin-bottom:14px;">
+              <label id="lbl-appSubLbl"></label>
+              <input type="text" id="set-appsub">
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="btn btn-p" id="btn-saveApp" onclick="saveAppSettings()"></button>
+            </div>
+            <div id="al-app" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sgr">
+        <!-- Parties -->
+        <div class="card">
+          <div class="card-title" id="lbl-setParties"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newpartylbl"></label><input type="text"
+                id="sp-in"></div>
+            <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addparty"
+                onclick="addFromSettings('party')"></button></div>
+          </div>
+          <div id="al-sp"></div>
+          <div class="tags" id="parties-list"></div>
+        </div>
+        <!-- Sectors -->
+        <div class="card">
+          <div class="card-title" id="lbl-setSectors"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newsectorlbl"></label><input type="text"
+                id="ss-in"></div>
+            <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addsector"
+                onclick="addFromSettings('sector')"></button></div>
+          </div>
+          <div id="al-ss"></div>
+          <div class="tags" id="sectors-list"></div>
+        </div>
+        <!-- Transports -->
+        <div class="card">
+          <div class="card-title" id="lbl-setTransports"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newtransportlbl"></label><input type="text"
+                id="st-in"></div>
+            <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addtransport"
+                onclick="addFromSettings('transport')"></button></div>
+          </div>
+          <div id="al-st"></div>
+          <div class="tags" id="transports-list"></div>
+        </div>
+      </div>
+
+      <!-- Rename Party -->
+      <div class="card">
+        <div class="card-title" id="lbl-renameParty"></div>
+        <div id="al-rename"></div>
+        <div class="grid">
+          <div class="fg">
+            <label id="lbl-oldName"></label>
+            <select id="rename-from"></select>
+          </div>
+          <div class="fg">
+            <label id="lbl-newName"></label>
+            <input type="text" id="rename-to" placeholder="">
+          </div>
+        </div>
+        <button class="btn btn-p" id="btn-renameSave" onclick="renameParty()"></button>
+      </div>
+
+    </div>
+
+  </div><!-- /wrap -->
+
+  <!-- MODAL -->
+  <div class="mo" id="modal">
+    <div class="md">
+      <h3 id="m-title"></h3>
+      <input type="text" id="m-input" placeholder="">
+      <div class="md-btns">
+        <button class="btn btn-p" id="btn-msave" onclick="confirmModal()"></button>
+        <button class="btn btn-o" id="btn-mcancel" onclick="closeModal()"></button>
       </div>
     </div>
   </div>
-
-  <div class="sgr">
-    <!-- Parties -->
-    <div class="card">
-      <div class="card-title" id="lbl-setParties"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newpartylbl"></label><input type="text" id="sp-in"></div>
-        <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addparty" onclick="addFromSettings('party')"></button></div>
-      </div>
-      <div id="al-sp"></div>
-      <div class="tags" id="parties-list"></div>
-    </div>
-    <!-- Sectors -->
-    <div class="card">
-      <div class="card-title" id="lbl-setSectors"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newsectorlbl"></label><input type="text" id="ss-in"></div>
-        <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addsector" onclick="addFromSettings('sector')"></button></div>
-      </div>
-      <div id="al-ss"></div>
-      <div class="tags" id="sectors-list"></div>
-    </div>
-    <!-- Transports -->
-    <div class="card">
-      <div class="card-title" id="lbl-setTransports"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newtransportlbl"></label><input type="text" id="st-in"></div>
-        <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addtransport" onclick="addFromSettings('transport')"></button></div>
-      </div>
-      <div id="al-st"></div>
-      <div class="tags" id="transports-list"></div>
-    </div>
-  </div>
-
-  <!-- Rename Party -->
-  <div class="card">
-    <div class="card-title" id="lbl-renameParty"></div>
-    <div id="al-rename"></div>
-    <div class="grid">
-      <div class="fg">
-        <label id="lbl-oldName"></label>
-        <select id="rename-from"></select>
-      </div>
-      <div class="fg">
-        <label id="lbl-newName"></label>
-        <input type="text" id="rename-to" placeholder="">
-      </div>
-    </div>
-    <button class="btn btn-p" id="btn-renameSave" onclick="renameParty()"></button>
-  </div>
-
-</div>
-
-</div><!-- /wrap -->
-
-<!-- MODAL -->
-<div class="mo" id="modal">
-  <div class="md">
-    <h3 id="m-title"></h3>
-    <input type="text" id="m-input" placeholder="">
-    <div class="md-btns">
-      <button class="btn btn-p" id="btn-msave" onclick="confirmModal()"></button>
-      <button class="btn btn-o" id="btn-mcancel" onclick="closeModal()"></button>
-    </div>
-  </div>
-</div>
 
   <script src="script.js"></script>
 </body>
+
 </html>
