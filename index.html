@@ -97,6 +97,7 @@
       <button onclick="showPage('records',this)"></button>
       <button onclick="showPage('report',this)"></button>
       <button onclick="showPage('update',this)"></button>
+      <button onclick="showPage('dailynote',this)" id="nav-dailynote"></button>
       <button onclick="showPage('settings',this)"></button>
     </nav>
 
@@ -314,6 +315,57 @@
             </div>
           </div>
           <div id="rep-out"></div>
+        </div>
+      </div>
+
+      <!-- DAILY NOTE -->
+      <div id="page-dailynote" class="page">
+        <div class="card">
+          <div class="card-title" id="lbl-dnTitle"></div>
+          <div id="al-dn"></div>
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+            <div class="fg">
+              <label id="lbl-dnDate"></label>
+              <input type="date" id="dn-date">
+            </div>
+            <div class="fg">
+              <label id="lbl-dnRef"></label>
+              <input type="text" id="dn-ref" placeholder="" style="background:#f0faf0;font-weight:700;color:var(--green-dark);letter-spacing:1px;">
+            </div>
+            <div class="fg">
+              <label id="lbl-dnNotes"></label>
+              <input type="text" id="dn-notes" placeholder="">
+            </div>
+          </div>
+          <!-- Sector rows dynamic -->
+          <div id="dn-sectors-wrap" style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1.5px solid var(--gold-light);" id="lbl-dnSectors"></div>
+            <div id="dn-sector-rows" class="dn-rows-grid"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-p" id="btn-dn-save" onclick="saveDailyNote()"></button>
+            <button class="btn btn-o" id="btn-dn-clear" onclick="clearDailyNoteForm()"></button>
+          </div>
+        </div>
+
+        <!-- Daily Note Report -->
+        <div class="card">
+          <div class="card-title" id="lbl-dnRepTitle"></div>
+          <div class="fb">
+            <div class="fg">
+              <label id="lbl-dnRepFrom"></label>
+              <input type="date" id="dnr-from" onchange="renderDailyNoteReport()">
+            </div>
+            <div class="fg">
+              <label id="lbl-dnRepTo"></label>
+              <input type="date" id="dnr-to" onchange="renderDailyNoteReport()">
+            </div>
+            <div style="margin-top:auto;display:flex;gap:7px;">
+              <button class="btn btn-g no-print" onclick="window.print()">🖨️</button>
+              <button class="btn btn-o no-print" id="btn-dn-resetrep" onclick="clearDailyNoteReport()"></button>
+            </div>
+          </div>
+          <div id="dn-report-out"></div>
         </div>
       </div>
 
