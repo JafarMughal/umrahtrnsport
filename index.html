@@ -323,24 +323,42 @@
         <div class="card">
           <div class="card-title" id="lbl-dnTitle"></div>
           <div id="al-dn"></div>
-          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
-            <div class="fg">
-              <label id="lbl-dnDate"></label>
-              <input type="date" id="dn-date">
-            </div>
+          <input type="hidden" id="dn-id">
+          <div class="grid">
+            <div class="fg"><label id="lbl-dnDate"></label><input type="date" id="dn-date"></div>
             <div class="fg">
               <label id="lbl-dnRef"></label>
-              <input type="text" id="dn-ref" placeholder="" style="background:#f0faf0;font-weight:700;color:var(--green-dark);letter-spacing:1px;">
+              <input type="text" id="dn-ref" placeholder="" style="background:#f0faf0;font-weight:700;color:var(--green-dark);letter-spacing:1px;font-family:'Noto Sans',monospace;">
             </div>
             <div class="fg">
-              <label id="lbl-dnNotes"></label>
-              <input type="text" id="dn-notes" placeholder="">
+              <label id="lbl-dnParty"></label>
+              <div class="sd-wrap">
+                <div class="sd-input-row">
+                  <input type="text" class="sd-input" id="dn-party-input" autocomplete="off"
+                    oninput="sdFilter('dn-party')" onfocus="sdOpen('dn-party')" onblur="sdBlur('dn-party')">
+                  <button class="pb" onclick="openModal('party','dailynote')">+</button>
+                </div>
+                <input type="hidden" id="dn-party">
+                <div class="sd-dropdown" id="sd-dn-party"></div>
+              </div>
             </div>
-          </div>
-          <!-- Sector rows dynamic -->
-          <div id="dn-sectors-wrap" style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1.5px solid var(--gold-light);" id="lbl-dnSectors"></div>
-            <div id="dn-sector-rows" class="dn-rows-grid"></div>
+            <div class="fg">
+              <label id="lbl-dnGroup"></label>
+              <input type="text" id="dn-group">
+            </div>
+            <div class="fg">
+              <label id="lbl-dnMobile"></label>
+              <input type="text" id="dn-mobile" style="direction:ltr;text-align:right;">
+            </div>
+            <div class="fg">
+              <label id="lbl-dnSector"></label>
+              <div class="ddr"><select id="dn-sector"></select><button class="pb"
+                  onclick="openModal('sector','dailynote')">+</button></div>
+            </div>
+            <div class="fg">
+              <label id="lbl-dnCount"></label>
+              <input type="number" id="dn-count" min="1" placeholder="0">
+            </div>
           </div>
           <div class="btn-row">
             <button class="btn btn-p" id="btn-dn-save" onclick="saveDailyNote()"></button>

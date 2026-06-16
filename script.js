@@ -94,9 +94,12 @@ const T = {
     dnNav: '📋 ڈیلی نوٹ',
     dnTitle: 'ڈیلی ٹرانسپورٹ نوٹ 📋',
     dnDate: 'تاریخ',
-    dnRef: 'نوٹ نمبر (خودکار)',
-    dnNotesLbl: 'عمومی نوٹس',
-    dnSectorsLbl: 'تمام سیکٹرز — افراد کی تعداد درج کریں',
+    dnRef: 'واوچر نمبر (خودکار)',
+    dnParty: 'پارٹی کا نام',
+    dnGroup: 'گروپ کوڈ',
+    dnMobile: 'موبائل نمبر',
+    dnSector: 'سیکٹر',
+    dnCount: 'حاجیوں کی تعداد',
     dnSave: '✅ نوٹ محفوظ کریں',
     dnClear: '🔄 صاف کریں',
     dnRepTitle: 'ڈیلی نوٹ رپورٹ 📊',
@@ -104,14 +107,12 @@ const T = {
     dnRepTo: 'تاریخ تک',
     dnReset: '↩ صاف',
     dnSaved: '✅ ڈیلی نوٹ محفوظ ہوگیا',
-    dnRequired: '⚠️ تاریخ ضروری ہے',
+    dnRequired: '⚠️ تاریخ، پارٹی، سیکٹر اور تعداد ضروری ہے',
     dnNoData: 'کوئی ڈیلی نوٹ نہیں',
     dnTotalLbl: 'کل افراد:',
     dnDelConfirm: 'کیا یہ ڈیلی نوٹ حذف کریں؟',
     dnDelOk: '🗑️ حذف ہوگیا',
     dnEditTitle: '✏️ نوٹ اپڈیٹ کریں',
-    dnArrive: 'آمد (Arrival)',
-    dnArriveHint: 'جدہ سے آنے والے',
     nav: ['📝 نئی انٹری', '💰 ادائیگی', '📒 لیجر', '📋 تمام ریکارڈ', '📊 رپورٹ', '✏️ اپڈیٹ', '📋 ڈیلی نوٹ', '⚙️ ترتیبات'],
   },
   en: {
@@ -198,9 +199,12 @@ const T = {
     dnNav: '📋 Daily Note',
     dnTitle: 'Daily Transport Note 📋',
     dnDate: 'Date',
-    dnRef: 'Note No. (Auto)',
-    dnNotesLbl: 'General Notes',
-    dnSectorsLbl: 'All Sectors — Enter Passenger Count',
+    dnRef: 'Voucher No. (Auto)',
+    dnParty: 'Party Name',
+    dnGroup: 'Group Code',
+    dnMobile: 'Mobile Number',
+    dnSector: 'Sector',
+    dnCount: 'Pilgrims Count',
     dnSave: '✅ Save Note',
     dnClear: '🔄 Clear',
     dnRepTitle: 'Daily Note Report 📊',
@@ -208,14 +212,12 @@ const T = {
     dnRepTo: 'To Date',
     dnReset: '↩ Reset',
     dnSaved: '✅ Daily note saved successfully',
-    dnRequired: '⚠️ Date is required',
+    dnRequired: '⚠️ Date, Party, Sector and Count are required',
     dnNoData: 'No daily notes found',
     dnTotalLbl: 'Total Persons:',
     dnDelConfirm: 'Delete this daily note?',
     dnDelOk: '🗑️ Deleted',
     dnEditTitle: '✏️ Update Note',
-    dnArrive: 'Arrival',
-    dnArriveHint: 'Arriving from Jeddah',
     nav: ['📝 New Entry', '💰 Payment', '📒 Ledger', '📋 All Records', '📊 Report', '✏️ Update', '📋 Daily Note', '⚙️ Settings'],
   },
   ar: {
@@ -302,9 +304,12 @@ const T = {
     dnNav: '📋 الملاحظة اليومية',
     dnTitle: 'الملاحظة اليومية للنقل 📋',
     dnDate: 'التاريخ',
-    dnRef: 'رقم الملاحظة (تلقائي)',
-    dnNotesLbl: 'ملاحظات عامة',
-    dnSectorsLbl: 'جميع القطاعات — أدخل عدد الأشخاص',
+    dnRef: 'رقم الإيصال (تلقائي)',
+    dnParty: 'اسم المجموعة',
+    dnGroup: 'رمز المجموعة',
+    dnMobile: 'رقم الجوال',
+    dnSector: 'القطاع',
+    dnCount: 'عدد الحجاج',
     dnSave: '✅ حفظ الملاحظة',
     dnClear: '🔄 مسح',
     dnRepTitle: 'تقرير الملاحظة اليومية 📊',
@@ -312,14 +317,12 @@ const T = {
     dnRepTo: 'إلى تاريخ',
     dnReset: '↩ إعادة',
     dnSaved: '✅ تم حفظ الملاحظة اليومية',
-    dnRequired: '⚠️ التاريخ مطلوب',
+    dnRequired: '⚠️ التاريخ والمجموعة والقطاع مطلوبة',
     dnNoData: 'لا توجد ملاحظات يومية',
     dnTotalLbl: 'إجمالي الأشخاص:',
     dnDelConfirm: 'هل تريد حذف هذه الملاحظة؟',
     dnDelOk: '🗑️ تم الحذف',
     dnEditTitle: '✏️ تعديل الملاحظة',
-    dnArrive: 'الوصول',
-    dnArriveHint: 'القادمون من جدة',
     nav: ['📝 إدخال جديد', '💰 دفعة', '📒 دفتر الحساب', '📋 كل السجلات', '📊 تقرير', '✏️ تعديل', '📋 الملاحظة اليومية', '⚙️ الإعدادات'],
   }
 };
@@ -859,8 +862,11 @@ function setLang(l) {
   setText('lbl-dnTitle', L.dnTitle);
   setText('lbl-dnDate', L.dnDate);
   setText('lbl-dnRef', L.dnRef);
-  setText('lbl-dnNotes', L.dnNotesLbl);
-  setText('lbl-dnSectors', L.dnSectorsLbl);
+  setText('lbl-dnParty', L.dnParty);
+  setText('lbl-dnGroup', L.dnGroup);
+  setText('lbl-dnMobile', L.dnMobile);
+  setText('lbl-dnSector', L.dnSector);
+  setText('lbl-dnCount', L.dnCount);
   setText('btn-dn-save', L.dnSave);
   setText('btn-dn-clear', L.dnClear);
   setText('lbl-dnRepTitle', L.dnRepTitle);
@@ -869,7 +875,6 @@ function setLang(l) {
   setText('btn-dn-resetrep', L.dnReset);
   const navDn = document.getElementById('nav-dailynote');
   if (navDn) navDn.textContent = L.dnNav;
-  renderDailyNoteForm();
 
   // Login form labels & placeholders
   const loginTitle = document.getElementById('login-title');
@@ -893,11 +898,11 @@ function setLang(l) {
   if (ap) {
     const id = ap.id.replace('page-', '');
     if (id === 'entry') todayStats();
-  if (id === 'payment') { renderPayments(); renderPayHead(); }
+    if (id === 'payment') { renderPayments(); renderPayHead(); }
     if (id === 'ledger') renderLedger();
     if (id === 'records') renderRecords(records);
     if (id === 'update') renderUpdateTable();
-    if (id === 'dailynote') { renderDailyNoteForm(); renderDailyNoteReport(); }
+    if (id === 'dailynote') { renderDailyNoteReport(); }
     if (id === 'settings') { renderPartyList(); renderSectorList(); renderTransportList(); renderUsers(); }
   }
   renderPayHead(); renderRecHead(); renderUpdHead();
@@ -917,7 +922,7 @@ function showPage(p, btn) {
   if (p === 'ledger') { fillDrop('l-party', parties, true); renderLedger(); }
   if (p === 'records') { fillDrop('f-party', parties, true); fillDrop('f-sector', sectors, true); renderRecords(records); renderRecHead(); }
   if (p === 'update') { fillDrop('u-sector', sectors); fillDrop('u-transport', transports); renderUpdateTable(); renderUpdHead(); }
-  if (p === 'dailynote') { renderDailyNoteForm(); renderDailyNoteReport(); }
+  if (p === 'dailynote') { fillDrop('dn-sector', sectors); renderDailyNoteReport(); }
   if (p === 'settings') {
     renderPartyList(); renderSectorList(); renderTransportList(); fillRenameFrom(); loadAppName(lang);
     renderUsers();
@@ -944,7 +949,8 @@ function refreshAllDrops() {
   fillDrop('f-party', parties, true); fillDrop('f-sector', sectors, true);
   fillDrop('u-sector', sectors);
   fillDrop('u-transport', transports);
-  ['e-party', 'p-party', 'u-party'].forEach(p => sdBuild(p));
+  fillDrop('dn-sector', sectors);
+  ['e-party', 'p-party', 'u-party', 'dn-party'].forEach(p => sdBuild(p));
 }
 
 /* ─── MODAL ─── */
@@ -967,12 +973,15 @@ function confirmModal() {
   if (_mt === 'party') {
     if (parties.includes(val)) { alert(L.alreadyExists); return; }
     parties.push(val); getCode(val); svP(); refreshAllDrops();
-    const tgt = _mc === 'entry' ? 'e-party' : _mc === 'payment' ? 'p-party' : 'u-party';
+    const tgt = _mc === 'entry' ? 'e-party' : _mc === 'payment' ? 'p-party' : _mc === 'dailynote' ? 'dn-party' : 'u-party';
     sdSetValue(tgt, val);
   } else if (_mt === 'sector') {
     if (sectors.includes(val)) { alert(L.alreadyExists); return; }
     sectors.push(val); svS(); refreshAllDrops();
-    document.getElementById(_mc === 'entry' ? 'e-sector' : 'u-sector').value = val;
+    let tgtSec = 'e-sector';
+    if (_mc === 'update') tgtSec = 'u-sector';
+    if (_mc === 'dailynote') tgtSec = 'dn-sector';
+    document.getElementById(tgtSec).value = val;
   } else if (_mt === 'transport') {
     if (transports.includes(val)) { alert(L.alreadyExists); return; }
     transports.push(val); svTr(); refreshAllDrops();
@@ -1583,7 +1592,6 @@ document.getElementById('modal').addEventListener('click', function (e) { if (e.
 
 /* ═══════════ DAILY NOTE MODULE ═══════════ */
 let dailyNotes = [];
-let _dnEditId = null;
 
 function svDN() { db.ref('dailyNotes').set(dailyNotes); }
 
@@ -1593,66 +1601,30 @@ function genDNRef() {
   return 'DN-' + String(next).padStart(4, '0');
 }
 
-// Build the sector input rows inside the Daily Note form
-function renderDailyNoteForm() {
-  const L = T[lang];
-  const wrap = document.getElementById('dn-sector-rows');
-  if (!wrap || !sectors) return;
-
-  // Remember existing values
-  const existing = {};
-  wrap.querySelectorAll('.dn-sector-row').forEach(row => {
-    const inp = row.querySelector('input');
-    if (inp) existing[inp.dataset.sector] = inp.value;
-  });
-
-  const sectorIcons = ['✈️', '🕌', '🕋', '🚌', '🛤️', '🏨', '🚐', '🗺️'];
-  wrap.innerHTML = sectors.map((s, i) => {
-    const icon = sectorIcons[i % sectorIcons.length];
-    const val = existing[s] || '';
-    return `<div class="dn-sector-row">
-      <div class="dn-sector-label">
-        <span>${icon}</span>
-        <span class="dn-sector-badge">${i + 1}</span>
-        <span>${s}</span>
-      </div>
-      <input type="number" min="0" placeholder="0" data-sector="${s.replace(/"/g, '&quot;')}" value="${val}" title="${s}">
-    </div>`;
-  }).join('');
-
-  // Auto-fill ref number
-  const refEl = document.getElementById('dn-ref');
-  if (refEl && !refEl.value) refEl.value = _dnEditId ? '' : genDNRef();
-}
-
 function saveDailyNote() {
   const L = T[lang];
-  const dateEl = document.getElementById('dn-date');
-  const refEl = document.getElementById('dn-ref');
-  const notesEl = document.getElementById('dn-notes');
-  const date = dateEl ? dateEl.value : '';
-  if (!date) { al('al-dn', L.dnRequired, 'er'); return; }
+  const date = document.getElementById('dn-date').value;
+  const ref = document.getElementById('dn-ref').value.trim() || genDNRef();
+  const party = document.getElementById('dn-party').value;
+  const group = document.getElementById('dn-group').value.trim();
+  const mobile = document.getElementById('dn-mobile').value.trim();
+  const sector = document.getElementById('dn-sector').value;
+  const count = parseInt(document.getElementById('dn-count').value) || 0;
 
-  const ref = refEl ? refEl.value.trim() || genDNRef() : genDNRef();
-  const notes = notesEl ? notesEl.value.trim() : '';
+  if (!date || !party || !sector || count <= 0) {
+    al('al-dn', L.dnRequired || '⚠️ Date, Party, Sector and Count are required', 'er');
+    return;
+  }
 
-  // Collect sector counts
-  const sectorCounts = {};
-  document.querySelectorAll('#dn-sector-rows .dn-sector-row input').forEach(inp => {
-    const s = inp.dataset.sector;
-    const v = parseInt(inp.value) || 0;
-    if (s) sectorCounts[s] = v;
-  });
+  const id = document.getElementById('dn-id').value;
 
-  if (_dnEditId) {
-    // Edit mode
-    const idx = dailyNotes.findIndex(n => n.id === _dnEditId);
+  if (id) {
+    const idx = dailyNotes.findIndex(n => n.id === id);
     if (idx !== -1) {
-      dailyNotes[idx] = { ...dailyNotes[idx], date, ref, notes, sectors: sectorCounts };
+      dailyNotes[idx] = { ...dailyNotes[idx], date, ref, party, group, mobile, sector, count };
     }
-    _dnEditId = null;
   } else {
-    dailyNotes.push({ id: uid(), date, ref, notes, sectors: sectorCounts });
+    dailyNotes.push({ id: uid(), date, ref, party, group, mobile, sector, count });
   }
 
   svDN();
@@ -1662,15 +1634,15 @@ function saveDailyNote() {
 }
 
 function clearDailyNoteForm() {
-  _dnEditId = null;
-  const dateEl = document.getElementById('dn-date');
-  const refEl = document.getElementById('dn-ref');
-  const notesEl = document.getElementById('dn-notes');
-  if (dateEl) dateEl.value = today();
-  if (refEl) refEl.value = genDNRef();
-  if (notesEl) notesEl.value = '';
-  // Clear all sector inputs
-  document.querySelectorAll('#dn-sector-rows .dn-sector-row input').forEach(inp => inp.value = '');
+  document.getElementById('dn-id').value = '';
+  document.getElementById('dn-date').value = today();
+  document.getElementById('dn-ref').value = genDNRef();
+  sdClear('dn-party');
+  document.getElementById('dn-group').value = '';
+  document.getElementById('dn-mobile').value = '';
+  document.getElementById('dn-sector').value = '';
+  document.getElementById('dn-count').value = '';
+  
   const L = T[lang];
   setText('btn-dn-save', L.dnSave);
   setText('lbl-dnTitle', L.dnTitle);
@@ -1679,23 +1651,22 @@ function clearDailyNoteForm() {
 function editDailyNote(id) {
   const note = dailyNotes.find(n => n.id === id);
   if (!note) return;
-  _dnEditId = id;
   const L = T[lang];
+
+  document.getElementById('dn-id').value = id;
   document.getElementById('dn-date').value = note.date;
   document.getElementById('dn-ref').value = note.ref || '';
-  document.getElementById('dn-notes').value = note.notes || '';
-  // Render form first so inputs exist
-  renderDailyNoteForm();
-  // Fill sector values
-  document.querySelectorAll('#dn-sector-rows .dn-sector-row input').forEach(inp => {
-    const s = inp.dataset.sector;
-    if (s && note.sectors && note.sectors[s] !== undefined) inp.value = note.sectors[s];
-  });
+  sdSetValue('dn-party', note.party);
+  document.getElementById('dn-group').value = note.group || '';
+  document.getElementById('dn-mobile').value = note.mobile || '';
+  fillDrop('dn-sector', sectors);
+  document.getElementById('dn-sector').value = note.sector;
+  document.getElementById('dn-count').value = note.count;
+
   setText('btn-dn-save', L.dnEditTitle);
   setText('lbl-dnTitle', L.dnEditTitle);
-  // Scroll to form
+  
   document.getElementById('page-dailynote').scrollIntoView({ behavior: 'smooth' });
-  // Switch to daily note page
   document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('#main-nav button').forEach(x => x.classList.remove('active'));
   document.getElementById('page-dailynote').classList.add('active');
@@ -1737,49 +1708,14 @@ function renderDailyNoteReport() {
     return;
   }
 
-  let html = '';
-  notes.forEach(note => {
-    const sectorEntries = Object.entries(note.sectors || {});
-    const total = sectorEntries.reduce((s, [, v]) => s + (parseInt(v) || 0), 0);
-    const sectorCards = sectorEntries.length
-      ? sectorEntries.map(([sec, cnt]) => `
-          <div class="dn-rep-sector">
-            <span class="dn-rep-sector-name">${sec}</span>
-            <span class="dn-rep-sector-count">${parseInt(cnt) || 0}</span>
-          </div>`).join('')
-      : `<div style="color:var(--muted);font-size:12px;">—</div>`;
-
-    html += `
-      <div class="dn-rep-card">
-        <div class="dn-rep-header">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span class="dn-rep-date">📅 ${fd(note.date)}</span>
-            <span class="dn-rep-ref">${note.ref || '—'}</span>
-          </div>
-          <div class="dn-rep-actions">
-            <button class="btn btn-sm btn-o no-print" onclick="editDailyNote('${note.id}')">${L.edit || '✏️'}</button>
-            <button class="btn btn-sm btn-d no-print" onclick="deleteDailyNote('${note.id}')">${L.del || '🗑️'}</button>
-          </div>
-        </div>
-        <div class="dn-rep-body">
-          <div class="dn-rep-sectors">${sectorCards}</div>
-          <div class="dn-rep-total-row">
-            <span>${L.dnTotalLbl}</span>
-            <span style="font-size:20px;color:var(--gold-dark);">${total}</span>
-          </div>
-          ${note.notes ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);padding:6px 10px;background:var(--cream);border-radius:6px;border:1px solid var(--border);">📝 ${note.notes}</div>` : ''}
-        </div>
-      </div>`;
-  });
-
-  // Grand total summary
+  // Calculate sector totals
   const allSectorTotals = {};
   notes.forEach(note => {
-    Object.entries(note.sectors || {}).forEach(([s, v]) => {
-      allSectorTotals[s] = (allSectorTotals[s] || 0) + (parseInt(v) || 0);
-    });
+    const s = note.sector;
+    allSectorTotals[s] = (allSectorTotals[s] || 0) + (parseInt(note.count) || 0);
   });
   const grandTotal = Object.values(allSectorTotals).reduce((a, b) => a + b, 0);
+  
   const summaryCards = Object.entries(allSectorTotals).map(([s, c]) =>
     `<div class="dn-rep-sector" style="background:var(--green-light);border-color:var(--green);">
       <span class="dn-rep-sector-name">${s}</span>
@@ -1789,7 +1725,7 @@ function renderDailyNoteReport() {
   const summary = `
     <div class="dn-rep-card" style="border-color:var(--gold);border-width:2px;margin-bottom:20px;">
       <div class="dn-rep-header" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));">
-        <span class="dn-rep-date">📊 ${L.dnRepTitle} — ${notes.length} ${L.trips || 'دن'}</span>
+        <span class="dn-rep-date">📊 ${L.dnRepTitle}</span>
         <span class="dn-rep-ref" style="background:var(--green-dark);">${L.dnTotalLbl} ${grandTotal}</span>
       </div>
       <div class="dn-rep-body">
@@ -1797,7 +1733,45 @@ function renderDailyNoteReport() {
       </div>
     </div>`;
 
-  out.innerHTML = summary + html;
+  const tbody = notes.map((r, i) => `
+    <tr>
+    <td><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:12px;">${r.ref || '—'}</span></td>
+    <td>${fd(r.date)}</td>
+    <td><span class="party-code">${getCode(r.party)}</span></td>
+    <td><strong>${r.party}</strong></td>
+    <td>${r.group || '—'}</td>
+    <td style="direction:ltr;text-align:right;font-family:monospace;">${r.mobile || '—'}</td>
+    <td><span class="badge">${r.sector}</span></td>
+    <td><strong>${r.count}</strong></td>
+    <td class="action-btns">
+      <button class="btn btn-sm btn-o no-print" onclick="editDailyNote('${r.id}')">${L.edit || '✏️'}</button>
+      <button class="btn btn-sm btn-d no-print" onclick="deleteDailyNote('${r.id}')">${L.del || '🗑️'}</button>
+    </td></tr>`).join('');
+
+  const tableHtml = `
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>${L.voucherCol || 'Voucher'}</th>
+            <th>${L.dateCol || 'Date'}</th>
+            <th>${L.codeCol || 'Code'}</th>
+            <th>${L.partyCol || 'Party'}</th>
+            <th>${L.dnGroup || 'Group'}</th>
+            <th>${L.dnMobile || 'Mobile'}</th>
+            <th>${L.sectorCol || 'Sector'}</th>
+            <th>${L.hujjajCol || 'Pilgrims'}</th>
+            <th>${L.actionCol || 'Action'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tbody}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  out.innerHTML = summary + tableHtml;
 }
 /* ════════════════════════════════════════ */
 
@@ -1841,7 +1815,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('e-count').disabled = false;
       document.getElementById('e-fare').disabled = false;
       setNextVoucher();
-      renderDailyNoteForm();
       renderDailyNoteReport();
     } else {
       // Data updated externally, refresh UI
