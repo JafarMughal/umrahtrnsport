@@ -100,6 +100,8 @@ const T = {
     dnMobile: 'موبائل نمبر',
     dnSector: 'سیکٹر',
     dnCount: 'حاجیوں کی تعداد',
+    dnFlightNo: 'فلائیٹ نمبر',
+    dnFlightTime: 'وقت',
     dnSave: '✅ نوٹ محفوظ کریں',
     dnClear: '🔄 صاف کریں',
     dnRepTitle: 'ڈیلی نوٹ رپورٹ 📊',
@@ -205,6 +207,8 @@ const T = {
     dnMobile: 'Mobile Number',
     dnSector: 'Sector',
     dnCount: 'Pilgrims Count',
+    dnFlightNo: 'Flight Number',
+    dnFlightTime: 'Flight Time',
     dnSave: '✅ Save Note',
     dnClear: '🔄 Clear',
     dnRepTitle: 'Daily Note Report 📊',
@@ -310,6 +314,8 @@ const T = {
     dnMobile: 'رقم الجوال',
     dnSector: 'القطاع',
     dnCount: 'عدد الحجاج',
+    dnFlightNo: 'رقم الرحلة',
+    dnFlightTime: 'وقت الرحلة',
     dnSave: '✅ حفظ الملاحظة',
     dnClear: '🔄 مسح',
     dnRepTitle: 'تقرير الملاحظة اليومية 📊',
@@ -867,6 +873,8 @@ function setLang(l) {
   setText('lbl-dnMobile', L.dnMobile);
   setText('lbl-dnSector', L.dnSector);
   setText('lbl-dnCount', L.dnCount);
+  setText('lbl-dnFlightNo', L.dnFlightNo);
+  setText('lbl-dnFlightTime', L.dnFlightTime);
   setText('btn-dn-save', L.dnSave);
   setText('btn-dn-clear', L.dnClear);
   setText('lbl-dnRepTitle', L.dnRepTitle);
@@ -1610,6 +1618,8 @@ function saveDailyNote() {
   const mobile = document.getElementById('dn-mobile').value.trim();
   const sector = document.getElementById('dn-sector').value;
   const count = parseInt(document.getElementById('dn-count').value) || 0;
+  const flightNo = document.getElementById('dn-flight-no').value.trim();
+  const flightTime = document.getElementById('dn-flight-time').value;
 
   if (!date || !party || !sector || count <= 0) {
     al('al-dn', L.dnRequired || '⚠️ Date, Party, Sector and Count are required', 'er');
@@ -1621,10 +1631,10 @@ function saveDailyNote() {
   if (id) {
     const idx = dailyNotes.findIndex(n => n.id === id);
     if (idx !== -1) {
-      dailyNotes[idx] = { ...dailyNotes[idx], date, ref, party, group, mobile, sector, count };
+      dailyNotes[idx] = { ...dailyNotes[idx], date, ref, party, group, mobile, sector, count, flightNo, flightTime };
     }
   } else {
-    dailyNotes.push({ id: uid(), date, ref, party, group, mobile, sector, count });
+    dailyNotes.push({ id: uid(), date, ref, party, group, mobile, sector, count, flightNo, flightTime });
   }
 
   svDN();
@@ -1642,6 +1652,8 @@ function clearDailyNoteForm() {
   document.getElementById('dn-mobile').value = '';
   document.getElementById('dn-sector').value = '';
   document.getElementById('dn-count').value = '';
+  document.getElementById('dn-flight-no').value = '';
+  document.getElementById('dn-flight-time').value = '';
   
   const L = T[lang];
   setText('btn-dn-save', L.dnSave);
@@ -1662,6 +1674,8 @@ function editDailyNote(id) {
   fillDrop('dn-sector', sectors);
   document.getElementById('dn-sector').value = note.sector;
   document.getElementById('dn-count').value = note.count;
+  document.getElementById('dn-flight-no').value = note.flightNo || '';
+  document.getElementById('dn-flight-time').value = note.flightTime || '';
 
   setText('btn-dn-save', L.dnEditTitle);
   setText('lbl-dnTitle', L.dnEditTitle);
@@ -1743,6 +1757,7 @@ function renderDailyNoteReport() {
     <td style="direction:ltr;text-align:right;font-family:monospace;">${r.mobile || '—'}</td>
     <td><span class="badge">${r.sector}</span></td>
     <td><strong>${r.count}</strong></td>
+    <td style="font-family:monospace;">${r.flightNo || '—'}<br><small style="color:var(--muted);">${r.flightTime ? formatTime12(r.flightTime) : ''}</small></td>
     <td class="action-btns">
       <button class="btn btn-sm btn-o no-print" onclick="editDailyNote('${r.id}')">${L.edit || '✏️'}</button>
       <button class="btn btn-sm btn-d no-print" onclick="deleteDailyNote('${r.id}')">${L.del || '🗑️'}</button>
@@ -1761,6 +1776,7 @@ function renderDailyNoteReport() {
             <th>${L.dnMobile || 'Mobile'}</th>
             <th>${L.sectorCol || 'Sector'}</th>
             <th>${L.hujjajCol || 'Pilgrims'}</th>
+            <th>${L.dnFlightNo || 'Flight'}</th>
             <th>${L.actionCol || 'Action'}</th>
           </tr>
         </thead>
@@ -1773,7 +1789,15 @@ function renderDailyNoteReport() {
 
   out.innerHTML = summary + tableHtml;
 }
-/* ════════════════════════════════════════ */
+
+function formatTime12(time24) {
+  if (!time24) return '';
+  const [h, m] = time24.split(':');
+  let hh = parseInt(h);
+  const ampm = hh >= 12 ? 'PM' : 'AM';
+  hh = hh % 12 || 12;
+  return `${hh}:${m} ${ampm}`;
+}
 
 /* ─── INIT ─── */
 document.addEventListener('DOMContentLoaded', () => {
