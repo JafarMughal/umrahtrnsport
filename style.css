@@ -274,3 +274,209 @@ body.lang-en .sd-dropdown{right:auto;}
 
 
 .header-icon:hover .logo-hover-overlay{opacity:1!important;}
+
+/* ══ AUTH & LOGIN PAGE ══ */
+#login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--green-dark), var(--green), var(--cream));
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  padding: 20px;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 35px 25px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  border-top: 5px solid var(--gold);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.login-logo {
+  font-size: 50px;
+  margin-bottom: 12px;
+  animation: pulseLogo 2s infinite alternate;
+}
+
+@keyframes pulseLogo {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+.login-card h2 {
+  color: var(--green-dark);
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.login-card p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.login-fg {
+  margin-bottom: 15px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.login-fg label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.login-fg input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.login-fg input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: #fff;
+  box-shadow: 0 0 6px rgba(201,148,10,0.2);
+}
+
+.btn-login {
+  width: 100%;
+  justify-content: center;
+  padding: 10px;
+  font-size: 14px;
+  background: var(--green-dark);
+  color: #fff;
+  border-radius: 8px;
+  margin-top: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.btn-login:hover {
+  background: var(--green);
+  box-shadow: 0 4px 10px rgba(5,77,40,0.2);
+}
+
+/* ══ HEADER USER STATUS ══ */
+.header-user-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-left: 10px;
+}
+body.lang-ur .header-user-wrap, body.lang-ar .header-user-wrap {
+  margin-left: 0;
+  margin-right: 10px;
+}
+.header-user-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+/* ══ LEDGER SUMMARY & OVERALL BALANCE ══ */
+.overall-bal-badge {
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.summary-card {
+  border-left: 5px solid var(--gold)!important;
+}
+body.lang-ur .summary-card, body.lang-ar .summary-card {
+  border-left: none!important;
+  border-right: 5px solid var(--gold)!important;
+}
+
+.summary-card table {
+  margin-top: 10px;
+}
+
+/* ══ USER LIST TAG ══ */
+.user-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 11px;
+}
+.user-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 4px 11px;
+  font-size: 12px;
+}
+.user-tag .username-val {
+  font-weight: 700;
+  color: var(--green-dark);
+}
+.user-tag .role-badge {
+  font-size: 9px;
+  background: var(--gold);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-family: monospace;
+}
+.user-tag .x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0;
+  line-height: 1;
+}
+
+@media(max-width:640px){
+  .header-user-wrap {
+    margin-right: 0;
+    margin-left: 0;
+    padding: 3px 8px;
+  }
+}
