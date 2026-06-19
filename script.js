@@ -292,87 +292,8 @@ function svC() { db.ref('partyCodes').set(partyCodes); }
 function svU() { db.ref('users').set(users); }
 function svDN() { db.ref('dailyNotes').set(dailyNotes); }
 
-<<<<<<< HEAD
-/* ─── STORAGE KEYS ─── */
-const KEY_RECS = 'uts_records', KEY_PAYS = 'uts_payments', KEY_PARTIES = 'uts_parties', KEY_SECTORS = 'uts_sectors', KEY_CODES = 'uts_codes', KEY_LOGO = 'uts_logo', KEY_APPNAME = 'uts_appname', KEY_APPSUB = 'uts_appsub', KEY_TRANSPORTS = 'uts_transports';
-
-let records  = JSON.parse(localStorage.getItem(KEY_RECS)  || '[]');
-let payments = JSON.parse(localStorage.getItem(KEY_PAYS)  || '[]');
-let parties  = JSON.parse(localStorage.getItem(KEY_PARTIES) || 'null');
-let sectors  = JSON.parse(localStorage.getItem(KEY_SECTORS) || 'null');
-let transports = JSON.parse(localStorage.getItem(KEY_TRANSPORTS) || 'null');
-let partyCodes = JSON.parse(localStorage.getItem(KEY_CODES) || '{}');
-
-function svR(){ localStorage.setItem(KEY_RECS, JSON.stringify(records)); }
-function svPy(){ localStorage.setItem(KEY_PAYS, JSON.stringify(payments)); }
-function svP(){ localStorage.setItem(KEY_PARTIES, JSON.stringify(parties)); }
-function svS(){ localStorage.setItem(KEY_SECTORS, JSON.stringify(sectors)); }
-function svTr(){ localStorage.setItem(KEY_TRANSPORTS, JSON.stringify(transports)); }
-function svC(){ localStorage.setItem(KEY_CODES, JSON.stringify(partyCodes)); }
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).substr(2,5); }
-function fd(d){ if(!d)return''; const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
-function sar(n){ return Number(n||0).toLocaleString(); }
-function today(){ return new Date().toISOString().split('T')[0]; }
-function t(k){ return T[lang][k]||k; }
-
-/* ─── LOADER ─── */
-function showLoader(delay = 500) {
-  const loader = document.getElementById('loader-overlay');
-  if(loader) {
-    loader.classList.remove('hidden');
-    if(delay > 0) {
-      setTimeout(() => loader.classList.add('hidden'), delay);
-    }
-  }
-}
-function hideLoader() {
-  const loader = document.getElementById('loader-overlay');
-  if(loader) loader.classList.add('hidden');
-}
-
-/* ─── LOGO & APP NAME ─── */
-function handleLogoUpload(inp){
-  const file = inp.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = e.target.result;
-    localStorage.setItem(KEY_LOGO, data);
-    applyLogo(data);
-  };
-  reader.readAsDataURL(file);
-}
-function handleLogoDrop(e){
-  e.preventDefault();
-  document.getElementById('logo-drop-zone').style.borderColor='var(--border)';
-  const file = e.dataTransfer.files[0]; if(!file||!file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = ev => { localStorage.setItem(KEY_LOGO, ev.target.result); applyLogo(ev.target.result); };
-  reader.readAsDataURL(file);
-}
-function applyLogo(src){
-  // header
-  const emoji = document.getElementById('header-logo-emoji');
-  const img   = document.getElementById('header-logo-img');
-  if(src){ emoji.style.display='none'; img.src=src; img.style.display='block'; }
-  else   { emoji.style.display=''; img.style.display='none'; }
-  // settings preview
-  const pe = document.getElementById('logo-preview-emoji');
-  const pi = document.getElementById('logo-preview-img');
-  const rb = document.getElementById('btn-removeLogo');
-  if(src){ pe.style.display='none'; pi.src=src; pi.style.display='block'; if(rb)rb.style.display='inline-flex'; }
-  else   { pe.style.display=''; pi.style.display='none'; if(rb)rb.style.display='none'; }
-}
-function removeLogo(){
-  localStorage.removeItem(KEY_LOGO);
-  applyLogo(null);
-}
-function loadLogo(){
-  const saved = localStorage.getItem(KEY_LOGO);
-  if(saved) applyLogo(saved);
-=======
 function saveAppSettingsToFb() {
   db.ref('settings').set({ logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} });
->>>>>>> 35b08e3e4250f483f085562cb44c746ad9bc4e95
 }
 
 function initUsers() {
@@ -505,23 +426,12 @@ function formatTime12(time24) {
   return `${hh}:${m} ${ampm}`;
 }
 
-<<<<<<< HEAD
-  const lt = document.getElementById('loader-text');
-  if(lt) lt.textContent = l === 'en' ? 'Please wait...' : (l === 'ar' ? 'يرجى الانتظار...' : 'براہ کرم انتظار کریں...');
-
-  ['ur','en','ar'].forEach(x=>document.getElementById('lb-'+x).classList.toggle('active',x===l));
-  document.getElementById('app-title').textContent=L.appTitle;
-  document.getElementById('app-sub').textContent=L.appSub;
-  const navBtns=document.querySelectorAll('#main-nav button');
-  L.nav.forEach((txt,i)=>{ if(navBtns[i]) navBtns[i].textContent=txt; });
-=======
 function al(id, msg, type) {
   const e = document.getElementById(id);
   if (!e) return;
   e.innerHTML = `<div class="alert a-${type}">${msg}</div>`;
   setTimeout(() => e.innerHTML = '', 3000);
 }
->>>>>>> 35b08e3e4250f483f085562cb44c746ad9bc4e95
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  LANGUAGE
@@ -645,23 +555,6 @@ function setLang(l) {
 function setText(id, txt) { const e = document.getElementById(id); if (e) e.textContent = txt; }
 function setOpt(id, txt, val) { const e = document.getElementById(id); if (e) { e.textContent = txt; e.value = val; } }
 
-<<<<<<< HEAD
-/* ─── NAV ─── */
-function showPage(p,btn){
-  showLoader(300);
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('#main-nav button').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(p==='entry')   { fillDrop('e-sector',sectors); fillDrop('e-transport',transports); todayStats(); }
-  if(p==='payment') { renderPayments(); renderPayHead(); }
-  if(p==='ledger')  { fillDrop('l-party',parties,true); renderLedger(); }
-  if(p==='records') { fillDrop('f-party',parties,true); fillDrop('f-sector',sectors,true); renderRecords(records); renderRecHead(); }
-  if(p==='update')  { fillDrop('u-sector',sectors); fillDrop('u-transport',transports); renderUpdateTable(); renderUpdHead(); }
-  if(p==='settings'){ renderPartyList(); renderSectorList(); renderTransportList(); fillRenameFrom(); loadAppName(lang);
-    const sn=document.getElementById('set-appname'); if(sn) sn.value=localStorage.getItem(KEY_APPNAME+'_'+lang)||T[lang].appTitle;
-    const ss=document.getElementById('set-appsub');  if(ss) ss.value=localStorage.getItem(KEY_APPSUB+'_'+lang)||T[lang].appSub;
-=======
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  LOGO & APP NAME
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -791,7 +684,6 @@ function sdShowCode(prefix, partyName) {
     badge.id = prefix + '-badge';
     badge.style.cssText = 'margin-top:4px;font-size:12px;color:var(--muted);';
     document.getElementById('sd-' + prefix).parentElement.appendChild(badge);
->>>>>>> 35b08e3e4250f483f085562cb44c746ad9bc4e95
   }
   badge.innerHTML = partyName ? `<span class="party-code">${code}</span> ${partyName}` : '';
 }
@@ -1619,24 +1511,6 @@ function saveDailyNote() {
   renderDailyNoteReport();
 }
 
-<<<<<<< HEAD
-/* ─── INIT ─── */
-document.addEventListener('DOMContentLoaded',()=>{
-  showLoader(600);
-  if(!parties){ parties=T[lang].defaultParties.slice(); svP(); }
-  if(!sectors){ sectors=T[lang].defaultSectors.slice(); svS(); }
-  if(!transports){ transports=['بس','وین','کار','کوچ']; svTr(); }
-  parties.forEach(p=>getCode(p));
-  loadLogo();
-  setLang(lang);
-  document.getElementById('e-date').value=today();
-  document.getElementById('p-date').value=today();
-  // disable fare fields until transport chosen
-  document.getElementById('e-count').disabled=true;
-  document.getElementById('e-fare').disabled=true;
-  setNextVoucher();
-});
-=======
 function clearDailyNoteForm() {
   document.getElementById('dn-id').value = '';
   document.getElementById('dn-date').value = today();
@@ -1651,7 +1525,6 @@ function clearDailyNoteForm() {
   document.getElementById('btn-dn-save').textContent = T[lang].dnSave;
   document.getElementById('lbl-dnTitle').textContent = T[lang].dnTitle;
 }
->>>>>>> 35b08e3e4250f483f085562cb44c746ad9bc4e95
 
 function editDailyNote(id) {
   const note = dailyNotes.find(n => n.id === id);
