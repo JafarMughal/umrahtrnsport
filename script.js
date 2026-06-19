@@ -229,6 +229,21 @@ function sar(n){ return Number(n||0).toLocaleString(); }
 function today(){ return new Date().toISOString().split('T')[0]; }
 function t(k){ return T[lang][k]||k; }
 
+/* ─── LOADER ─── */
+function showLoader(delay = 500) {
+  const loader = document.getElementById('loader-overlay');
+  if(loader) {
+    loader.classList.remove('hidden');
+    if(delay > 0) {
+      setTimeout(() => loader.classList.add('hidden'), delay);
+    }
+  }
+}
+function hideLoader() {
+  const loader = document.getElementById('loader-overlay');
+  if(loader) loader.classList.add('hidden');
+}
+
 /* ─── LOGO & APP NAME ─── */
 function handleLogoUpload(inp){
   const file = inp.files[0]; if(!file) return;
@@ -424,6 +439,9 @@ function setLang(l){
   document.body.className='lang-'+l;
   document.getElementById('modal').style.direction=L.dir;
 
+  const lt = document.getElementById('loader-text');
+  if(lt) lt.textContent = l === 'en' ? 'Please wait...' : (l === 'ar' ? 'يرجى الانتظار...' : 'براہ کرم انتظار کریں...');
+
   ['ur','en','ar'].forEach(x=>document.getElementById('lb-'+x).classList.toggle('active',x===l));
   document.getElementById('app-title').textContent=L.appTitle;
   document.getElementById('app-sub').textContent=L.appSub;
@@ -564,6 +582,7 @@ function setOpt(id,txt,val){ const e=document.getElementById(id); if(e){e.textCo
 
 /* ─── NAV ─── */
 function showPage(p,btn){
+  showLoader(300);
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('#main-nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
@@ -1151,6 +1170,7 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 
 /* ─── INIT ─── */
 document.addEventListener('DOMContentLoaded',()=>{
+  showLoader(600);
   if(!parties){ parties=T[lang].defaultParties.slice(); svP(); }
   if(!sectors){ sectors=T[lang].defaultSectors.slice(); svS(); }
   if(!transports){ transports=['بس','وین','کار','کوچ']; svTr(); }
