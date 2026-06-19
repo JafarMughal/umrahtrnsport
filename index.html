@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Umrah Transport System</title>
+  <link rel="icon" type="image/x-icon" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Amiri:wght@400;700&family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap"
+    rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+</head>
+
+<body class="lang-ur">
+
+  <!-- FIREBASE LOADING OVERLAY - نیا سپنر -->
+  <div id="firebase-loader">
+    <div class="loader-container">
+      <div class="spinner-ring">
+        <svg width="70" height="70" viewBox="0 0 70 70">
+          <circle cx="35" cy="35" r="28" fill="none" stroke="#C9940A" stroke-width="4" stroke-dasharray="60 130"
+            stroke-linecap="round" />
+          <circle cx="35" cy="35" r="28" fill="none" stroke="#F5E6A3" stroke-width="4" stroke-dasharray="40 150"
+            stroke-linecap="round" stroke-dashoffset="-40" />
+          <circle cx="35" cy="35" r="28" fill="none" stroke="#E8F5EE" stroke-width="3" stroke-dasharray="20 170"
+            stroke-linecap="round" stroke-dashoffset="-80" />
+        </svg>
+        <div class="loader-icon">🕋</div>
+      </div>
+      <div class="loader-text">ڈیٹا لوڈ ہو رہا ہے...</div>
+      <div class="loader-bar">
+        <div class="loader-bar-fill"></div>
+      </div>
+      <div class="loader-sub">U M R A H T R A N S P O R T</div>
+    </div>
+  </div>
+
+  <!-- ══ LOGIN PAGE ══ -->
+<div id="login-container" style="display:none;">
+  <div class="login-card">
+    <div class="login-logo">🕋</div>
+    <h2 id="login-title">لاگ ان کریں</h2>
+    <p id="app-sub-login">Umrah Transport Management System</p>
+    <div id="al-login"></div>
+    <div class="login-fg">
+      <label id="lbl-li-username">صارف نام</label>
+      <input type="text" id="li-username" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault(); login();}">
+    </div>
+    <div class="login-fg">
+      <label id="lbl-li-password">پاس ورڈ</label>
+      <input type="password" id="li-password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault(); login();}">
+    </div>
+    <button class="btn btn-login" id="btn-login-submit" onclick="login()">لاگ ان</button>
+  </div>
+</div>
+
+  <div id="main-app-container" style="display:none;">
+
+    <!-- HEADER - فکسڈ اور کم ہائٹ -->
+    <header>
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="header-icon" id="header-logo-wrap" onclick="document.getElementById('logo-file-input').click()"
+            title="لوگو تبدیل کریں">
+            <span id="header-logo-emoji">🕋</span>
+            <img id="header-logo-img" src="" alt="" style="display:none;">
+          </div>
+          <input type="file" id="logo-file-input" accept="image/*" style="display:none;"
+            onchange="handleLogoUpload(this)">
+          <div class="header-text">
+            <h1 id="app-title">عمرہ ٹرانسپورٹ مینجمنٹ سسٹم</h1>
+            <p id="app-sub">حاجیوں کی آمدورفت کا مکمل ریکارڈ</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="header-user-wrap" id="user-status-wrap">
+            <span class="header-user-name" id="lbl-logged-in-user">صارف: admin</span>
+            <button class="btn-logout" id="btn-logout" onclick="logout()">لاگ آؤٹ 🚪</button>
+          </div>
+          <div class="lang-switcher">
+            <button class="lang-btn active" id="lb-ur" onclick="setLang('ur')">اردو</button>
+            <button class="lang-btn" id="lb-en" onclick="setLang('en')">EN</button>
+            <button class="lang-btn" id="lb-ar" onclick="setLang('ar')">ع</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAV - فکسڈ نیچے -->
+    <nav id="main-nav">
+      <button class="active" onclick="showPage('entry',this)">📝 نئی</button>
+      <button onclick="showPage('payment',this)">💰 ادائیگی</button>
+      <button onclick="showPage('ledger',this)">📒 لیجر</button>
+      <button onclick="showPage('records',this)">📋 ریکارڈ</button>
+      <button onclick="showPage('report',this)">📊 رپورٹ</button>
+      <button onclick="showPage('update',this)">✏️ اپڈیٹ</button>
+      <button onclick="showPage('dailynote',this)" id="nav-dailynote">📋 ڈیلی</button>
+      <button onclick="showPage('settings',this)">⚙️ سیٹنگ</button>
+    </nav>
+
+    <div class="wrap">
+
+      <!-- ══ ENTRY PAGE ══ -->
+      <div id="page-entry" class="page active">
+        <div class="card">
+          <div class="card-title" id="lbl-entry">نئی ٹرانسپورٹ انٹری 🚌</div>
+          <div id="al-entry"></div>
+          <div class="grid">
+            <div class="fg"><label id="lbl-date">تاریخ</label><input type="date" id="e-date"></div>
+            <div class="fg">
+              <label id="lbl-voucher">واوچر نمبر</label>
+              <input type="text" id="e-voucher" class="voucher-input" readonly>
+            </div>
+            <div class="fg">
+              <label><span id="lbl-party">پارٹی</span></label>
+              <div class="sd-wrap">
+                <div class="sd-input-row">
+                  <input type="text" class="sd-input" id="e-party-input" autocomplete="off"
+                    oninput="sdFilter('e-party')" onfocus="sdOpen('e-party')" onblur="sdBlur('e-party')">
+                </div>
+                <input type="hidden" id="e-party">
+                <div class="sd-dropdown" id="sd-e-party"></div>
+              </div>
+            </div>
+            <div class="fg">
+              <label><span id="lbl-sector">سیکٹر</span></label>
+              <div class="ddr">
+                <select id="e-sector"></select>
+              </div>
+            </div>
+            <div class="fg">
+              <label><span id="lbl-transport">ٹرانسپورٹ</span></label>
+              <div class="ddr">
+                <select id="e-transport" onchange="onTransportChange('e')">
+                  <option value="">-- منتخب کریں --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="fg"><label id="lbl-count">حاجیوں کی تعداد</label><input type="number" id="e-count" min="1"
+                placeholder="0" oninput="calcE()"></div>
+            <div class="fg"><label id="lbl-fare">فی حاجی کرایہ (SAR)</label><input type="number" id="e-fare" min="0"
+                placeholder="0" oninput="calcE()"></div>
+            <div class="fg"><label id="lbl-total">کل رقم (SAR)</label><input type="number" id="e-total" readonly
+                class="total-input"></div>
+            <div class="fg" id="e-vehicle-wrap" style="display:none;">
+              <label id="lbl-vehicletotal">پوری گاڑی کی رقم (SAR)</label>
+              <input type="number" id="e-vehicle-total" min="0" placeholder="0" oninput="calcE()">
+            </div>
+          </div>
+          <div id="e-transport-hint"
+            style="display:none;margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:12px;"></div>
+          <div class="fg" style="margin-bottom:15px;"><label id="lbl-notes">نوٹس</label><textarea id="e-notes"
+              rows="2"></textarea></div>
+          <div class="btn-row">
+            <button class="btn btn-p" id="btn-save" onclick="addEntry()">✅ انٹری محفوظ کریں</button>
+            <button class="btn btn-o" id="btn-clear" onclick="clearEntryForm()">🔄 صاف کریں</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" id="lbl-todaysum">آج کا خلاصہ 📊</div>
+          <div class="sg">
+            <div class="sc">
+              <div class="num" id="ts-p">0</div>
+              <div class="lbl" id="lbl-ts-p">پارٹیاں آج</div>
+            </div>
+            <div class="sc">
+              <div class="num" id="ts-h">0</div>
+              <div class="lbl" id="lbl-ts-h">کل حاجی آج</div>
+            </div>
+            <div class="sc">
+              <div class="num" id="ts-a">0</div>
+              <div class="lbl" id="lbl-ts-a">کل رقم (SAR)</div>
+            </div>
+            <div class="sc">
+              <div class="num" id="ts-t">0</div>
+              <div class="lbl" id="lbl-ts-t">کل سفر آج</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAYMENT ══ -->
+      <div id="page-payment" class="page">
+        <div class="card">
+          <div class="card-title" id="lbl-payTitle">پارٹی کی ادائیگی درج کریں 💰</div>
+          <div id="al-pay"></div>
+          <div class="grid">
+            <div class="fg"><label id="lbl-paydate">تاریخ</label><input type="date" id="p-date"></div>
+            <div class="fg"><label id="lbl-payparty">پارٹی</label>
+              <div class="sd-wrap">
+                <div class="sd-input-row">
+                  <input type="text" class="sd-input" id="p-party-input" autocomplete="off"
+                    oninput="sdFilter('p-party')" onfocus="sdOpen('p-party')" onblur="sdBlur('p-party')">
+                </div>
+                <input type="hidden" id="p-party">
+                <div class="sd-dropdown" id="sd-p-party"></div>
+              </div>
+            </div>
+            <div class="fg"><label id="lbl-received">موصول رقم (SAR)</label><input type="number" id="p-amount" min="1"
+                placeholder="0"></div>
+            <div class="fg"><label id="lbl-method">ادائیگی کا طریقہ</label>
+              <select id="p-method">
+                <option value="cash" id="opt-cash">نقد</option>
+                <option value="bank" id="opt-bank">بینک</option>
+                <option value="cheque" id="opt-cheque">چیک</option>
+                <option value="online" id="opt-online">آن لائن</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg" style="margin-bottom:15px;"><label id="lbl-paynotes">نوٹس</label><textarea id="p-notes"
+              rows="2"></textarea></div>
+          <button class="btn btn-p" id="btn-savepay" onclick="addPayment()">✅ ادائیگی محفوظ کریں</button>
+        </div>
+        <div class="card">
+          <div class="card-title" id="lbl-recentpay">حالیہ ادائیگیاں 💳</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr id="pay-head"></tr>
+              </thead>
+              <tbody id="pay-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LEDGER ══ -->
+      <div id="page-ledger" class="page">
+        <div class="card">
+          <div class="card-title" id="lbl-ledgerTitle">پارٹی لیجر 📒</div>
+          <div class="fb">
+            <div class="fg"><label id="lbl-ledparty">پارٹی</label><select id="l-party"
+                onchange="renderLedger()"></select></div>
+            <div class="fg"><label id="lbl-ledfrom">تاریخ سے</label><input type="date" id="l-from"
+                onchange="renderLedger()"></div>
+            <div class="fg"><label id="lbl-ledto">تاریخ تک</label><input type="date" id="l-to"
+                onchange="renderLedger()"></div>
+            <div class="fb-actions">
+              <button class="btn btn-g no-print" id="btn-print" onclick="window.print()">🖨️ پرنٹ</button>
+              <button class="btn btn-o no-print" id="btn-resetled" onclick="clearLedgerFilter()">↩ صاف</button>
+            </div>
+          </div>
+          <div id="ledger-output"></div>
+        </div>
+      </div>
+
+      <!-- ══ RECORDS ══ -->
+      <div id="page-records" class="page">
+        <div class="card">
+          <div class="card-title" id="lbl-recTitle">تمام ریکارڈ 📋</div>
+          <div class="fb">
+            <div class="fg"><label id="lbl-recfrom">تاریخ سے</label><input type="date" id="f-from"></div>
+            <div class="fg"><label id="lbl-recto">تاریخ تک</label><input type="date" id="f-to"></div>
+            <div class="fg"><label id="lbl-recparty">پارٹی</label><select id="f-party"></select></div>
+            <div class="fg"><label id="lbl-recsector">سیکٹر</label><select id="f-sector"></select></div>
+            <div class="fb-actions">
+              <button class="btn btn-g" id="btn-filter" onclick="filterRecords()">🔍 فلٹر</button>
+              <button class="btn btn-o" id="btn-clearfilter" onclick="clearFilter()">↩ صاف</button>
+            </div>
+          </div>
+          <div id="rec-totals" class="totbox" style="display:none;">
+            <div class="ti">
+              <div class="tl" id="lbl-totalrec">کل ریکارڈ</div>
+              <div class="tv" id="rt-c">0</div>
+            </div>
+            <div class="ti">
+              <div class="tl" id="lbl-totalhj">کل حاجی</div>
+              <div class="tv" id="rt-h">0</div>
+            </div>
+            <div class="ti">
+              <div class="tl" id="lbl-totalamt">کل رقم (SAR)</div>
+              <div class="tv" id="rt-a">0</div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr id="rec-head"></tr>
+              </thead>
+              <tbody id="rec-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REPORT ══ -->
+   <div id="page-report" class="page">
+  <div class="card">
+    <div class="card-title" id="lbl-repTitle">رپورٹ سینٹر 📊</div>
+    <div class="fb">
+      <div class="fg"><label id="lbl-repfrom">تاریخ سے</label><input type="date" id="r-from"></div>
+      <div class="fg"><label id="lbl-repto">تاریخ تک</label><input type="date" id="r-to"></div>
+      <div class="fg"><label id="lbl-reptype">رپورٹ کی قسم</label>
+        <select id="r-type">
+          <option value="date" id="opt-bydate">تاریخ وائز</option>
+          <option value="party" id="opt-byparty">پارٹی وائز</option>
+          <option value="sector" id="opt-bysector">سیکٹر وائز</option>
+        </select>
+      </div>
+     <div class="fb-actions">
+  <button class="btn btn-p" id="btn-genrep" onclick="genReport()">📊 رپورٹ بنائیں</button>
+  <button class="btn btn-g no-print" onclick="printReport()">🖨️</button>
+  <button class="btn btn-g no-print" onclick="exportReportExcel()">📥 Excel</button>
+</div>
+    </div>
+
+    <!-- یہ صرف پرنٹ میں نظر آئے گا -->
+    <div id="print-header">
+      <div class="ph-title">Umrah Transport Management System</div>
+      <div class="ph-sub">رپورٹ سینٹر — Report Center</div>
+      <div class="ph-meta">
+        <span id="ph-range"></span>
+        <span id="ph-printed-on"></span>
+      </div>
+    </div>
+
+    <div id="rep-out"></div>
+
+    <!-- یہ صرف پرنٹ میں نظر آئے گا -->
+    <div id="print-footer">Umrah Transport Management System — Generated Report</div>
+  </div>
+</div>
+
+      <!-- ══ DAILY NOTE ══ -->
+      <div id="page-dailynote" class="page">
+        <div class="card">
+          <div class="card-title" id="lbl-dnTitle">ڈیلی ٹرانسپورٹ نوٹ 📋</div>
+          <div id="al-dn"></div>
+          <input type="hidden" id="dn-id">
+          <div class="grid">
+            <div class="fg"><label id="lbl-dnDate">تاریخ</label><input type="date" id="dn-date"></div>
+            <div class="fg"><label id="lbl-dnRef">واوچر نمبر</label><input type="text" id="dn-ref" class="voucher-input"
+                readonly></div>
+            <div class="fg"><label id="lbl-dnParty">پارٹی کا نام</label>
+              <div class="sd-wrap">
+                <div class="sd-input-row">
+                  <input type="text" class="sd-input" id="dn-party-input" autocomplete="off"
+                    oninput="sdFilter('dn-party')" onfocus="sdOpen('dn-party')" onblur="sdBlur('dn-party')">
+                </div>
+                <input type="hidden" id="dn-party">
+                <div class="sd-dropdown" id="sd-dn-party"></div>
+              </div>
+            </div>
+            <div class="fg"><label id="lbl-dnGroup">گروپ کوڈ</label><input type="text" id="dn-group"></div>
+            <div class="fg"><label id="lbl-dnMobile">موبائل نمبر</label><input type="text" id="dn-mobile"
+                class="ltr-input"></div>
+            <div class="fg"><label id="lbl-dnSector">سیکٹر</label>
+              <div class="ddr"><select id="dn-sector"></select></div>
+            </div>
+            <div class="fg"><label id="lbl-dnCount">حاجیوں کی تعداد</label><input type="number" id="dn-count" min="1"
+                placeholder="0"></div>
+            <div class="fg"><label id="lbl-dnFlightNo">فلائیٹ نمبر</label><input type="text" id="dn-flight-no"></div>
+            <div class="fg"><label id="lbl-dnFlightTime">وقت</label><input type="time" id="dn-flight-time"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-p" id="btn-dn-save" onclick="saveDailyNote()">✅ نوٹ محفوظ کریں</button>
+            <button class="btn btn-o" id="btn-dn-clear" onclick="clearDailyNoteForm()">🔄 صاف کریں</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" id="lbl-dnRepTitle">ڈیلی نوٹ رپورٹ 📊</div>
+          <div class="fb">
+            <div class="fg"><label id="lbl-dnRepFrom">تاریخ سے</label><input type="date" id="dnr-from"
+                onchange="renderDailyNoteReport()"></div>
+            <div class="fg"><label id="lbl-dnRepTo">تاریخ تک</label><input type="date" id="dnr-to"
+                onchange="renderDailyNoteReport()"></div>
+            <div class="fb-actions">
+              <button class="btn btn-g no-print" onclick="window.print()">🖨️</button>
+              <button class="btn btn-o no-print" id="btn-dn-resetrep" onclick="clearDailyNoteReport()">↩ صاف</button>
+            </div>
+          </div>
+          <div id="dn-report-out"></div>
+        </div>
+      </div>
+
+      <!-- ══ UPDATE ══ -->
+      <div id="page-update" class="page">
+        <div class="card">
+          <div class="card-title" id="lbl-updTitle">ریکارڈ اپڈیٹ کریں ✏️</div>
+          <div id="al-upd"></div>
+          <div id="upd-form" style="display:none;">
+            <input type="hidden" id="u-id">
+            <div class="grid">
+              <div class="fg"><label id="lbl-udate">تاریخ</label><input type="date" id="u-date"></div>
+              <div class="fg"><label id="lbl-uvoucher">واوچر نمبر</label><input type="text" id="u-voucher"
+                  class="voucher-input" readonly></div>
+              <div class="fg"><label id="lbl-uparty">پارٹی</label>
+                <div class="sd-wrap">
+                  <div class="sd-input-row">
+                    <input type="text" class="sd-input" id="u-party-input" autocomplete="off"
+                      oninput="sdFilter('u-party')" onfocus="sdOpen('u-party')" onblur="sdBlur('u-party')">
+                  </div>
+                  <input type="hidden" id="u-party">
+                  <div class="sd-dropdown" id="sd-u-party"></div>
+                </div>
+              </div>
+              <div class="fg"><label id="lbl-usector">سیکٹر</label>
+                <div class="ddr"><select id="u-sector"></select></div>
+              </div>
+              <div class="fg"><label id="lbl-utransport">ٹرانسپورٹ</label>
+                <div class="ddr"><select id="u-transport" onchange="onTransportChange('u')">
+                    <option value="">-- منتخب کریں --</option>
+                  </select></div>
+              </div>
+            </div>
+            <div class="grid">
+              <div class="fg"><label id="lbl-ucount">حاجیوں کی تعداد</label><input type="number" id="u-count" min="1"
+                  oninput="calcU()"></div>
+              <div class="fg"><label id="lbl-ufare">فی حاجی کرایہ (SAR)</label><input type="number" id="u-fare" min="0"
+                  oninput="calcU()"></div>
+              <div class="fg"><label id="lbl-utotal">کل رقم (SAR)</label><input type="number" id="u-total" readonly
+                  class="total-input"></div>
+              <div class="fg" id="u-vehicle-wrap" style="display:none;"><label id="lbl-uvehicletotal">پوری گاڑی کی رقم
+                  (SAR)</label><input type="number" id="u-vehicle-total" min="0" placeholder="0" oninput="calcU()">
+              </div>
+            </div>
+            <div id="u-transport-hint"
+              style="display:none;margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:12px;"></div>
+            <div class="fg" style="margin-bottom:15px;"><label id="lbl-unotes">نوٹس</label><textarea id="u-notes"
+                rows="2"></textarea></div>
+            <div class="btn-row">
+              <button class="btn btn-p" id="btn-saveupd" onclick="saveUpdate()">💾 اپڈیٹ محفوظ کریں</button>
+              <button class="btn btn-o" id="btn-cancel" onclick="cancelUpdate()">❌ منسوخ</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" id="lbl-selrec">ریکارڈ منتخب کریں 📋</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr id="upd-head"></tr>
+              </thead>
+              <tbody id="upd-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS ══ -->
+      <div id="page-settings" class="page">
+        <div class="card">
+          <div class="card-title" id="lbl-setApp">ایپ کی ترتیب ⚙️</div>
+          <div class="sgr">
+            <div>
+              <div class="fg" style="margin-bottom:10px;"><label id="lbl-logoLbl">لوگو تبدیل کریں</label></div>
+              <div id="logo-drop-zone" onclick="document.getElementById('logo-file-input2').click()"
+                style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color .2s;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;"
+                ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+                ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLogoDrop(event)">
+                <div id="logo-preview-wrap">
+                  <div id="logo-preview-emoji" style="font-size:44px;line-height:1;">🕋</div>
+                  <img id="logo-preview-img" src="" alt=""
+                    style="display:none;width:70px;height:70px;object-fit:cover;border-radius:50%;border:3px solid var(--gold);">
+                </div>
+                <div style="font-size:12px;color:var(--muted);" id="lbl-logoHint">PNG / JPG / SVG (کلک یا ڈراپ کریں)
+                </div>
+                <button class="btn btn-o btn-sm no-print" onclick="event.stopPropagation();removeLogo()"
+                  id="btn-removeLogo" style="display:none;">✕ حذف</button>
+              </div>
+              <input type="file" id="logo-file-input2" accept="image/*" style="display:none;"
+                onchange="handleLogoUpload(this)">
+            </div>
+            <div>
+              <div class="fg" style="margin-bottom:11px;"><label id="lbl-appNameLbl">ایپ کا نام</label><input
+                  type="text" id="set-appname" style="font-size:15px;"></div>
+              <div class="fg" style="margin-bottom:14px;"><label id="lbl-appSubLbl">ذیلی عنوان</label><input type="text"
+                  id="set-appsub"></div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button class="btn btn-p" id="btn-saveApp" onclick="saveAppSettings()">💾 محفوظ کریں</button>
+              </div>
+              <div id="al-app" style="margin-top:8px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sgr">
+          <div class="card">
+            <div class="card-title" id="lbl-setParties">پارٹیاں 👥</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newpartylbl">نئی پارٹی</label><input
+                  type="text" id="sp-in" placeholder="پارٹی کا نام"></div>
+              <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addparty"
+                  onclick="addFromSettings('party')">➕ شامل</button></div>
+            </div>
+            <div id="al-sp"></div>
+            <div class="tags" id="parties-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" id="lbl-setSectors">سیکٹر 🗺️</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newsectorlbl">نیا سیکٹر</label><input
+                  type="text" id="ss-in" placeholder="مثلاً: جدہ ➜ مکہ"></div>
+              <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addsector"
+                  onclick="addFromSettings('sector')">➕ شامل</button></div>
+            </div>
+            <div id="al-ss"></div>
+            <div class="tags" id="sectors-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" id="lbl-setTransports">ٹرانسپورٹ 🚌</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newtransportlbl">نئی
+                  ٹرانسپورٹ</label><input type="text" id="st-in" placeholder="مثلاً: بس، وین، کوچ"></div>
+              <div style="margin-top:auto;"><button class="btn btn-p" id="btn-addtransport"
+                  onclick="addFromSettings('transport')">➕ شامل</button></div>
+            </div>
+            <div id="al-st"></div>
+            <div class="tags" id="transports-list"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" id="lbl-renameParty">پارٹی کا نام تبدیل کریں ✏️</div>
+          <div id="al-rename"></div>
+          <div class="grid">
+            <div class="fg"><label id="lbl-oldName">پرانا نام</label><select id="rename-from"></select></div>
+            <div class="fg"><label id="lbl-newName">نیا نام</label><input type="text" id="rename-to"
+                placeholder="نیا نام"></div>
+          </div>
+          <button class="btn btn-p" id="btn-renameSave" onclick="renameParty()">💾 محفوظ</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title" id="lbl-setUsers">صارفین کی ترتیبات 👥</div>
+          <div id="al-su"></div>
+          <div style="display:flex;gap:15px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:260px;">
+              <h4 style="font-size:13px;color:var(--green-dark);margin-bottom:10px;" id="lbl-su-title">نیا صارف شامل
+                کریں</h4>
+              <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+                <div class="fg"><label id="lbl-su-username">صارف نام</label><input type="text" id="su-username"></div>
+                <div class="fg"><label id="lbl-su-password">پاس ورڈ</label><input type="password" id="su-password">
+                </div>
+              </div>
+              <button class="btn btn-p" id="btn-add-user" onclick="addUser()">➕ شامل</button>
+            </div>
+            <div style="flex:1;min-width:200px;border-inline-start:1px dashed var(--border);padding-inline-start:15px;"
+              class="no-print">
+              <h4 style="font-size:13px;color:var(--green-dark);margin-bottom:10px;" id="lbl-users-list-title">صارفین کی
+                فہرست</h4>
+              <div class="user-tags" id="users-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /wrap -->
+
+    <!-- NAV SPACER - موبائل کے لیے نیچے جگہ -->
+    <div class="nav-spacer"></div>
+
+  </div><!-- /main-app-container -->
+
+  <!-- MODAL -->
+  <div class="mo" id="modal">
+    <div class="md">
+      <h3 id="m-title"></h3>
+      <input type="text" id="m-input" placeholder="">
+      <div class="md-btns">
+        <button class="btn btn-p" id="btn-msave" onclick="confirmModal()">✅ شامل کریں</button>
+        <button class="btn btn-o" id="btn-mcancel" onclick="closeModal()">❌ منسوخ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIREBASE SDK (v8 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
