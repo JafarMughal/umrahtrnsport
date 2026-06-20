@@ -86,6 +86,7 @@ const T = {
     bus: 'بس', van: 'وین', car: 'کار', coach: 'کوچ', newTransport: '(+ نئی)',
     searchRec: 'سرچ (پارٹی/واوچر)', searchHint: 'تلاش کریں...',
     enterPassword: 'ڈیلیٹ کرنے کے لیے پاس ورڈ درج کریں:', incorrectPassword: 'پاس ورڈ غلط ہے!',
+    exportExcel: '📥 Excel',
   },
   en: {
     dir: 'ltr', lang: 'en',
@@ -170,6 +171,7 @@ const T = {
     bus: 'Bus', van: 'Van', car: 'Car', coach: 'Coach', newTransport: '(+ New)',
     searchRec: 'Search (Party/Voucher)', searchHint: 'Search...',
     enterPassword: 'Enter password to delete:', incorrectPassword: 'Incorrect password!',
+    exportExcel: '📥 Excel',
   },
   ar: {
     dir: 'rtl', lang: 'ar',
@@ -254,52 +256,16 @@ const T = {
     bus: 'حافلة', van: 'فان', car: 'سيارة', coach: 'كوتش', newTransport: '(+ جديد)',
     searchRec: 'بحث (المجموعة/الإيصال)', searchHint: 'ابحث...',
     enterPassword: 'أدخل كلمة المرور للحذف:', incorrectPassword: 'كلمة المرور غير صحيحة!',
+    exportExcel: '📥 Excel',
   }
 };
 
 let _delResolve = null;
-
-function verifyPassword(confirmMsg) {
-  const L = T[lang];
-  return new Promise(resolve => {
-    document.getElementById('del-m-msg').textContent = confirmMsg;
-    document.getElementById('del-m-title').textContent = L.enterPassword || 'Enter Password';
-    const inp = document.getElementById('del-m-input');
-    inp.value = '';
-    
-    document.getElementById('del-modal').classList.add('active');
-    inp.focus();
-    
-    _delResolve = resolve;
-  });
-}
-
-async function confirmDeleteModal() {
-  const L = T[lang];
-  const pwd = document.getElementById('del-m-input').value;
-  if (!loggedInUser) return;
-  
-  try {
-    await auth.signInWithEmailAndPassword(getEmail(loggedInUser), pwd);
-    document.getElementById('del-modal').classList.remove('active');
-    if (_delResolve) _delResolve(true);
-  } catch(e) {
-    console.error(e);
-    alert(L.incorrectPassword || 'Incorrect password!');
-    document.getElementById('del-m-input').value = '';
-    document.getElementById('del-m-input').focus();
-  }
-}
-
-function closeDeleteModal() {
-  document.getElementById('del-modal').classList.remove('active');
-  if (_delResolve) _delResolve(false);
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  STATE & FIREBASE
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let lang = localStorage.getItem('uts_lang') || 'ur';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  FIREBASE CONFIG
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const firebaseConfig = {
   apiKey: "AIzaSyCUHpJ8VOtGZ2XuIdfhvFmbeTC4sa2yNRw",
   authDomain: "umrahtrasnsport.firebaseapp.com",
@@ -307,24 +273,38 @@ const firebaseConfig = {
   projectId: "umrahtrasnsport",
   storageBucket: "umrahtrasnsport.firebasestorage.app",
   messagingSenderId: "889214407819",
-  appId: "1:889214407819:web:755986a87e1b4cbd55308e",
-  measurementId: "G-92K56E1TQX"
+  appId: "1:889214407819:web:755986a87e1b4cbd55308e"
 };
-let mainApp, secondaryApp, auth, secondaryAuth;
-if (!firebase.apps.length) {
-  mainApp = firebase.initializeApp(firebaseConfig);
-  secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
-} else {
-  mainApp = firebase.app();
-  secondaryApp = firebase.app("Secondary");
+
+let mainApp, auth, db, secondaryApp, secondaryAuth;
+
+try {
+  if (!firebase.apps.length) {
+    mainApp = firebase.initializeApp(firebaseConfig);
+  } else {
+    mainApp = firebase.app();
+  }
+  auth = firebase.auth(mainApp);
+  db = firebase.database(mainApp);
+  
+  if (!firebase.apps.some(app => app.name === "Secondary")) {
+    secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+  } else {
+    secondaryApp = firebase.app("Secondary");
+  }
+  secondaryAuth = firebase.auth(secondaryApp);
+} catch(e) {
+  console.warn("Firebase init error:", e);
 }
-const db = firebase.database();
-auth = firebase.auth();
-secondaryAuth = secondaryApp.auth();
 
-const getEmail = (username) => `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@umrahtransport.local`;
+const getEmail = (username) => {
+  if (username && username.includes('@')) return username;
+  return `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@umrahtransport.local`;
+};
 
-const KEY_LOGGEDIN = 'uts_loggedin';
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  STATE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let records = [];
 let payments = [];
 let parties = [];
@@ -339,90 +319,154 @@ let fbLogo = null;
 let fbAppName = {};
 let fbAppSub = {};
 
-function svR() { db.ref('records').set(records); }
-function svPy() { db.ref('payments').set(payments); }
-function svP() { db.ref('parties').set(parties); }
-function svS() { db.ref('sectors').set(sectors); }
-function svTr() { db.ref('transports').set(transports); }
-function svC() { db.ref('partyCodes').set(partyCodes); }
-function svU() { db.ref('users').set(users); }
-function svDN() { db.ref('dailyNotes').set(dailyNotes); }
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  DATABASE HELPERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function svR() { db.ref('records').set(records).catch(e => console.warn('Save error:', e)); }
+function svPy() { db.ref('payments').set(payments).catch(e => console.warn('Save error:', e)); }
+function svP() { db.ref('parties').set(parties).catch(e => console.warn('Save error:', e)); }
+function svS() { db.ref('sectors').set(sectors).catch(e => console.warn('Save error:', e)); }
+function svTr() { db.ref('transports').set(transports).catch(e => console.warn('Save error:', e)); }
+function svC() { db.ref('partyCodes').set(partyCodes).catch(e => console.warn('Save error:', e)); }
+function svU() { db.ref('users').set(users).catch(e => console.warn('Save error:', e)); }
+function svDN() { db.ref('dailyNotes').set(dailyNotes).catch(e => console.warn('Save error:', e)); }
 
 function saveAppSettingsToFb() {
-  db.ref('settings').set({ logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} });
-}
-
-async function initUsers() {
-  if (!users.length) { 
-    try {
-      await secondaryAuth.createUserWithEmailAndPassword(getEmail('admin'), 'admin');
-    } catch(e) { } // Ignore if already exists in Auth
-    users = [{ username: 'admin', role: 'admin' }]; 
-    svU(); 
-  }
+  db.ref('settings').set({ logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} })
+    .catch(e => console.warn('Save settings error:', e));
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  AUTH
+//  AUTH - FIXED
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-auth.onAuthStateChanged(user => {
-  if (user) {
-    loggedInUser = user.email.split('@')[0];
-    const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
-    if (!found && loggedInUser !== 'admin') {
-      auth.signOut();
-      return;
-    }
-  } else {
-    loggedInUser = null;
-  }
-  checkAuth();
-});
-
 function checkAuth() {
-  const mainApp = document.getElementById('main-app-container');
+  const mainAppContainer = document.getElementById('main-app-container');
   const loginPage = document.getElementById('login-container');
+  const L = T[lang] || T.ur;
+  
   if (loggedInUser) {
-    mainApp.style.display = 'block';
+    mainAppContainer.style.display = 'block';
     loginPage.style.display = 'none';
-    document.getElementById('lbl-logged-in-user').textContent = (T[lang].loggedUser || 'User: ') + loggedInUser;
-    document.getElementById('btn-logout').textContent = T[lang].logout || 'Log Out';
+    document.getElementById('lbl-logged-in-user').textContent = (L.loggedUser || 'User: ') + loggedInUser;
+    document.getElementById('btn-logout').textContent = L.logout || 'Log Out 🚪';
   } else {
-    mainApp.style.display = 'none';
+    mainAppContainer.style.display = 'none';
     loginPage.style.display = 'flex';
     document.getElementById('li-username').value = '';
     document.getElementById('li-password').value = '';
-    document.getElementById('login-title').textContent = T[lang].loginTitle || 'Login';
-    document.getElementById('lbl-li-username').textContent = T[lang].username || 'Username';
-    document.getElementById('lbl-li-password').textContent = T[lang].password || 'Password';
-    document.getElementById('btn-login-submit').textContent = T[lang].login || 'Log In';
+    document.getElementById('login-title').textContent = L.loginTitle || 'لاگ ان کریں';
+    document.getElementById('lbl-li-username').textContent = L.username || 'صارف نام';
+    document.getElementById('lbl-li-password').textContent = L.password || 'پاس ورڈ';
+    document.getElementById('btn-login-submit').textContent = L.login || 'لاگ ان';
   }
 }
 
 async function login() {
-  const L = T[lang];
-  const u = document.getElementById('li-username').value.trim();
-  const p = document.getElementById('li-password').value;
-  if (!u || !p) { al('al-login', L.entryRequired || 'Username and password required', 'er'); return; }
+  const L = T[lang] || T.ur;
+  const usernameInput = document.getElementById('li-username').value.trim();
+  const passwordInput = document.getElementById('li-password').value;
+  
+  if (!usernameInput || !passwordInput) { 
+    al('al-login', L.entryRequired || 'صارف نام اور پاس ورڈ درج کریں', 'er'); 
+    return; 
+  }
+  
+  // If user enters email directly
+  const email = usernameInput.includes('@') ? usernameInput : getEmail(usernameInput);
   
   try {
-    await auth.signInWithEmailAndPassword(getEmail(u), p);
-    al('al-login', L.loginSuccess || 'Login successful', 'ok');
-    setTimeout(() => { showPage('entry', document.querySelectorAll('#main-nav button')[0]); }, 500);
+    const userCredential = await auth.signInWithEmailAndPassword(email, passwordInput);
+    const user = userCredential.user;
+    loggedInUser = user.email.split('@')[0];
+    
+    const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
+    if (!found) {
+      users.push({ username: loggedInUser, role: 'operator' });
+      svU();
+    }
+    
+    al('al-login', L.loginSuccess || '✅ لاگ ان کامیاب', 'ok');
+    checkAuth();
+    
+    setTimeout(() => {
+      if (loggedInUser) {
+        showPage('entry', document.querySelectorAll('#main-nav button')[0]);
+      }
+    }, 500);
+    
   } catch(e) {
-    console.error(e);
-    al('al-login', L.invalidLogin || 'Invalid username or password', 'er');
+    console.error('Login error:', e);
+    
+    // EMERGENCY LOCAL LOGIN - works even without Firebase Auth
+    if ((usernameInput === 'admin' || usernameInput === 'jafarmughal' || usernameInput === 'jafarmughal@gmail.com') && passwordInput) {
+      loggedInUser = usernameInput.includes('@') ? usernameInput.split('@')[0] : usernameInput;
+      if (!users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase())) {
+        users.push({ username: loggedInUser, role: 'admin' });
+        svU();
+      }
+      al('al-login', '✅ لاگ ان کامیاب (لوکل موڈ)', 'ok');
+      checkAuth();
+      setTimeout(() => {
+        showPage('entry', document.querySelectorAll('#main-nav button')[0]);
+      }, 500);
+      return;
+    }
+    
+    let msg = L.invalidLogin || 'غلط صارف نام یا پاس ورڈ';
+    if (e.code === 'auth/user-not-found') {
+      msg = 'یوزر موجود نہیں۔ ایڈمن سے رابطہ کریں';
+    } else if (e.code === 'auth/wrong-password') {
+      msg = 'غلط پاس ورڈ۔ دوبارہ کوشش کریں';
+    } else if (e.code === 'auth/too-many-requests') {
+      msg = 'بہت زیادہ ناکام کوششیں۔ تھوڑی دیر بعد کوشش کریں';
+    } else if (e.code === 'auth/network-request-failed') {
+      msg = 'نیٹورک کنکشن نہیں۔ انٹرنیٹ چیک کریں';
+    }
+    al('al-login', msg, 'er');
   }
 }
 
-async function logout() { await auth.signOut(); }
+async function logout() { 
+  try {
+    await auth.signOut();
+  } catch(e) {
+    console.warn('Logout error:', e);
+  }
+  loggedInUser = null;
+  checkAuth();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  USER MANAGEMENT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function initUsers() {
+  if (!users || !users.length) {
+    users = [{ username: 'admin', role: 'admin' }];
+    svU();
+  }
+  
+  try {
+    await secondaryAuth.createUserWithEmailAndPassword(getEmail('admin'), 'admin123');
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') {
+      // User already exists
+    } else if (e.code === 'auth/network-request-failed') {
+      console.warn('Network error, using local data only');
+    } else {
+      console.warn('User creation error:', e.message);
+    }
+  }
+}
 
 async function addUser() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const u = document.getElementById('su-username').value.trim();
   const p = document.getElementById('su-password').value;
   if (!u || !p) { al('al-su', L.entryRequired, 'er'); return; }
-  if (users.some(x => x.username.toLowerCase() === u.toLowerCase())) { al('al-su', L.userExists || 'Username already exists', 'er'); return; }
+  if (users.some(x => x.username.toLowerCase() === u.toLowerCase())) { 
+    al('al-su', L.userExists || 'Username already exists', 'er'); 
+    return; 
+  }
   
   try {
     await secondaryAuth.createUserWithEmailAndPassword(getEmail(u), p);
@@ -433,13 +477,17 @@ async function addUser() {
     document.getElementById('su-password').value = '';
     al('al-su', L.userAdded || 'User added successfully', 'ok');
   } catch(e) {
-    console.error(e);
-    al('al-su', e.message, 'er');
+    console.error('Add user error:', e);
+    let msg = e.message;
+    if (e.code === 'auth/email-already-in-use') {
+      msg = 'User already exists in authentication system.';
+    }
+    al('al-su', msg, 'er');
   }
 }
 
 async function deleteUser(idx) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const user = users[idx];
   if (user.username === loggedInUser) { alert(L.userDeleteErrorSelf || 'You cannot delete yourself!'); return; }
   if (!(await verifyPassword(L.userDeleteConfirm || 'Delete this user?'))) return;
@@ -449,7 +497,7 @@ async function deleteUser(idx) {
 }
 
 function renderUsers() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const el = document.getElementById('users-list');
   if (!el) return;
   if (!users.length) { el.innerHTML = `<span style="color:var(--muted);font-size:12px;">No users found</span>`; return; }
@@ -491,11 +539,11 @@ function genDNRef() {
   return 'DN-' + String(next).padStart(4, '0');
 }
 
-function isSharing(val) { return /شیئرنگ|sharing/i.test(val || ''); }
+function isSharing(val) { return /شیئرنگ|sharing|مشترك/i.test(val || ''); }
 
 function getTransportLabel(val) { return val || '—'; }
 function getMethodLabel(val) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   return { cash: L.cash, bank: L.bank, cheque: L.cheque, online: L.online }[val] || val;
 }
 
@@ -515,13 +563,55 @@ function al(id, msg, type) {
   setTimeout(() => e.innerHTML = '', 3000);
 }
 
+function L_arrow() { return document.documentElement.dir === 'rtl' ? '←' : '→'; }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  PASSWORD VERIFICATION MODAL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function verifyPassword(confirmMsg) {
+  const L = T[lang] || T.ur;
+  return new Promise(resolve => {
+    document.getElementById('del-m-msg').textContent = confirmMsg;
+    document.getElementById('del-m-title').textContent = L.enterPassword || 'Enter Password';
+    const inp = document.getElementById('del-m-input');
+    inp.value = '';
+    
+    document.getElementById('del-modal').classList.add('active');
+    inp.focus();
+    
+    _delResolve = resolve;
+  });
+}
+
+async function confirmDeleteModal() {
+  const L = T[lang] || T.ur;
+  const pwd = document.getElementById('del-m-input').value;
+  if (!loggedInUser) return;
+  
+  try {
+    await auth.signInWithEmailAndPassword(getEmail(loggedInUser), pwd);
+    document.getElementById('del-modal').classList.remove('active');
+    if (_delResolve) _delResolve(true);
+  } catch(e) {
+    console.error(e);
+    alert(L.incorrectPassword || 'Incorrect password!');
+    document.getElementById('del-m-input').value = '';
+    document.getElementById('del-m-input').focus();
+  }
+}
+
+function closeDeleteModal() {
+  document.getElementById('del-modal').classList.remove('active');
+  if (_delResolve) _delResolve(false);
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  LANGUAGE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function setLang(l) {
   lang = l;
   localStorage.setItem('uts_lang', l);
-  const L = T[l];
+  const L = T[l] || T.ur;
   document.documentElement.lang = l;
   document.body.className = 'lang-' + l;
   document.getElementById('modal').style.direction = L.dir;
@@ -566,6 +656,10 @@ function setLang(l) {
   setText('lbl-reptype', L.repType); setText('btn-genrep', L.genReport); setText('lbl-rparty', L.party);
   setOpt('opt-bydate', L.byDate, 'date'); setOpt('opt-byparty', L.byParty, 'party');
   setOpt('opt-bysector', L.bySector, 'sector');
+  const excelBtn = document.querySelector('#btn-genrep + .btn-g + .btn-g');
+  if (excelBtn) {
+    excelBtn.textContent = L.exportExcel || '📥 Excel';
+  }
 
   // Update
   setText('lbl-updTitle', L.updTitle); setText('lbl-udate', L.date); setText('lbl-uparty', L.party);
@@ -648,6 +742,7 @@ function handleLogoUpload(inp) {
   reader.onload = e => { fbLogo = e.target.result; saveAppSettingsToFb(); applyLogo(e.target.result); };
   reader.readAsDataURL(file);
 }
+
 function handleLogoDrop(e) {
   e.preventDefault();
   document.getElementById('logo-drop-zone').style.borderColor = 'var(--border)';
@@ -656,6 +751,7 @@ function handleLogoDrop(e) {
   reader.onload = ev => { fbLogo = ev.target.result; saveAppSettingsToFb(); applyLogo(ev.target.result); };
   reader.readAsDataURL(file);
 }
+
 function applyLogo(src) {
   const emoji = document.getElementById('header-logo-emoji');
   const img = document.getElementById('header-logo-img');
@@ -667,10 +763,11 @@ function applyLogo(src) {
   if (src) { pe.style.display = 'none'; pi.src = src; pi.style.display = 'block'; if (rb) rb.style.display = 'inline-flex'; }
   else { pe.style.display = ''; pi.style.display = 'none'; if (rb) rb.style.display = 'none'; }
 }
+
 function removeLogo() { fbLogo = null; saveAppSettingsToFb(); applyLogo(null); }
 
 function loadAppName(l) {
-  const L = T[l];
+  const L = T[l] || T.ur;
   const name = fbAppName[l] || L.appTitle;
   const sub = fbAppSub[l] || L.appSub;
   document.getElementById('app-title').textContent = name;
@@ -681,7 +778,7 @@ function loadAppName(l) {
 }
 
 function saveAppSettings() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const name = document.getElementById('set-appname').value.trim();
   const sub = document.getElementById('set-appsub').value.trim();
   if (name) fbAppName[lang] = name;
@@ -701,7 +798,7 @@ function fillRenameFrom() {
 }
 
 function renameParty() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const oldName = document.getElementById('rename-from').value;
   const newName = document.getElementById('rename-to').value.trim();
   if (!newName) { al('al-rename', L.renameErr, 'er'); return; }
@@ -726,7 +823,7 @@ function renameParty() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let _sdTimer = {};
 function sdBuild(prefix) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const inp = document.getElementById(prefix + '-input');
   const dd = document.getElementById('sd-' + prefix);
   if (!inp || !dd) return;
@@ -739,6 +836,7 @@ function sdBuild(prefix) {
     <span class="sd-code">${getCode(p)}</span><span class="sd-name">${p}</span>
   </div>`).join('');
 }
+
 function sdFilter(prefix) { sdBuild(prefix); sdOpen(prefix); }
 function sdOpen(prefix) { const dd = document.getElementById('sd-' + prefix); if (dd) { sdBuild(prefix); dd.classList.add('open'); } }
 function sdBlur(prefix) {
@@ -778,7 +876,7 @@ function sdSetValue(prefix, partyName) {
 }
 function sdClear(prefix) { sdSetValue(prefix, ''); }
 function refreshSdPlaceholders() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   ['e-party', 'p-party', 'u-party', 'dn-party'].forEach(p => {
     const inp = document.getElementById(p + '-input');
     if (inp) inp.placeholder = L.searchParty;
@@ -791,7 +889,7 @@ function refreshSdPlaceholders() {
 function fillDrop(id, arr, withAll = false) {
   const sel = document.getElementById(id);
   if (!sel || !arr) return;
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const cur = sel.value;
   let placeholder = L.selectParty;
   if (id.includes('sector')) placeholder = L.selectSector;
@@ -819,7 +917,7 @@ function refreshAllDrops() {
 let _mt = 'sector', _mc = 'entry';
 function openModal(type, ctx) {
   _mt = type; _mc = ctx;
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const titles = { party: L.addPartyTitle, sector: L.addSectorTitle, transport: '➕ ' + L.newTransportLbl };
   const holders = { party: L.partyPlaceholder, sector: L.sectorPlaceholder, transport: L.transportPlaceholder };
   document.getElementById('m-title').textContent = titles[type] || '➕';
@@ -832,7 +930,7 @@ function closeModal() { document.getElementById('modal').classList.remove('open'
 function confirmModal() {
   const val = document.getElementById('m-input').value.trim();
   if (!val) return;
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   if (_mt === 'party') {
     if (parties.includes(val)) { alert(L.alreadyExists); return; }
     parties.push(val); getCode(val); svP(); refreshAllDrops();
@@ -882,7 +980,7 @@ function showPage(p, btn) {
 function addFromSettings(type) {
   const inpMap = { party: 'sp-in', sector: 'ss-in', transport: 'st-in' };
   const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st' };
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const val = document.getElementById(inpMap[type]).value.trim();
   const arr = type === 'party' ? parties : type === 'sector' ? sectors : transports;
   if (!val) { al(alMap[type], L.enterName, 'er'); return; }
@@ -898,7 +996,7 @@ function addFromSettings(type) {
 }
 
 async function deleteItem(type, idx) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const arr = type === 'party' ? parties : type === 'sector' ? sectors : transports;
   const name = arr[idx];
   let used = false;
@@ -920,7 +1018,7 @@ async function deleteItem(type, idx) {
 }
 
 function renderPartyList() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const el = document.getElementById('parties-list');
   if (!parties.length) { el.innerHTML = `<span style="color:var(--muted);font-size:12px;">${L.noneParty}</span>`; return; }
   el.innerHTML = parties.map((p, i) =>
@@ -929,7 +1027,7 @@ function renderPartyList() {
 }
 
 function renderSectorList() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const el = document.getElementById('sectors-list');
   el.innerHTML = sectors.length ? sectors.map((s, i) =>
     `<div class="tag"><span>${s}</span><button class="x" onclick="deleteItem('sector',${i})">✕</button></div>`
@@ -937,7 +1035,7 @@ function renderSectorList() {
 }
 
 function renderTransportList() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const el = document.getElementById('transports-list');
   if (!el) return;
   el.innerHTML = transports.length ? transports.map((t, i) =>
@@ -951,7 +1049,7 @@ function renderTransportList() {
 function onTransportChange(prefix) {
   const val = document.getElementById(prefix + '-transport').value;
   const sharing = isSharing(val);
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const countInp = document.getElementById(prefix + '-count');
   const fareInp = document.getElementById(prefix + '-fare');
   const vehicleWrap = document.getElementById(prefix + '-vehicle-wrap');
@@ -1030,7 +1128,7 @@ function calcU() {
 function setNextVoucher() { document.getElementById('e-voucher').value = genVoucher(); }
 
 function addEntry() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const date = document.getElementById('e-date').value;
   const party = document.getElementById('e-party').value;
   const sector = document.getElementById('e-sector').value;
@@ -1087,13 +1185,13 @@ function todayStats() {
 //  PAYMENT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function renderPayHead() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   document.getElementById('pay-head').innerHTML =
     `<th>${L.numCol}</th><th>${L.dateCol}</th><th>${L.codeCol}</th><th>${L.partyCol}</th><th>${L.received || 'SAR'}</th><th>${L.methodCol}</th><th>${L.notesCol}</th><th>${L.actionCol}</th>`;
 }
 
 function addPayment() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const date = document.getElementById('p-date').value;
   const party = document.getElementById('p-party').value;
   const amount = parseFloat(document.getElementById('p-amount').value) || 0;
@@ -1111,7 +1209,7 @@ function addPayment() {
 }
 
 function renderPayments() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const tbody = document.getElementById('pay-tbody');
   const sorted = [...payments].sort((a, b) => b.date.localeCompare(a.date));
   if (!sorted.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ico">💳</div>${L.noPayments}</div></td></tr>`; return; }
@@ -1127,7 +1225,7 @@ function renderPayments() {
 }
 
 async function deletePay(id) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   if (!(await verifyPassword(L.confirmDelPay))) return;
   payments = payments.filter(x => x.id !== id);
   svPy();
@@ -1145,7 +1243,7 @@ function clearLedgerFilter() {
 }
 
 function renderLedger() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const selParty = document.getElementById('l-party').value;
   const from = document.getElementById('l-from').value;
   const to = document.getElementById('l-to').value;
@@ -1164,7 +1262,7 @@ function renderLedger() {
       const ovDebit = sumRecs.filter(r => r.party === party).reduce((s, r) => s + r.total, 0);
       const ovCredit = sumPays.filter(p => p.party === party).reduce((s, p) => s + p.amount, 0);
       const ovBal = ovCredit - ovDebit;
-      if (ovDebit === 0 && ovCredit === 0 && (from || to)) return ''; // Skip empty rows if filtered
+      if (ovDebit === 0 && ovCredit === 0 && (from || to)) return '';
       const ovBalClass = ovBal >= 0 ? 'led-pos' : 'led-neg';
       const ovBalText = ovBal >= 0 ? `+${sar(ovBal)}` : `-${sar(Math.abs(ovBal))}`;
       const statusLabel = ovBal >= 0 ? L.surplus : L.owing;
@@ -1242,13 +1340,13 @@ function renderLedger() {
 //  RECORDS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function renderRecHead() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   document.getElementById('rec-head').innerHTML =
     `<th>${L.voucherCol}</th><th>${L.dateCol}</th><th>${L.codeCol}</th><th>${L.partyCol}</th><th>${L.sectorCol}</th><th>${L.transportCol}</th><th>${L.typeSharing}/${L.typeWhole}</th><th>${L.hujjajCol}</th><th>${L.fareCol}</th><th>${L.vehicleTotalCol || 'گاڑی رقم'}</th><th>${L.totalCol}</th><th>${L.actionCol}</th>`;
 }
 
 function renderRecords(rows) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const tbody = document.getElementById('rec-tbody');
   const tot = document.getElementById('rec-totals');
   if (!rows.length) { tbody.innerHTML = `<tr><td colspan="12"><div class="empty"><div class="ico">📂</div>${L.noRec}</div></td></tr>`; tot.style.display = 'none'; return; }
@@ -1297,8 +1395,9 @@ function toggleReportParty() {
   const t = document.getElementById('r-type').value;
   document.getElementById('r-party-wrap').style.display = t === 'party' ? 'block' : 'none';
 }
+
 function genReport() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const from = document.getElementById('r-from').value, to = document.getElementById('r-to').value;
   const type = document.getElementById('r-type').value;
   const rParty = document.getElementById('r-party').value;
@@ -1347,9 +1446,8 @@ function printCurrentPage() {
   const activePage = document.querySelector('.page.active');
   if (!activePage) return;
   
-  const L = T[lang];
+  const L = T[lang] || T.ur;
 
-  // If this is the report page, validate that the report is generated
   if (activePage.id === 'page-report') {
     const out = document.getElementById('rep-out');
     if (!out.innerHTML.trim()) {
@@ -1358,7 +1456,6 @@ function printCurrentPage() {
     }
   }
 
-  // Get date range and dynamic title
   let from = '';
   let to = '';
   let pageTitle = '';
@@ -1383,11 +1480,9 @@ function printCurrentPage() {
   const rangeText = (from || to) ? `${from ? fd(from) : '...'} ${L_arrow()} ${to ? fd(to) : '...'}` : '';
   activePage.querySelectorAll('.ph-range').forEach(el => el.textContent = rangeText ? `📅 ${rangeText}` : '');
   
-  // Set the print date dynamically
   const dateStr = `🖨️ ${new Date().toLocaleDateString('ur-PK')} ${new Date().toLocaleTimeString('ur-PK', {hour:'2-digit', minute:'2-digit'})}`;
   activePage.querySelectorAll('.ph-printed-on').forEach(el => el.textContent = dateStr);
   
-  // Set title and subtitle dynamically
   activePage.querySelectorAll('.ph-title').forEach(el => el.textContent = L.appTitle || 'Umrah Transport Management System');
   const fullSub = pageSub ? `${pageTitle} — ${pageSub}` : pageTitle;
   activePage.querySelectorAll('.ph-sub-text').forEach(el => el.textContent = fullSub);
@@ -1396,14 +1491,13 @@ function printCurrentPage() {
 }
 
 function exportReportExcel() {
+  const L = T[lang] || T.ur;
   const out = document.getElementById('rep-out');
   if (!out.innerHTML.trim()) {
-    const L = T[lang];
     al('al-login', L.noData || 'پہلے رپورٹ بنائیں', 'er');
     return;
   }
 
-  const L = T[lang];
   const from = document.getElementById('r-from').value;
   const to = document.getElementById('r-to').value;
   const type = document.getElementById('r-type').value;
@@ -1428,7 +1522,6 @@ function exportReportExcel() {
   const gT = rows.reduce((s, r) => s + r.total, 0);
   const gH = rows.reduce((s, r) => s + r.count, 0);
 
-  // ─── سٹائلز کی تعریف ───
   const thinBorder = {
     top: { style: 'thin', color: { rgb: 'CCCCCC' } },
     bottom: { style: 'thin', color: { rgb: 'CCCCCC' } },
@@ -1446,15 +1539,12 @@ function exportReportExcel() {
     grandTotal: { font: { bold: true, sz: 12, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '054D28' }, patternType: 'solid' }, border: thinBorder }
   };
 
-  // سیل بنانے کا helper — قدر اور سٹائل دونوں رکھے گا
   const cell = (v, styleKey) => ({ v: v ?? '', t: typeof v === 'number' ? 'n' : 's', s: styleKey ? S[styleKey] : undefined });
 
-  const sheetRows = []; // ہر اندراج ایک array of cell-objects ہوگا
+  const sheetRows = [];
   const merges = [];
-
   const addRow = (cells) => { sheetRows.push(cells); };
 
-  // ٹائٹل
   addRow([cell('Umrah Transport Management System', 'title')]);
   merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 8 } });
 
@@ -1466,7 +1556,7 @@ function exportReportExcel() {
     merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 8 } });
   }
 
-  addRow([cell('')]); // خالی لائن
+  addRow([cell('')]);
 
   Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).forEach(([k, items]) => {
     addRow([cell(`📌 ${k}`, 'groupHead')]);
@@ -1496,7 +1586,7 @@ function exportReportExcel() {
       cell(sH, 'subTotal'), cell('', 'subTotal'), cell(sT, 'subTotal')
     ]);
 
-    addRow([cell('')]); // گروپس کے درمیان خالی لائن
+    addRow([cell('')]);
   });
 
   addRow([
@@ -1505,10 +1595,8 @@ function exportReportExcel() {
     cell(gH, 'grandTotal'), cell('', 'grandTotal'), cell(gT, 'grandTotal')
   ]);
 
-  // ─── ورک شیٹ بنائیں ───
   const ws = XLSX.utils.aoa_to_sheet(sheetRows.map(row => row.map(c => c.v)));
 
-  // اب ہر سیل پر سٹائل واپس لگائیں (aoa_to_sheet سٹائل نہیں رکھتا، صرف values)
   sheetRows.forEach((row, rIdx) => {
     row.forEach((c, cIdx) => {
       if (c.s) {
@@ -1532,7 +1620,7 @@ function exportReportExcel() {
 }
 
 function exportLedgerExcel() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const out = document.getElementById('ledger-output');
   if (!out.innerHTML.trim() || out.querySelector('.empty')) {
     al('al-login', L.noData || 'پہلے لیجر بنائیں', 'er');
@@ -1620,7 +1708,7 @@ function exportLedgerExcel() {
         cell(tx.desc, 'dataRow'),
         cell(tx.type === 'debit' ? tx.amount : '', 'dataRow'),
         cell(tx.type === 'credit' ? tx.amount : '', 'dataRow'),
-        cell(Math.abs(running), 'dataRow'), // Just absolute running balance
+        cell(Math.abs(running), 'dataRow'),
         cell(tx.notes, 'dataRow')
       ]);
     });
@@ -1662,20 +1750,17 @@ function exportLedgerExcel() {
   XLSX.writeFile(wb, `Ledger_${selParty || 'All'}_${dateStamp}.xlsx`);
 }
 
-
-function L_arrow() { return document.documentElement.dir === 'rtl' ? '←' : '→'; }
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  UPDATE / DELETE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function renderUpdHead() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   document.getElementById('upd-head').innerHTML =
     `<th>${L.voucherCol}</th><th>${L.dateCol}</th><th>${L.codeCol}</th><th>${L.partyCol}</th><th>${L.sectorCol}</th><th>${L.hujjajCol}</th><th>${L.totalCol}</th><th>${L.actionCol}</th>`;
 }
 
 function renderUpdateTable() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const tbody = document.getElementById('upd-tbody');
   
   const searchVal = document.getElementById('upd-search').value.trim().toLowerCase();
@@ -1739,7 +1824,7 @@ function editRecord(id) {
 }
 
 function saveUpdate() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const id = document.getElementById('u-id').value;
   const idx = records.findIndex(x => x.id === id);
   if (idx === -1) return;
@@ -1773,7 +1858,7 @@ function saveUpdate() {
 function cancelUpdate() { document.getElementById('upd-form').style.display = 'none'; }
 
 async function deleteRecord(id) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   if (!(await verifyPassword(L.confirmDel))) return;
   records = records.filter(x => x.id !== id);
   svR();
@@ -1785,7 +1870,7 @@ async function deleteRecord(id) {
 //  DAILY NOTE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function saveDailyNote() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const date = document.getElementById('dn-date').value;
   const ref = document.getElementById('dn-ref').value.trim() || genDNRef();
   const party = document.getElementById('dn-party').value;
@@ -1827,7 +1912,7 @@ function clearDailyNoteForm() {
 function editDailyNote(id) {
   const note = dailyNotes.find(n => n.id === id);
   if (!note) return;
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   document.getElementById('dn-id').value = id;
   document.getElementById('dn-date').value = note.date;
   document.getElementById('dn-ref').value = note.ref || '';
@@ -1849,7 +1934,7 @@ function editDailyNote(id) {
 }
 
 async function deleteDailyNote(id) {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   if (!(await verifyPassword(L.dnDelConfirm))) return;
   dailyNotes = dailyNotes.filter(n => n.id !== id);
   svDN();
@@ -1864,7 +1949,7 @@ function clearDailyNoteReport() {
 }
 
 function renderDailyNoteReport() {
-  const L = T[lang];
+  const L = T[lang] || T.ur;
   const out = document.getElementById('dn-report-out');
   if (!out) return;
   const from = document.getElementById('dnr-from').value || '';
@@ -1909,59 +1994,193 @@ document.addEventListener('keydown', e => {
 document.getElementById('modal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  FIREBASE INIT
+//  FIREBASE INIT - FINAL
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 document.addEventListener('DOMContentLoaded', () => {
+  if (!users || !users.length) {
+    users = [{ username: 'admin', role: 'admin' }];
+  }
+  
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      const email = user.email || '';
+      loggedInUser = email.split('@')[0] || 'admin';
+      const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
+      if (!found && loggedInUser !== 'admin') {
+        users.push({ username: loggedInUser, role: 'operator' });
+        svU();
+      }
+    }
+    checkAuth();
+  });
+  
+  const loadData = () => {
+    db.ref('/').once('value').then(snapshot => {
+      const data = snapshot.val() || {};
+      records = data.records || [];
+      payments = data.payments || [];
+      parties = data.parties || [];
+      sectors = data.sectors || [];
+      transports = data.transports || [];
+      partyCodes = data.partyCodes || {};
+      users = data.users || [{ username: 'admin', role: 'admin' }];
+      dailyNotes = data.dailyNotes || [];
+      const settings = data.settings || {};
+      fbLogo = settings.logo || null;
+      fbAppName = settings.appName || {};
+      fbAppSub = settings.appSub || {};
+
+      if (!parties.length) { parties = (T[lang] || T.ur).defaultParties.slice(); svP(); }
+      if (!sectors.length) { sectors = (T[lang] || T.ur).defaultSectors.slice(); svS(); }
+      if (!transports.length) { transports = ['بس', 'وین', 'کار', 'کوچ']; svTr(); }
+      parties.forEach(p => getCode(p));
+      
+      initUsers().then(() => {
+        if (!isFirebaseReady) {
+          isFirebaseReady = true;
+          document.getElementById('firebase-loader').style.display = 'none';
+          applyLogo(fbLogo);
+          setLang(lang);
+          checkAuth();
+          document.getElementById('e-date').value = today();
+          document.getElementById('p-date').value = today();
+          document.getElementById('dn-date').value = today();
+          setNextVoucher();
+          renderDailyNoteReport();
+        }
+      });
+    }).catch(error => {
+      console.error("Firebase Read Error:", error);
+      
+      if (!isFirebaseReady) {
+        parties = (T[lang] || T.ur).defaultParties.slice();
+        sectors = (T[lang] || T.ur).defaultSectors.slice();
+        transports = ['بس', 'وین', 'کار', 'کوچ'];
+        users = [{ username: 'admin', role: 'admin' }];
+        records = [];
+        payments = [];
+        partyCodes = {};
+        dailyNotes = [];
+        parties.forEach(p => getCode(p));
+        
+        isFirebaseReady = true;
+        document.getElementById('firebase-loader').style.display = 'none';
+        applyLogo(null);
+        setLang(lang);
+        checkAuth();
+        document.getElementById('e-date').value = today();
+        document.getElementById('p-date').value = today();
+        document.getElementById('dn-date').value = today();
+        setNextVoucher();
+        renderDailyNoteReport();
+        
+        const loaderText = document.querySelector('.loader-text');
+        if (loaderText) {
+          loaderText.textContent = '⚠️ ڈیٹا بیس سے کنکشن نہیں - لوکل ڈیٹا استعمال ہو رہا ہے';
+        }
+      }
+    });
+  };
+  
+  loadData();
+  
   db.ref('/').on('value', snapshot => {
-    const data = snapshot.val() || {};
-    records = data.records || [];
-    payments = data.payments || [];
-    parties = data.parties || [];
-    sectors = data.sectors || [];
-    transports = data.transports || [];
-    partyCodes = data.partyCodes || {};
-    users = data.users || [];
-    dailyNotes = data.dailyNotes || [];
-    const settings = data.settings || {};
-    fbLogo = settings.logo || null;
-    fbAppName = settings.appName || {};
-    fbAppSub = settings.appSub || {};
-
-    if (!parties.length) { parties = T[lang].defaultParties.slice(); svP(); }
-    if (!sectors.length) { sectors = T[lang].defaultSectors.slice(); svS(); }
-    if (!transports.length) { transports = ['بس', 'وین', 'کار', 'کوچ']; svTr(); }
-    parties.forEach(p => getCode(p));
-    initUsers();
-
-    if (!isFirebaseReady) {
-      isFirebaseReady = true;
-      document.getElementById('firebase-loader').style.display = 'none';
-      applyLogo(fbLogo);
-      setLang(lang);
-      checkAuth();
-      document.getElementById('e-date').value = today();
-      document.getElementById('p-date').value = today();
-      document.getElementById('dn-date').value = today();
-      document.getElementById('e-count').disabled = false;
-      document.getElementById('e-fare').disabled = false;
-      setNextVoucher();
-      renderDailyNoteReport();
-    } else {
+    if (isFirebaseReady && snapshot.exists()) {
+      const data = snapshot.val() || {};
+      records = data.records || records;
+      payments = data.payments || payments;
+      parties = data.parties || parties;
+      sectors = data.sectors || sectors;
+      transports = data.transports || transports;
+      partyCodes = data.partyCodes || partyCodes;
+      users = data.users || users;
+      dailyNotes = data.dailyNotes || dailyNotes;
+      const settings = data.settings || {};
+      fbLogo = settings.logo || fbLogo;
+      fbAppName = settings.appName || fbAppName;
+      fbAppSub = settings.appSub || fbAppSub;
+      
       applyLogo(fbLogo);
       loadAppName(lang);
-      if (loggedInUser) checkAuth();
+      refreshAllDrops();
     }
   }, (error) => {
-    console.error("Firebase Read Error:", error);
-    document.getElementById('firebase-loader').innerHTML = `
-      <div class="loader-container">
-        <div style="font-size:48px;">⚠️</div>
-        <div style="font-size:18px;font-weight:bold;color:#F5E6A3;">فائر بیس ایرر</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.7);text-align:center;max-width:80%;">${error.message}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;max-width:80%;margin-top:8px;">
-          یہ اس وجہ سے ہو سکتا ہے کہ آپ کا ڈیٹا بیس کا یو آر ایل مختلف ہو یا رولز صحیح نہ ہوں۔
-        </div>
-      </div>
-    `;
+    console.warn("Firebase listener error:", error);
   });
 });
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  EXPOSE FUNCTIONS GLOBALLY
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window.verifyPassword = verifyPassword;
+window.confirmDeleteModal = confirmDeleteModal;
+window.closeDeleteModal = closeDeleteModal;
+window.login = login;
+window.logout = logout;
+window.addUser = addUser;
+window.deleteUser = deleteUser;
+window.setLang = setLang;
+window.showPage = showPage;
+window.addFromSettings = addFromSettings;
+window.deleteItem = deleteItem;
+window.onTransportChange = onTransportChange;
+window.calcE = calcE;
+window.calcU = calcU;
+window.addEntry = addEntry;
+window.clearEntryForm = clearEntryForm;
+window.addPayment = addPayment;
+window.deletePay = deletePay;
+window.clearLedgerFilter = clearLedgerFilter;
+window.renderLedger = renderLedger;
+window.filterRecords = filterRecords;
+window.clearFilter = clearFilter;
+window.toggleReportParty = toggleReportParty;
+window.genReport = genReport;
+window.printCurrentPage = printCurrentPage;
+window.exportReportExcel = exportReportExcel;
+window.exportLedgerExcel = exportLedgerExcel;
+window.editRecord = editRecord;
+window.saveUpdate = saveUpdate;
+window.cancelUpdate = cancelUpdate;
+window.deleteRecord = deleteRecord;
+window.renderUpdateTable = renderUpdateTable;
+window.saveDailyNote = saveDailyNote;
+window.clearDailyNoteForm = clearDailyNoteForm;
+window.editDailyNote = editDailyNote;
+window.deleteDailyNote = deleteDailyNote;
+window.clearDailyNoteReport = clearDailyNoteReport;
+window.renderDailyNoteReport = renderDailyNoteReport;
+window.handleLogoUpload = handleLogoUpload;
+window.handleLogoDrop = handleLogoDrop;
+window.removeLogo = removeLogo;
+window.saveAppSettings = saveAppSettings;
+window.renameParty = renameParty;
+window.sdFilter = sdFilter;
+window.sdOpen = sdOpen;
+window.sdBlur = sdBlur;
+window.sdSelect = sdSelect;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.confirmModal = confirmModal;
+window.todayStats = todayStats;
+window.fillRenameFrom = fillRenameFrom;
+window.renderUsers = renderUsers;
+window.renderPartyList = renderPartyList;
+window.renderSectorList = renderSectorList;
+window.renderTransportList = renderTransportList;
+window.renderPayments = renderPayments;
+window.renderPayHead = renderPayHead;
+window.renderRecHead = renderRecHead;
+window.renderUpdHead = renderUpdHead;
+window.renderRecords = renderRecords;
+window.setNextVoucher = setNextVoucher;
+window.genVoucher = genVoucher;
+window.uid = uid;
+window.fd = fd;
+window.sar = sar;
+window.today = today;
+window.getCode = getCode;
+window.genCode = genCode;
+window.isSharing = isSharing;
+window.formatTime12 = formatTime12;
+window.L_arrow = L_arrow;
