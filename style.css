@@ -15,10 +15,11 @@
   --white: #fff;
   --red: #C0392B;
   --border: #D4B483;
-  --shadow: 0 2px 12px rgba(0, 0, 0, .08);
+  --shadow: 0 2px 12px rgba(0, 0, 0, .07);
   --header-height: 56px;
   --nav-height: 52px;
 }
+
 
 /* ─── RESET ─── */
 * {
@@ -48,6 +49,7 @@ body.lang-en {
 }
 
 /* ─── FIREBASE LOADER ─── */
+
 #firebase-loader {
   position: fixed;
   inset: 0;
@@ -942,22 +944,26 @@ body.lang-en .sd-dropdown {
   border-top: 5px solid var(--danger);
   max-width: 350px;
 }
+
 .del-icon {
   font-size: 50px;
   margin-bottom: 10px;
   animation: saPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+
 #del-m-title {
   font-size: 18px;
   color: var(--danger);
   margin-bottom: 5px;
 }
+
 #del-m-msg {
   font-size: 13px;
   color: var(--muted);
   margin-bottom: 15px;
   line-height: 1.4;
 }
+
 #del-m-input {
   text-align: center;
   font-size: 16px;
@@ -965,8 +971,15 @@ body.lang-en .sd-dropdown {
 }
 
 @keyframes saPopIn {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .md {
@@ -1114,7 +1127,9 @@ body.lang-en .sd-dropdown {
 .login-card::before {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 5px;
   background: linear-gradient(90deg, var(--gold), var(--green), var(--gold));
   background-size: 200% 100%;
@@ -1122,7 +1137,9 @@ body.lang-en .sd-dropdown {
 }
 
 @keyframes shimmerBar {
-  to { background-position: -200% 0; }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .login-logo {
@@ -1134,14 +1151,21 @@ body.lang-en .sd-dropdown {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,148,10,.15), transparent 70%);
+  background: radial-gradient(circle, rgba(201, 148, 10, .15), transparent 70%);
   box-shadow: 0 0 0 2px rgba(201, 148, 10, .25);
   animation: pulseLogo 2.2s ease-in-out infinite alternate;
 }
 
 @keyframes pulseLogo {
-  from { transform: scale(1); box-shadow: 0 0 0 2px rgba(201, 148, 10, .25); }
-  to   { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(201, 148, 10, .12); }
+  from {
+    transform: scale(1);
+    box-shadow: 0 0 0 2px rgba(201, 148, 10, .25);
+  }
+
+  to {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 6px rgba(201, 148, 10, .12);
+  }
 }
 
 .login-card h2 {
@@ -1770,7 +1794,13 @@ body.lang-en .sd-dropdown {
   }
 
   /* فلٹرز/بٹن چھپا دیں، صرف رپورٹ آؤٹ پٹ دکھائیں */
-  .fb, .card-title, .no-print, header, nav, .header-inner, .lang-switcher {
+  .fb,
+  .card-title,
+  .no-print,
+  header,
+  nav,
+  .header-inner,
+  .lang-switcher {
     display: none !important;
   }
 
@@ -1844,7 +1874,8 @@ body.lang-en .sd-dropdown {
     page-break-inside: avoid;
   }
 
-  table th, table td {
+  table th,
+  table td {
     border: 1px solid #999 !important;
     font-size: 11px !important;
     padding: 6px 8px !important;
@@ -1877,9 +1908,11 @@ body.lang-en .sd-dropdown {
 }
 
 /* عام (غیر پرنٹ) حالت میں یہ ہمیشہ چھپے رہیں */
-.print-header, .print-footer {
+.print-header,
+.print-footer {
   display: none;
 }
-#btn-genrep{
+
+#btn-genrep {
   font-size: 8px;
 }
