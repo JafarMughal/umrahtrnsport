@@ -2001,19 +2001,6 @@ document.addEventListener('DOMContentLoaded', () => {
     users = [{ username: 'admin', role: 'admin' }];
   }
   
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      const email = user.email || '';
-      loggedInUser = email.split('@')[0] || 'admin';
-      const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
-      if (!found && loggedInUser !== 'admin') {
-        users.push({ username: loggedInUser, role: 'operator' });
-        svU();
-      }
-    }
-    checkAuth();
-  });
-  
   const loadData = () => {
     db.ref('/').once('value').then(snapshot => {
       const data = snapshot.val() || {};
@@ -2080,32 +2067,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+    
+    // Attach listener only after auth
+    db.ref('/').on('value', snapshot => {
+      if (isFirebaseReady && snapshot.exists()) {
+        const data = snapshot.val() || {};
+        records = data.records || records;
+        payments = data.payments || payments;
+        parties = data.parties || parties;
+        sectors = data.sectors || sectors;
+        transports = data.transports || transports;
+        partyCodes = data.partyCodes || partyCodes;
+        users = data.users || users;
+        dailyNotes = data.dailyNotes || dailyNotes;
+        const settings = data.settings || {};
+        fbLogo = settings.logo || fbLogo;
+        fbAppName = settings.appName || fbAppName;
+        fbAppSub = settings.appSub || fbAppSub;
+        
+        applyLogo(fbLogo);
+        loadAppName(lang);
+        refreshAllDrops();
+        
+        // Refresh active pages
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+          if (activePage.id === 'page-entry') todayStats();
+          if (activePage.id === 'page-payment') renderPayments();
+          if (activePage.id === 'page-ledger') renderLedger();
+          if (activePage.id === 'page-records') filterRecords();
+          if (activePage.id === 'page-update') renderUpdateTable();
+          if (activePage.id === 'page-dailynote') renderDailyNoteReport();
+        }
+      }
+    }, (error) => {
+      console.warn("Firebase listener error:", error);
+    });
   };
-  
-  loadData();
-  
-  db.ref('/').on('value', snapshot => {
-    if (isFirebaseReady && snapshot.exists()) {
-      const data = snapshot.val() || {};
-      records = data.records || records;
-      payments = data.payments || payments;
-      parties = data.parties || parties;
-      sectors = data.sectors || sectors;
-      transports = data.transports || transports;
-      partyCodes = data.partyCodes || partyCodes;
-      users = data.users || users;
-      dailyNotes = data.dailyNotes || dailyNotes;
-      const settings = data.settings || {};
-      fbLogo = settings.logo || fbLogo;
-      fbAppName = settings.appName || fbAppName;
-      fbAppSub = settings.appSub || fbAppSub;
-      
-      applyLogo(fbLogo);
-      loadAppName(lang);
-      refreshAllDrops();
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      const email = user.email || '';
+      loggedInUser = email.split('@')[0] || 'admin';
+      const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
+      if (!found && loggedInUser !== 'admin') {
+        users.push({ username: loggedInUser, role: 'operator' });
+        svU();
+      }
+      loadData();
+    } else {
+      loggedInUser = null;
+      if (!isFirebaseReady) {
+        isFirebaseReady = true;
+        document.getElementById('firebase-loader').style.display = 'none';
+      }
+      checkAuth();
     }
-  }, (error) => {
-    console.warn("Firebase listener error:", error);
   });
 });
 
@@ -2184,3 +2201,22 @@ window.genCode = genCode;
 window.isSharing = isSharing;
 window.formatTime12 = formatTime12;
 window.L_arrow = L_arrow;
+
+function togglePasswordVisibility() {
+  const pwdInput = document.getElementById('li-password');
+  const toggleIcon = document.getElementById('toggle-password');
+  
+  const eyeSVG = '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+  const eyeOffSVG = '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+
+  if (pwdInput.type === 'password') {
+    pwdInput.type = 'text';
+    toggleIcon.innerHTML = eyeOffSVG;
+    toggleIcon.title = 'Hide Password';
+  } else {
+    pwdInput.type = 'password';
+    toggleIcon.innerHTML = eyeSVG;
+    toggleIcon.title = 'Show Password';
+  }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;

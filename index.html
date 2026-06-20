@@ -51,7 +51,12 @@
     </div>
     <div class="login-fg">
       <label id="lbl-li-password">پاس ورڈ</label>
-      <input type="password" id="li-password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault(); login();}">
+      <div style="position: relative;">
+        <input type="password" id="li-password" autocomplete="current-password" style="padding-left: 36px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); login();}">
+        <span id="toggle-password" onclick="togglePasswordVisibility()" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--muted); user-select: none; display: flex; align-items: center;" title="Show Password">
+          <svg id="icon-eye" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </span>
+      </div>
     </div>
     <button class="btn btn-login" id="btn-login-submit" onclick="login()">لاگ ان</button>
   </div>
