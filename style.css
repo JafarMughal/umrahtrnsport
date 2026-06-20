@@ -155,12 +155,14 @@ body.lang-en {
 
 /* ─── HEADER - فکسڈ اور کم ہائٹ ─── */
 header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   background: linear-gradient(135deg, var(--green-dark), var(--green), var(--green-dark));
   color: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   border-bottom: 2px solid var(--gold);
 }
 
@@ -372,7 +374,7 @@ nav button.active {
 .wrap {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 12px 12px calc(var(--nav-height) + 12px);
+  padding: calc(var(--header-height) + 16px) 16px calc(var(--nav-height) + 24px);
 }
 
 .page {
@@ -386,11 +388,17 @@ nav button.active {
 /* ─── CARDS ─── */
 .card {
   background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 14px;
-  box-shadow: var(--shadow);
+  border: 1px solid rgba(212, 180, 131, 0.4);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 .card-title {
@@ -418,14 +426,15 @@ nav button.active {
 .fg input,
 .fg select,
 .fg textarea {
-  padding: 8px 12px;
-  border: 1.5px solid var(--cream-dark);
-  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
   font-size: 14px;
   color: var(--text);
-  background: var(--cream);
-  transition: border-color .2s;
+  background: var(--white);
+  transition: all 0.3s ease;
   width: 100%;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .fg input:focus,
@@ -434,6 +443,7 @@ nav button.active {
   outline: none;
   border-color: var(--gold);
   background: var(--white);
+  box-shadow: 0 0 0 3px rgba(201, 148, 10, 0.2);
 }
 
 .voucher-input {
@@ -474,54 +484,68 @@ nav button.active {
 
 /* ─── BUTTONS ─── */
 .btn {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: 10px;
+  font-size: 14px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all .2s;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 8px;
   white-space: nowrap;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-p {
-  background: var(--green);
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
   color: #fff;
 }
 
 .btn-p:hover {
-  background: var(--green-dark);
+  background: linear-gradient(135deg, #0b8045, var(--green));
 }
 
 .btn-g {
-  background: var(--gold);
+  background: linear-gradient(135deg, var(--gold), #d1a629);
   color: #fff;
 }
 
 .btn-g:hover {
-  background: var(--gold-dark);
+  background: linear-gradient(135deg, #dfa91b, var(--gold));
 }
 
 .btn-d {
-  background: var(--red);
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: #fff;
 }
 
 .btn-d:hover {
-  background: #962d22;
+  background: linear-gradient(135deg, #f1685a, #e74c3c);
 }
 
 .btn-o {
   background: transparent;
   color: var(--green);
-  border: 1.5px solid var(--green);
+  border: 2px solid var(--green);
+  box-shadow: none;
 }
 
 .btn-o:hover {
   background: var(--green-light);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .btn-sm {
@@ -591,6 +615,7 @@ thead th {
   font-weight: 600;
   white-space: nowrap;
   font-size: 11px;
+  text-align: start;
 }
 
 tbody tr {
@@ -604,6 +629,7 @@ tbody tr:hover {
 tbody td {
   padding: 8px 6px;
   vertical-align: middle;
+  text-align: start;
 }
 
 /* ─── BADGES ─── */
@@ -905,6 +931,42 @@ body.lang-en .sd-dropdown {
 
 .mo.open {
   display: flex;
+}
+
+.mo.active {
+  display: flex;
+}
+
+.del-md {
+  text-align: center;
+  border-top: 5px solid var(--danger);
+  max-width: 350px;
+}
+.del-icon {
+  font-size: 50px;
+  margin-bottom: 10px;
+  animation: saPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#del-m-title {
+  font-size: 18px;
+  color: var(--danger);
+  margin-bottom: 5px;
+}
+#del-m-msg {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+#del-m-input {
+  text-align: center;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+@keyframes saPopIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .md {
@@ -1607,7 +1669,10 @@ body.lang-en .sd-dropdown {
 /* ڈیسک ٹاپ پر نیچے نیویگیشن نہیں */
 @media (min-width: 641px) {
   nav {
-    position: static;
+    position: sticky;
+    top: var(--header-height);
+    margin-top: var(--header-height);
+    z-index: 99;
     border-top: none;
     border-bottom: 2px solid var(--gold);
     height: auto;
@@ -1629,7 +1694,7 @@ body.lang-en .sd-dropdown {
   }
 
   .wrap {
-    padding: 16px 20px;
+    padding: 24px 20px;
   }
 }
 
@@ -1704,80 +1769,71 @@ body.lang-en .sd-dropdown {
     margin: 12mm 10mm;
   }
 
-  /* سب کچھ چھپا دیں */
-  body * {
-    visibility: hidden;
-  }
-
-  /* صرف رپورٹ کا حصہ نظر آئے */
-  #page-report, #page-report * {
-    visibility: visible;
-  }
-
-  #page-report {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-  }
-
   /* فلٹرز/بٹن چھپا دیں، صرف رپورٹ آؤٹ پٹ دکھائیں */
-  .fb, .card-title, .no-print {
+  .fb, .card-title, .no-print, header, nav, .header-inner, .lang-switcher {
     display: none !important;
   }
 
-  #rep-out {
-    visibility: visible;
+  .page:not(.active) {
+    display: none !important;
+  }
+
+  .page.active {
+    display: block !important;
   }
 
   .card {
     box-shadow: none !important;
     border: none !important;
     padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Print header */
-  #print-header {
+  .print-header {
     display: block !important;
-    visibility: visible;
     text-align: center;
     border-bottom: 3px solid var(--green-dark);
-    padding-bottom: 10px;
-    margin-bottom: 16px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
   }
 
-  #print-header .ph-title {
-    font-size: 20px;
+  .print-header .ph-title {
+    font-size: 24px;
     font-weight: 800;
     color: var(--green-dark);
+    letter-spacing: 1px;
   }
 
-  #print-header .ph-sub {
-    font-size: 11px;
+  .print-header .ph-sub {
+    font-size: 14px;
     color: var(--muted);
-    margin-top: 2px;
+    margin-top: 4px;
   }
 
-  #print-header .ph-meta {
-    font-size: 10px;
+  .print-header .ph-meta {
+    font-size: 11px;
     color: var(--text);
-    margin-top: 6px;
+    margin-top: 8px;
     display: flex;
-    justify-content: center;
-    gap: 20px;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 6px;
   }
 
   /* رنگ پرنٹ میں بھی نظر آئیں */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    color-adjust: exact !important;
+    color-scheme: exact !important;
   }
 
   table {
     width: 100% !important;
     page-break-inside: auto;
     border-collapse: collapse !important;
+    margin-bottom: 20px;
   }
 
   thead {
@@ -1790,8 +1846,13 @@ body.lang-en .sd-dropdown {
 
   table th, table td {
     border: 1px solid #999 !important;
-    font-size: 10px !important;
-    padding: 5px 6px !important;
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+  }
+
+  table th {
+    background-color: var(--green-dark) !important;
+    color: white !important;
   }
 
   /* ہر گروپ کا header اگلے صفحے کے اوپر نہ ٹوٹے */
@@ -1800,22 +1861,25 @@ body.lang-en .sd-dropdown {
   }
 
   /* Print footer */
-  #print-footer {
+  .print-footer {
     display: block !important;
-    visibility: visible;
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     text-align: center;
-    font-size: 9px;
+    font-size: 10px;
     color: var(--muted);
     border-top: 1px solid #ccc;
-    padding-top: 4px;
+    padding-top: 6px;
+    background: #fff;
   }
 }
 
 /* عام (غیر پرنٹ) حالت میں یہ ہمیشہ چھپے رہیں */
-#print-header, #print-footer {
+.print-header, .print-footer {
   display: none;
+}
+#btn-genrep{
+  font-size: 8px;
 }

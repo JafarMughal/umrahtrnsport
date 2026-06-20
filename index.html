@@ -112,7 +112,7 @@
             <div class="fg"><label id="lbl-date">تاریخ</label><input type="date" id="e-date"></div>
             <div class="fg">
               <label id="lbl-voucher">واوچر نمبر</label>
-              <input type="text" id="e-voucher" class="voucher-input" readonly>
+              <input type="text" id="e-voucher" class="voucher-input">
             </div>
             <div class="fg">
               <label><span id="lbl-party">پارٹی</span></label>
@@ -241,11 +241,22 @@
             <div class="fg"><label id="lbl-ledto">تاریخ تک</label><input type="date" id="l-to"
                 onchange="renderLedger()"></div>
             <div class="fb-actions">
-              <button class="btn btn-g no-print" id="btn-print" onclick="window.print()">🖨️ پرنٹ</button>
+              <button class="btn btn-g no-print" id="btn-print" onclick="printCurrentPage()">🖨️ پرنٹ</button>
+              <button class="btn btn-g no-print" onclick="exportLedgerExcel()">📥 Excel</button>
               <button class="btn btn-o no-print" id="btn-resetled" onclick="clearLedgerFilter()">↩ صاف</button>
             </div>
           </div>
+          <!-- یہ صرف پرنٹ میں نظر آئے گا -->
+          <div class="print-header">
+            <div class="ph-title">Umrah Transport Management System</div>
+            <div class="ph-sub ph-sub-text">پارٹی لیجر — Party Ledger</div>
+            <div class="ph-meta">
+              <span class="ph-range"></span>
+              <span class="ph-printed-on"></span>
+            </div>
+          </div>
           <div id="ledger-output"></div>
+          <div class="print-footer">Umrah Transport Management System — Generated Report</div>
         </div>
       </div>
 
@@ -296,33 +307,39 @@
       <div class="fg"><label id="lbl-repfrom">تاریخ سے</label><input type="date" id="r-from"></div>
       <div class="fg"><label id="lbl-repto">تاریخ تک</label><input type="date" id="r-to"></div>
       <div class="fg"><label id="lbl-reptype">رپورٹ کی قسم</label>
-        <select id="r-type">
+        <select id="r-type" onchange="toggleReportParty()">
           <option value="date" id="opt-bydate">تاریخ وائز</option>
           <option value="party" id="opt-byparty">پارٹی وائز</option>
           <option value="sector" id="opt-bysector">سیکٹر وائز</option>
         </select>
       </div>
+      <div class="fg" id="r-party-wrap" style="display:none;">
+        <label id="lbl-rparty">پارٹی منتخب کریں</label>
+        <select id="r-party">
+          <option value="">-- All --</option>
+        </select>
+      </div>
      <div class="fb-actions">
   <button class="btn btn-p" id="btn-genrep" onclick="genReport()">📊 رپورٹ بنائیں</button>
-  <button class="btn btn-g no-print" onclick="printReport()">🖨️</button>
+  <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️</button>
   <button class="btn btn-g no-print" onclick="exportReportExcel()">📥 Excel</button>
 </div>
     </div>
 
     <!-- یہ صرف پرنٹ میں نظر آئے گا -->
-    <div id="print-header">
+    <div class="print-header">
       <div class="ph-title">Umrah Transport Management System</div>
-      <div class="ph-sub">رپورٹ سینٹر — Report Center</div>
+      <div class="ph-sub ph-sub-text">رپورٹ سینٹر — Report Center</div>
       <div class="ph-meta">
-        <span id="ph-range"></span>
-        <span id="ph-printed-on"></span>
+        <span class="ph-range"></span>
+        <span class="ph-printed-on"></span>
       </div>
     </div>
 
     <div id="rep-out"></div>
 
     <!-- یہ صرف پرنٹ میں نظر آئے گا -->
-    <div id="print-footer">Umrah Transport Management System — Generated Report</div>
+    <div class="print-footer">Umrah Transport Management System — Generated Report</div>
   </div>
 </div>
 
@@ -370,11 +387,21 @@
             <div class="fg"><label id="lbl-dnRepTo">تاریخ تک</label><input type="date" id="dnr-to"
                 onchange="renderDailyNoteReport()"></div>
             <div class="fb-actions">
-              <button class="btn btn-g no-print" onclick="window.print()">🖨️</button>
+              <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️</button>
               <button class="btn btn-o no-print" id="btn-dn-resetrep" onclick="clearDailyNoteReport()">↩ صاف</button>
             </div>
           </div>
+          <!-- یہ صرف پرنٹ میں نظر آئے گا -->
+          <div class="print-header">
+            <div class="ph-title">Umrah Transport Management System</div>
+            <div class="ph-sub ph-sub-text">ڈیلی رپورٹ — Daily Report</div>
+            <div class="ph-meta">
+              <span class="ph-range"></span>
+              <span class="ph-printed-on"></span>
+            </div>
+          </div>
           <div id="dn-report-out"></div>
+          <div class="print-footer">Umrah Transport Management System — Generated Report</div>
         </div>
       </div>
 
@@ -388,7 +415,7 @@
             <div class="grid">
               <div class="fg"><label id="lbl-udate">تاریخ</label><input type="date" id="u-date"></div>
               <div class="fg"><label id="lbl-uvoucher">واوچر نمبر</label><input type="text" id="u-voucher"
-                  class="voucher-input" readonly></div>
+                  class="voucher-input"></div>
               <div class="fg"><label id="lbl-uparty">پارٹی</label>
                 <div class="sd-wrap">
                   <div class="sd-input-row">
@@ -431,6 +458,20 @@
         </div>
         <div class="card">
           <div class="card-title" id="lbl-selrec">ریکارڈ منتخب کریں 📋</div>
+          <div class="sgr" style="margin-bottom:15px;">
+            <div class="fg">
+              <label id="lbl-updSearch">سرچ (پارٹی/واوچر)</label>
+              <input type="text" id="upd-search" placeholder="تلاش کریں..." oninput="renderUpdateTable()">
+            </div>
+            <div class="fg">
+              <label id="lbl-updFrom">تاریخ سے</label>
+              <input type="date" id="upd-from" onchange="renderUpdateTable()">
+            </div>
+            <div class="fg">
+              <label id="lbl-updTo">تاریخ تک</label>
+              <input type="date" id="upd-to" onchange="renderUpdateTable()">
+            </div>
+          </div>
           <div class="tbl-wrap">
             <table>
               <thead>
@@ -569,8 +610,22 @@
     </div>
   </div>
 
+  <!-- DELETE MODAL (SweetAlert Style) -->
+  <div class="mo" id="del-modal">
+    <div class="md del-md">
+      <div class="del-icon">⚠️</div>
+      <h3 id="del-m-title"></h3>
+      <p id="del-m-msg"></p>
+      <input type="password" id="del-m-input" placeholder="">
+      <div class="md-btns" style="justify-content:center; margin-top:20px;">
+        <button class="btn btn-d" id="btn-del-confirm" onclick="confirmDeleteModal()">🗑️</button>
+        <button class="btn btn-o" id="btn-del-cancel" onclick="closeDeleteModal()">❌</button>
+      </div>
+    </div>
+  </div>
   <!-- FIREBASE SDK (v8 compat) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script src="script.js"></script>

@@ -56,7 +56,7 @@ const T = {
     renameParty: 'پارٹی کا نام تبدیل کریں ✏️', oldName: 'پرانا نام', newName: 'نیا نام',
     renameSave: '💾 محفوظ', renameOk: '✅ نام تبدیل ہوگیا',
     renameErr: '⚠️ نیا نام لکھیں', renameDup: '⚠️ یہ نام پہلے سے موجود ہے',
-    voucherCol: 'واوچر نمبر', voucherLbl: 'واوچر نمبر (خودکار)',
+    voucherCol: 'واوچر نمبر', voucherLbl: 'واوچر نمبر',
     overallBalance: 'کل بقایا',
     loggedUser: 'صارف: ', logout: 'لاگ آؤٹ 🚪',
     login: 'لاگ ان', username: 'صارف نام', password: 'پاس ورڈ',
@@ -84,6 +84,8 @@ const T = {
     sharingNote: '⚠️ شیئرنگ بس میں حاجیوں کی تعداد اور فی حاجی کرایہ ضروری ہے',
     wholeNote: '⚠️ پوری گاڑی کی رقم ضروری ہے',
     bus: 'بس', van: 'وین', car: 'کار', coach: 'کوچ', newTransport: '(+ نئی)',
+    searchRec: 'سرچ (پارٹی/واوچر)', searchHint: 'تلاش کریں...',
+    enterPassword: 'ڈیلیٹ کرنے کے لیے پاس ورڈ درج کریں:', incorrectPassword: 'پاس ورڈ غلط ہے!',
   },
   en: {
     dir: 'ltr', lang: 'en',
@@ -139,7 +141,7 @@ const T = {
     renameParty: 'Rename Party ✏️', oldName: 'Current Name', newName: 'New Name',
     renameSave: '💾 Save', renameOk: '✅ Name updated',
     renameErr: '⚠️ Enter a new name', renameDup: '⚠️ Name already exists',
-    voucherCol: 'Voucher No.', voucherLbl: 'Voucher No. (Auto)',
+    voucherCol: 'Voucher No.', voucherLbl: 'Voucher No.',
     overallBalance: 'Overall Balance',
     loggedUser: 'User: ', logout: 'Log Out 🚪',
     login: 'Log In', username: 'Username', password: 'Password',
@@ -166,6 +168,8 @@ const T = {
     typeSharing: 'Sharing', typeWhole: 'Full Vehicle',
     sharingNote: '⚠️ Enter pilgrim count and fare per pilgrim', wholeNote: '⚠️ Full vehicle amount is required',
     bus: 'Bus', van: 'Van', car: 'Car', coach: 'Coach', newTransport: '(+ New)',
+    searchRec: 'Search (Party/Voucher)', searchHint: 'Search...',
+    enterPassword: 'Enter password to delete:', incorrectPassword: 'Incorrect password!',
   },
   ar: {
     dir: 'rtl', lang: 'ar',
@@ -221,7 +225,7 @@ const T = {
     renameParty: 'إعادة تسمية المجموعة ✏️', oldName: 'الاسم الحالي', newName: 'الاسم الجديد',
     renameSave: '💾 حفظ', renameOk: '✅ تم تحديث الاسم',
     renameErr: '⚠️ أدخل اسماً جديداً', renameDup: '⚠️ الاسم موجود مسبقاً',
-    voucherCol: 'رقم الإيصال', voucherLbl: 'رقم الإيصال (تلقائي)',
+    voucherCol: 'رقم الإيصال', voucherLbl: 'رقم الإيصال',
     overallBalance: 'إجمالي الرصيد',
     loggedUser: 'المستخدم: ', logout: 'تسجيل الخروج 🚪',
     login: 'تسجيل الدخول', username: 'اسم المستخدم', password: 'كلمة المرور',
@@ -248,8 +252,49 @@ const T = {
     typeSharing: 'مشترك', typeWhole: 'مركبة كاملة',
     sharingNote: '⚠️ أدخل عدد الحجاج وأجرة كل حاج', wholeNote: '⚠️ مبلغ المركبة الكاملة مطلوب',
     bus: 'حافلة', van: 'فان', car: 'سيارة', coach: 'كوتش', newTransport: '(+ جديد)',
+    searchRec: 'بحث (المجموعة/الإيصال)', searchHint: 'ابحث...',
+    enterPassword: 'أدخل كلمة المرور للحذف:', incorrectPassword: 'كلمة المرور غير صحيحة!',
   }
 };
+
+let _delResolve = null;
+
+function verifyPassword(confirmMsg) {
+  const L = T[lang];
+  return new Promise(resolve => {
+    document.getElementById('del-m-msg').textContent = confirmMsg;
+    document.getElementById('del-m-title').textContent = L.enterPassword || 'Enter Password';
+    const inp = document.getElementById('del-m-input');
+    inp.value = '';
+    
+    document.getElementById('del-modal').classList.add('active');
+    inp.focus();
+    
+    _delResolve = resolve;
+  });
+}
+
+async function confirmDeleteModal() {
+  const L = T[lang];
+  const pwd = document.getElementById('del-m-input').value;
+  if (!loggedInUser) return;
+  
+  try {
+    await auth.signInWithEmailAndPassword(getEmail(loggedInUser), pwd);
+    document.getElementById('del-modal').classList.remove('active');
+    if (_delResolve) _delResolve(true);
+  } catch(e) {
+    console.error(e);
+    alert(L.incorrectPassword || 'Incorrect password!');
+    document.getElementById('del-m-input').value = '';
+    document.getElementById('del-m-input').focus();
+  }
+}
+
+function closeDeleteModal() {
+  document.getElementById('del-modal').classList.remove('active');
+  if (_delResolve) _delResolve(false);
+}
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  STATE & FIREBASE
@@ -265,8 +310,19 @@ const firebaseConfig = {
   appId: "1:889214407819:web:755986a87e1b4cbd55308e",
   measurementId: "G-92K56E1TQX"
 };
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+let mainApp, secondaryApp, auth, secondaryAuth;
+if (!firebase.apps.length) {
+  mainApp = firebase.initializeApp(firebaseConfig);
+  secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+} else {
+  mainApp = firebase.app();
+  secondaryApp = firebase.app("Secondary");
+}
 const db = firebase.database();
+auth = firebase.auth();
+secondaryAuth = secondaryApp.auth();
+
+const getEmail = (username) => `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@umrahtransport.local`;
 
 const KEY_LOGGEDIN = 'uts_loggedin';
 let records = [];
@@ -277,7 +333,7 @@ let transports = [];
 let partyCodes = {};
 let users = [];
 let dailyNotes = [];
-let loggedInUser = localStorage.getItem(KEY_LOGGEDIN) || null;
+let loggedInUser = null;
 let isFirebaseReady = false;
 let fbLogo = null;
 let fbAppName = {};
@@ -296,13 +352,33 @@ function saveAppSettingsToFb() {
   db.ref('settings').set({ logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} });
 }
 
-function initUsers() {
-  if (!users.length) { users = [{ username: 'admin', password: 'admin', role: 'admin' }]; svU(); }
+async function initUsers() {
+  if (!users.length) { 
+    try {
+      await secondaryAuth.createUserWithEmailAndPassword(getEmail('admin'), 'admin');
+    } catch(e) { } // Ignore if already exists in Auth
+    users = [{ username: 'admin', role: 'admin' }]; 
+    svU(); 
+  }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  AUTH
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+auth.onAuthStateChanged(user => {
+  if (user) {
+    loggedInUser = user.email.split('@')[0];
+    const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
+    if (!found && loggedInUser !== 'admin') {
+      auth.signOut();
+      return;
+    }
+  } else {
+    loggedInUser = null;
+  }
+  checkAuth();
+});
+
 function checkAuth() {
   const mainApp = document.getElementById('main-app-container');
   const loginPage = document.getElementById('login-container');
@@ -323,44 +399,50 @@ function checkAuth() {
   }
 }
 
-function login() {
+async function login() {
   const L = T[lang];
   const u = document.getElementById('li-username').value.trim();
   const p = document.getElementById('li-password').value;
-  const alertEl = document.getElementById('al-login');
   if (!u || !p) { al('al-login', L.entryRequired || 'Username and password required', 'er'); return; }
-  const found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
-  if (found) {
-    loggedInUser = found.username;
-    localStorage.setItem(KEY_LOGGEDIN, loggedInUser);
+  
+  try {
+    await auth.signInWithEmailAndPassword(getEmail(u), p);
     al('al-login', L.loginSuccess || 'Login successful', 'ok');
-    setTimeout(() => { checkAuth(); showPage('entry', document.querySelectorAll('#main-nav button')[0]); }, 500);
-  } else {
+    setTimeout(() => { showPage('entry', document.querySelectorAll('#main-nav button')[0]); }, 500);
+  } catch(e) {
+    console.error(e);
     al('al-login', L.invalidLogin || 'Invalid username or password', 'er');
   }
 }
 
-function logout() { loggedInUser = null; localStorage.removeItem(KEY_LOGGEDIN); checkAuth(); }
+async function logout() { await auth.signOut(); }
 
-function addUser() {
+async function addUser() {
   const L = T[lang];
   const u = document.getElementById('su-username').value.trim();
   const p = document.getElementById('su-password').value;
   if (!u || !p) { al('al-su', L.entryRequired, 'er'); return; }
   if (users.some(x => x.username.toLowerCase() === u.toLowerCase())) { al('al-su', L.userExists || 'Username already exists', 'er'); return; }
-  users.push({ username: u, password: p, role: 'operator' });
-  svU();
-  renderUsers();
-  document.getElementById('su-username').value = '';
-  document.getElementById('su-password').value = '';
-  al('al-su', L.userAdded || 'User added successfully', 'ok');
+  
+  try {
+    await secondaryAuth.createUserWithEmailAndPassword(getEmail(u), p);
+    users.push({ username: u, role: 'operator' });
+    svU();
+    renderUsers();
+    document.getElementById('su-username').value = '';
+    document.getElementById('su-password').value = '';
+    al('al-su', L.userAdded || 'User added successfully', 'ok');
+  } catch(e) {
+    console.error(e);
+    al('al-su', e.message, 'er');
+  }
 }
 
-function deleteUser(idx) {
+async function deleteUser(idx) {
   const L = T[lang];
   const user = users[idx];
   if (user.username === loggedInUser) { alert(L.userDeleteErrorSelf || 'You cannot delete yourself!'); return; }
-  if (!confirm(L.userDeleteConfirm || 'Delete this user?')) return;
+  if (!(await verifyPassword(L.userDeleteConfirm || 'Delete this user?'))) return;
   users.splice(idx, 1);
   svU();
   renderUsers();
@@ -481,7 +563,7 @@ function setLang(l) {
 
   // Report
   setText('lbl-repTitle', L.repTitle); setText('lbl-repfrom', L.fromDate); setText('lbl-repto', L.toDate);
-  setText('lbl-reptype', L.repType); setText('btn-genrep', L.genReport);
+  setText('lbl-reptype', L.repType); setText('btn-genrep', L.genReport); setText('lbl-rparty', L.party);
   setOpt('opt-bydate', L.byDate, 'date'); setOpt('opt-byparty', L.byParty, 'party');
   setOpt('opt-bysector', L.bySector, 'sector');
 
@@ -491,6 +573,8 @@ function setLang(l) {
   setText('lbl-ufare', L.fare); setText('lbl-utotal', L.total); setText('lbl-unotes', L.notes);
   setText('btn-saveupd', L.saveUpd); setText('btn-cancel', L.cancel); setText('lbl-selrec', L.selectRecord);
   setText('lbl-uvoucher', L.voucherLbl); setText('lbl-uvehicletotal', L.vehicleTotalLbl);
+  setText('lbl-updSearch', L.searchRec); setText('lbl-updFrom', L.fromDate); setText('lbl-updTo', L.toDate);
+  document.getElementById('upd-search').placeholder = L.searchHint || 'Search...';
 
   // Settings
   setText('lbl-setParties', L.setParties); setText('lbl-setSectors', L.setSectors);
@@ -725,6 +809,7 @@ function refreshAllDrops() {
   fillDrop('u-sector', sectors);
   fillDrop('u-transport', transports);
   fillDrop('dn-sector', sectors);
+  fillDrop('r-party', parties, true);
   ['e-party', 'p-party', 'u-party', 'dn-party'].forEach(p => sdBuild(p));
 }
 
@@ -812,7 +897,7 @@ function addFromSettings(type) {
   else renderTransportList();
 }
 
-function deleteItem(type, idx) {
+async function deleteItem(type, idx) {
   const L = T[lang];
   const arr = type === 'party' ? parties : type === 'sector' ? sectors : transports;
   const name = arr[idx];
@@ -820,7 +905,12 @@ function deleteItem(type, idx) {
   if (type === 'party') used = records.some(r => r.party === name) || payments.some(p => p.party === name);
   else if (type === 'sector') used = records.some(r => r.sector === name);
   else used = records.some(r => r.transport === name);
-  if (used && !confirm(`"${name}" ${L.usedWarning}`)) return;
+  if (used) {
+    if (!(await verifyPassword(`"${name}" ${L.usedWarning}`))) return;
+  } else {
+    if (!(await verifyPassword(L.confirmDel || 'Delete?'))) return;
+  }
+  
   arr.splice(idx, 1);
   if (type === 'party') svP(); else if (type === 'sector') svS(); else svTr();
   refreshAllDrops();
@@ -1036,9 +1126,9 @@ function renderPayments() {
   ).join('');
 }
 
-function deletePay(id) {
+async function deletePay(id) {
   const L = T[lang];
-  if (!confirm(L.confirmDelPay)) return;
+  if (!(await verifyPassword(L.confirmDelPay))) return;
   payments = payments.filter(x => x.id !== id);
   svPy();
   renderPayments();
@@ -1065,19 +1155,30 @@ function renderLedger() {
 
   let summaryHtml = '';
   if (!selParty && parties.length) {
+    let sumRecs = [...records];
+    let sumPays = [...payments];
+    if (from) { sumRecs = sumRecs.filter(r => r.date >= from); sumPays = sumPays.filter(p => p.date >= from); }
+    if (to) { sumRecs = sumRecs.filter(r => r.date <= to); sumPays = sumPays.filter(p => p.date <= to); }
+
     const summaryRows = parties.map(party => {
-      const ovDebit = records.filter(r => r.party === party).reduce((s, r) => s + r.total, 0);
-      const ovCredit = payments.filter(p => p.party === party).reduce((s, p) => s + p.amount, 0);
+      const ovDebit = sumRecs.filter(r => r.party === party).reduce((s, r) => s + r.total, 0);
+      const ovCredit = sumPays.filter(p => p.party === party).reduce((s, p) => s + p.amount, 0);
       const ovBal = ovCredit - ovDebit;
+      if (ovDebit === 0 && ovCredit === 0 && (from || to)) return ''; // Skip empty rows if filtered
       const ovBalClass = ovBal >= 0 ? 'led-pos' : 'led-neg';
       const ovBalText = ovBal >= 0 ? `+${sar(ovBal)}` : `-${sar(Math.abs(ovBal))}`;
       const statusLabel = ovBal >= 0 ? L.surplus : L.owing;
       return `<tr><td><span class="party-code">${getCode(party)}</span></td><td><strong>${party}</strong></td>
         <td class="led-dr">${sar(ovDebit)}</td><td class="led-cr">${sar(ovCredit)}</td>
         <td class="${ovBalClass}">${ovBalText} <span style="font-size:10px;color:var(--muted);">(${statusLabel})</span></td></tr>`;
-    }).join('');
-    summaryHtml = `<div class="card summary-card" style="margin-bottom:20px;"><h3 style="font-size:14px;color:var(--green-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px;">📊 ${L.overallBalance} (${L.selectAll})</h3>
-      <div class="tbl-wrap"><table><thead><tr><th>${L.codeCol}</th><th>${L.partyCol}</th><th>${L.totalDebit}</th><th>${L.totalCredit}</th><th>${L.overallBalance}</th></tr></thead><tbody>${summaryRows}</tbody></table></div></div>`;
+    }).filter(Boolean).join('');
+    
+    if (summaryRows) {
+      const rangeText = (from || to) ? ` (${from ? fd(from) : '...'} ➜ ${to ? fd(to) : '...'})` : ` (${L.selectAll})`;
+      const summaryHeading = (from || to) ? L.balance + rangeText : L.overallBalance + rangeText;
+      summaryHtml = `<div class="card summary-card" style="margin-bottom:20px;"><h3 style="font-size:14px;color:var(--green-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px;">📊 ${summaryHeading}</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>${L.codeCol}</th><th>${L.partyCol}</th><th>${L.totalDebit}</th><th>${L.totalCredit}</th><th>${L.balance}</th></tr></thead><tbody>${summaryRows}</tbody></table></div></div>`;
+    }
   }
 
   let html = '';
@@ -1120,8 +1221,8 @@ function renderLedger() {
           <span>${L.totalDebit}: <strong style="color:#ffb3b3;">${sar(totalDebit)} SAR</strong></span>
           <span>${L.totalCredit}: <strong style="color:#b3ffcc;">${sar(totalCredit)} SAR</strong></span>
           <span class="${balClass}" style="${balance < 0 ? 'color:#ff9999' : 'color:#99ffcc'};font-size:11px;">${balText}</span>
-          <span class="overall-bal-badge" style="font-size:10px;"><span>${L.overallBalance}:</span>
-            <strong class="${overallBalClass}" style="${overallBal < 0 ? 'color:#ff9999' : 'color:#99ffcc'}">${overallBalText}</strong></span>
+          ${(from || to) ? '' : `<span class="overall-bal-badge" style="font-size:10px;"><span>${L.overallBalance}:</span>
+            <strong class="${overallBalClass}" style="${overallBal < 0 ? 'color:#ff9999' : 'color:#99ffcc'}">${overallBalText}</strong></span>`}
         </div>
       </div>
       ${txns.length ? `<div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;"><table><thead><tr>
@@ -1192,13 +1293,21 @@ function clearFilter() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  REPORT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function toggleReportParty() {
+  const t = document.getElementById('r-type').value;
+  document.getElementById('r-party-wrap').style.display = t === 'party' ? 'block' : 'none';
+}
 function genReport() {
   const L = T[lang];
   const from = document.getElementById('r-from').value, to = document.getElementById('r-to').value;
   const type = document.getElementById('r-type').value;
+  const rParty = document.getElementById('r-party').value;
+  
   let rows = [...records];
   if (from) rows = rows.filter(r => r.date >= from);
   if (to) rows = rows.filter(r => r.date <= to);
+  if (type === 'party' && rParty) rows = rows.filter(r => r.party === rParty);
+  
   const out = document.getElementById('rep-out');
   if (!rows.length) { out.innerHTML = `<div class="empty"><div class="ico">📭</div>${L.noData}</div>`; return; }
   const lbl = { date: L.byDate, party: L.byParty, sector: L.bySector };
@@ -1234,18 +1343,55 @@ function genReport() {
   out.innerHTML = html;
 }
 
-function printReport() {
-  const out = document.getElementById('rep-out');
-  if (!out.innerHTML.trim()) {
-    const L = T[lang];
-    al('al-login', L.noData || 'پہلے رپورٹ بنائیں', 'er');
-    return;
+function printCurrentPage() {
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+  
+  const L = T[lang];
+
+  // If this is the report page, validate that the report is generated
+  if (activePage.id === 'page-report') {
+    const out = document.getElementById('rep-out');
+    if (!out.innerHTML.trim()) {
+      al('al-login', L.noData || 'پہلے رپورٹ بنائیں', 'er');
+      return;
+    }
   }
-  const from = document.getElementById('r-from').value;
-  const to = document.getElementById('r-to').value;
+
+  // Get date range and dynamic title
+  let from = '';
+  let to = '';
+  let pageTitle = '';
+  let pageSub = '';
+
+  if (activePage.id === 'page-report') {
+    from = document.getElementById('r-from').value;
+    to = document.getElementById('r-to').value;
+    pageTitle = (L.repTitle || 'Report Center').replace(/📊/g, '').trim();
+  } else if (activePage.id === 'page-ledger') {
+    from = document.getElementById('l-from').value;
+    to = document.getElementById('l-to').value;
+    pageTitle = (L.ledgerTitle || 'Party Ledger').replace(/📒/g, '').trim();
+    const selParty = document.getElementById('l-party').value;
+    pageSub = selParty || (L.selectAll || 'All Parties').replace(/--/g, '').trim();
+  } else if (activePage.id === 'page-dailynote') {
+    from = document.getElementById('dnr-from').value;
+    to = document.getElementById('dnr-to').value;
+    pageTitle = (L.dnRepTitle || 'Daily Note Report').replace(/📊/g, '').trim();
+  }
+
   const rangeText = (from || to) ? `${from ? fd(from) : '...'} ${L_arrow()} ${to ? fd(to) : '...'}` : '';
-  document.getElementById('ph-range').textContent = rangeText ? `📅 ${rangeText}` : '';
-  document.getElementById('ph-printed-on').textContent = `🖨️ ${new Date().toLocaleDateString('ur-PK')}`;
+  activePage.querySelectorAll('.ph-range').forEach(el => el.textContent = rangeText ? `📅 ${rangeText}` : '');
+  
+  // Set the print date dynamically
+  const dateStr = `🖨️ ${new Date().toLocaleDateString('ur-PK')} ${new Date().toLocaleTimeString('ur-PK', {hour:'2-digit', minute:'2-digit'})}`;
+  activePage.querySelectorAll('.ph-printed-on').forEach(el => el.textContent = dateStr);
+  
+  // Set title and subtitle dynamically
+  activePage.querySelectorAll('.ph-title').forEach(el => el.textContent = L.appTitle || 'Umrah Transport Management System');
+  const fullSub = pageSub ? `${pageTitle} — ${pageSub}` : pageTitle;
+  activePage.querySelectorAll('.ph-sub-text').forEach(el => el.textContent = fullSub);
+  
   window.print();
 }
 
@@ -1261,10 +1407,12 @@ function exportReportExcel() {
   const from = document.getElementById('r-from').value;
   const to = document.getElementById('r-to').value;
   const type = document.getElementById('r-type').value;
+  const rParty = document.getElementById('r-party').value;
 
   let rows = [...records];
   if (from) rows = rows.filter(r => r.date >= from);
   if (to) rows = rows.filter(r => r.date <= to);
+  if (type === 'party' && rParty) rows = rows.filter(r => r.party === rParty);
 
   if (!rows.length) { al('al-login', L.noData, 'er'); return; }
 
@@ -1383,6 +1531,137 @@ function exportReportExcel() {
   XLSX.writeFile(wb, `Report_${dateStamp}.xlsx`);
 }
 
+function exportLedgerExcel() {
+  const L = T[lang];
+  const out = document.getElementById('ledger-output');
+  if (!out.innerHTML.trim() || out.querySelector('.empty')) {
+    al('al-login', L.noData || 'پہلے لیجر بنائیں', 'er');
+    return;
+  }
+
+  const selParty = document.getElementById('l-party').value;
+  const from = document.getElementById('l-from').value;
+  const to = document.getElementById('l-to').value;
+  const pList = selParty ? [selParty] : parties;
+
+  if (!pList.length) { al('al-login', L.noData, 'er'); return; }
+
+  const thinBorder = {
+    top: { style: 'thin', color: { rgb: 'CCCCCC' } },
+    bottom: { style: 'thin', color: { rgb: 'CCCCCC' } },
+    left: { style: 'thin', color: { rgb: 'CCCCCC' } },
+    right: { style: 'thin', color: { rgb: 'CCCCCC' } }
+  };
+
+  const S = {
+    title:      { font: { bold: true, sz: 16, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '054D28' }, patternType: 'solid' }, alignment: { horizontal: 'center' } },
+    sub:        { font: { sz: 10, color: { rgb: '555555' } } },
+    groupHead:  { font: { bold: true, sz: 12, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0F7A41' }, patternType: 'solid' } },
+    colHead:    { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: 'C9940A' }, patternType: 'solid' }, alignment: { horizontal: 'center' }, border: thinBorder },
+    dataRow:    { border: thinBorder },
+    subTotal:   { font: { bold: true }, fill: { fgColor: { rgb: 'E8F3EC' }, patternType: 'solid' }, border: thinBorder }
+  };
+
+  const cell = (v, styleKey) => ({ v: v ?? '', t: typeof v === 'number' ? 'n' : 's', s: styleKey ? S[styleKey] : undefined });
+
+  const sheetRows = [];
+  const merges = [];
+  const addRow = (cells) => { sheetRows.push(cells); };
+
+  addRow([cell(L.appTitle || 'Umrah Transport Management System', 'title')]);
+  merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 7 } });
+
+  const ledgerTitle = (L.ledgerTitle || 'Party Ledger').replace(/📒/g, '').trim();
+  const subTitle = selParty || (L.selectAll || 'All Parties').replace(/--/g, '').trim();
+  addRow([cell(`${ledgerTitle} — ${subTitle}`, 'sub')]);
+  merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 7 } });
+
+  if (from || to) {
+    addRow([cell(`📅 ${from ? fd(from) : '...'} ${L_arrow()} ${to ? fd(to) : '...'}`, 'sub')]);
+    merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 7 } });
+  }
+
+  addRow([cell('')]);
+
+  const headers = [L.voucherCol, L.dateCol, L.txType, L.desc, L.debitCol, L.creditCol, L.balance, L.notesCol];
+
+  pList.forEach(party => {
+    let recs = [...records].filter(r => r.party === party);
+    let pays = [...payments].filter(p => p.party === party);
+    
+    if (from) { recs = recs.filter(r => r.date >= from); pays = pays.filter(p => p.date >= from); }
+    if (to) { recs = recs.filter(r => r.date <= to); pays = pays.filter(p => p.date <= to); }
+
+    const txns = [
+      ...recs.map(r => ({ date: r.date, type: 'debit', voucher: r.voucher || '—', desc: `${L.sectorRef} ${r.sector} (${r.count} ${L.hujPerSector} ${sar(r.fare)})`, amount: r.total, notes: r.notes || '' })),
+      ...pays.map(p => ({ date: p.date, type: 'credit', voucher: '—', desc: `${L.payMethodRef} ${getMethodLabel(p.method)}`, amount: p.amount, notes: p.notes || '' }))
+    ].sort((a, b) => a.date.localeCompare(b.date));
+
+    if (txns.length === 0) return;
+
+    const totalDebit = recs.reduce((s, r) => s + r.total, 0);
+    const totalCredit = pays.reduce((s, p) => s + p.amount, 0);
+    const balance = totalCredit - totalDebit;
+
+    addRow([cell(`📌 ${party} [${getCode(party)}]`, 'groupHead')]);
+    merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 7 } });
+
+    addRow(headers.map(h => cell(h, 'colHead')));
+
+    let running = 0;
+    txns.forEach(tx => {
+      if (tx.type === 'debit') running -= tx.amount;
+      else running += tx.amount;
+      
+      addRow([
+        cell(tx.voucher, 'dataRow'),
+        cell(fd(tx.date), 'dataRow'),
+        cell(tx.type === 'debit' ? (L.debitTx || 'Debit').replace(/[📤📥]/g,'').trim() : (L.creditTx || 'Credit').replace(/[📤📥]/g,'').trim(), 'dataRow'),
+        cell(tx.desc, 'dataRow'),
+        cell(tx.type === 'debit' ? tx.amount : '', 'dataRow'),
+        cell(tx.type === 'credit' ? tx.amount : '', 'dataRow'),
+        cell(Math.abs(running), 'dataRow'), // Just absolute running balance
+        cell(tx.notes, 'dataRow')
+      ]);
+    });
+
+    addRow([
+      cell(L.subTotal, 'subTotal'), cell('', 'subTotal'), cell('', 'subTotal'), cell('', 'subTotal'),
+      cell(totalDebit, 'subTotal'), cell(totalCredit, 'subTotal'), cell(balance, 'subTotal'), cell('', 'subTotal')
+    ]);
+
+    addRow([cell('')]);
+  });
+
+  if (sheetRows.length <= 5) {
+     al('al-login', L.noData || 'کوئی ڈیٹا نہیں', 'er');
+     return;
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(sheetRows.map(row => row.map(c => c.v)));
+
+  sheetRows.forEach((row, rIdx) => {
+    row.forEach((c, cIdx) => {
+      if (c.s) {
+        const ref = XLSX.utils.encode_cell({ r: rIdx, c: cIdx });
+        if (ws[ref]) ws[ref].s = c.s;
+      }
+    });
+  });
+
+  ws['!cols'] = [
+    { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 35 }, { wch: 14 },
+    { wch: 14 }, { wch: 14 }, { wch: 20 }
+  ];
+  ws['!merges'] = merges;
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Ledger');
+
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `Ledger_${selParty || 'All'}_${dateStamp}.xlsx`);
+}
+
 
 function L_arrow() { return document.documentElement.dir === 'rtl' ? '←' : '→'; }
 
@@ -1398,7 +1677,26 @@ function renderUpdHead() {
 function renderUpdateTable() {
   const L = T[lang];
   const tbody = document.getElementById('upd-tbody');
-  const s = [...records].sort((a, b) => b.date.localeCompare(a.date));
+  
+  const searchVal = document.getElementById('upd-search').value.trim().toLowerCase();
+  const fromVal = document.getElementById('upd-from').value;
+  const toVal = document.getElementById('upd-to').value;
+
+  let s = [...records];
+  
+  if (searchVal) {
+    s = s.filter(r => 
+      (r.party && r.party.toLowerCase().includes(searchVal)) || 
+      (r.voucher && r.voucher.toLowerCase().includes(searchVal)) ||
+      (r.sector && r.sector.toLowerCase().includes(searchVal))
+    );
+  }
+  
+  if (fromVal) s = s.filter(r => r.date >= fromVal);
+  if (toVal) s = s.filter(r => r.date <= toVal);
+
+  s.sort((a, b) => b.date.localeCompare(a.date));
+
   if (!s.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ico">📂</div>${L.noRec}</div></td></tr>`; return; }
   tbody.innerHTML = s.map(r =>
     `<tr><td><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>
@@ -1474,9 +1772,9 @@ function saveUpdate() {
 
 function cancelUpdate() { document.getElementById('upd-form').style.display = 'none'; }
 
-function deleteRecord(id) {
+async function deleteRecord(id) {
   const L = T[lang];
-  if (!confirm(L.confirmDel)) return;
+  if (!(await verifyPassword(L.confirmDel))) return;
   records = records.filter(x => x.id !== id);
   svR();
   renderUpdateTable();
@@ -1550,9 +1848,9 @@ function editDailyNote(id) {
   document.getElementById('nav-dailynote').classList.add('active');
 }
 
-function deleteDailyNote(id) {
+async function deleteDailyNote(id) {
   const L = T[lang];
-  if (!confirm(L.dnDelConfirm)) return;
+  if (!(await verifyPassword(L.dnDelConfirm))) return;
   dailyNotes = dailyNotes.filter(n => n.id !== id);
   svDN();
   renderDailyNoteReport();
