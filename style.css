@@ -814,6 +814,15 @@ tbody td {
   font-weight: 700;
 }
 
+/* LEDGER TABLE — ہر انٹری لائن کے اندر */
+.ledger-tbl tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+.ledger-tbl tbody td {
+  border: 1px solid var(--cream-dark);
+  border-bottom-color: var(--border);
+}
+
 .summary-card {
   border-left: 4px solid var(--gold) !important;
 }

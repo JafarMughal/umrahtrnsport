@@ -378,6 +378,15 @@
                 placeholder="0"></div>
             <div class="fg"><label id="lbl-dnFlightNo">فلائیٹ نمبر</label><input type="text" id="dn-flight-no"></div>
             <div class="fg"><label id="lbl-dnFlightTime">وقت</label><input type="time" id="dn-flight-time"></div>
+            <div class="fg"><label id="lbl-dnTripType">سفر کی نوعیت</label>
+              <div class="ddr"><select id="dn-trip-type">
+                <option value="">-- منتخب کریں --</option>
+                <option value="arrival">آمد</option>
+                <option value="return">واپسی</option>
+                <option value="other">دیگر سفر</option>
+              </select></div>
+            </div>
+            <div class="fg"><label id="lbl-dnFlightName">فلائیٹ کا نام</label><input type="text" id="dn-flight-name"></div>
           </div>
           <div class="btn-row">
             <button class="btn btn-p" id="btn-dn-save" onclick="saveDailyNote()">✅ نوٹ محفوظ کریں</button>
@@ -633,7 +642,39 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <script src="script.js"></script>
+  <!-- CONFIG (translations T + firebase config — load first) -->
+  <script src="scripts/config/translations.js"></script>
+  <script src="scripts/config/firebase-config.js"></script>
+
+  <!-- CORE (state + helpers) -->
+  <script src="scripts/core/state.js"></script>
+  <script src="scripts/core/helpers.js"></script>
+  <script src="scripts/core/db-helpers.js"></script>
+
+  <!-- AUTH -->
+  <script src="scripts/auth/password-modal.js"></script>
+  <script src="scripts/auth/auth.js"></script>
+
+  <!-- PAGES -->
+  <script src="scripts/pages/entry.js"></script>
+  <script src="scripts/pages/payment.js"></script>
+  <script src="scripts/pages/ledger.js"></script>
+  <script src="scripts/pages/records.js"></script>
+  <script src="scripts/pages/report.js"></script>
+  <script src="scripts/pages/update.js"></script>
+  <script src="scripts/pages/daily-note.js"></script>
+  <script src="scripts/pages/settings.js"></script>
+
+  <!-- UI -->
+  <script src="scripts/ui/navigation.js"></script>
+  <script src="scripts/ui/language.js"></script>
+  <script src="scripts/ui/dropdowns.js"></script>
+  <script src="scripts/ui/modal.js"></script>
+  <script src="scripts/ui/logo-settings.js"></script>
+  <script src="scripts/ui/print-export.js"></script>
+
+  <!-- APP (global expose + firebase init — load last) -->
+  <script src="scripts/app.js"></script>
 </body>
 
 </html>
