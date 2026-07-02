@@ -76,7 +76,7 @@ function exportReportExcel() {
 
     const groups = {};
     rows.forEach(r => {
-        const k = type === 'date' ? fd(r.date) : type === 'party' ? r.party : r.sector;
+        const k = type === 'date' ? fd(r.date) : type === 'party' ? r.party : type === 'newparty' ? (r.newParty || '—') : r.sector;
         if (!groups[k]) groups[k] = [];
         groups[k].push(r);
     });
@@ -110,7 +110,7 @@ function exportReportExcel() {
     addRow([cell('Umrah Transport Management System', 'title')]);
     merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 8 } });
 
-    addRow([cell(`${L.repKind || 'رپورٹ کی قسم'}: ${type === 'date' ? L.byDate : type === 'party' ? L.byParty : L.bySector}`, 'sub')]);
+    addRow([cell(`${L.repKind || 'رپورٹ کی قسم'}: ${type === 'date' ? L.byDate : type === 'party' ? L.byTransporter : type === 'newparty' ? L.byParty : L.bySector}`, 'sub')]);
     merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 8 } });
 
     if (from || to) {

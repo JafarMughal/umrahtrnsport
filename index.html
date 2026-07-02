@@ -120,7 +120,7 @@
               <input type="text" id="e-voucher" class="voucher-input">
             </div>
             <div class="fg">
-              <label><span id="lbl-party">پارٹی</span></label>
+              <label><span id="lbl-transporter-dropdown">ٹرانسپوٹر</span></label>
               <div class="sd-wrap">
                 <div class="sd-input-row">
                   <input type="text" class="sd-input" id="e-party-input" autocomplete="off"
@@ -129,6 +129,10 @@
                 <input type="hidden" id="e-party">
                 <div class="sd-dropdown" id="sd-e-party"></div>
               </div>
+            </div>
+            <div class="fg">
+              <label id="lbl-party">پارٹی</label>
+              <input type="text" id="e-new-party">
             </div>
             <div class="fg">
               <label><span id="lbl-sector">سیکٹر</span></label>
@@ -314,7 +318,8 @@
       <div class="fg"><label id="lbl-reptype">رپورٹ کی قسم</label>
         <select id="r-type" onchange="toggleReportParty()">
           <option value="date" id="opt-bydate">تاریخ وائز</option>
-          <option value="party" id="opt-byparty">پارٹی وائز</option>
+          <option value="party" id="opt-byparty">ٹرانسپوٹر وائز</option>
+          <option value="newparty" id="opt-bynewparty">پارٹی وائز</option>
           <option value="sector" id="opt-bysector">سیکٹر وائز</option>
         </select>
       </div>

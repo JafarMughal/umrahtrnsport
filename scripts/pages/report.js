@@ -19,9 +19,9 @@ function genReport() {
 
     const out = document.getElementById('rep-out');
     if (!rows.length) { out.innerHTML = `<div class="empty"><div class="ico">📭</div>${L.noData}</div>`; return; }
-    const lbl = { date: L.byDate, party: L.byParty, sector: L.bySector };
+    const lbl = { date: L.byDate, party: L.byTransporter, newparty: L.byParty, sector: L.bySector };
     const groups = {};
-    rows.forEach(r => { const k = type === 'date' ? fd(r.date) : type === 'party' ? r.party : r.sector; if (!groups[k]) groups[k] = []; groups[k].push(r); });
+    rows.forEach(r => { const k = type === 'date' ? fd(r.date) : type === 'party' ? r.party : type === 'newparty' ? (r.newParty || '—') : r.sector; if (!groups[k]) groups[k] = []; groups[k].push(r); });
     const gT = rows.reduce((s, r) => s + r.total, 0), gH = rows.reduce((s, r) => s + r.count, 0);
     let html = `<div style="margin-bottom:12px;padding:10px;background:var(--green-dark);color:#fff;border-radius:10px;display:flex;gap:14px;flex-wrap:wrap;">
     <div><div style="font-size:9px;opacity:.8;">${L.trips}</div><div style="font-size:16px;font-weight:700;">${rows.length}</div></div>

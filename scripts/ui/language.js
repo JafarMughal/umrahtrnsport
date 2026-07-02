@@ -18,7 +18,7 @@ function setLang(l) {
     L.nav.forEach((txt, i) => { if (navBtns[i]) navBtns[i].textContent = txt; });
 
     // Entry
-    setText('lbl-entry', L.entry); setText('lbl-date', L.date); setText('lbl-party', L.party);
+    setText('lbl-entry', L.entry); setText('lbl-date', L.date); setText('lbl-transporter-dropdown', L.transporterLbl); setText('lbl-party', L.party);
     setText('lbl-sector', L.sector); setText('lbl-transport', L.transport); setText('lbl-count', L.count);
     setText('lbl-fare', L.fare); setText('lbl-total', L.total); setText('lbl-notes', L.notes);
     setText('btn-save', L.save); setText('btn-clear', L.clear);
@@ -47,7 +47,8 @@ function setLang(l) {
     // Report
     setText('lbl-repTitle', L.repTitle); setText('lbl-repfrom', L.fromDate); setText('lbl-repto', L.toDate);
     setText('lbl-reptype', L.repType); setText('btn-genrep', L.genReport); setText('lbl-rparty', L.party);
-    setOpt('opt-bydate', L.byDate, 'date'); setOpt('opt-byparty', L.byParty, 'party');
+    setOpt('opt-bydate', L.byDate, 'date'); setOpt('opt-byparty', L.byTransporter, 'party');
+    setOpt('opt-bynewparty', L.byParty, 'newparty');
     setOpt('opt-bysector', L.bySector, 'sector');
     const excelBtn = document.querySelector('#btn-genrep + .btn-g + .btn-g');
     if (excelBtn) {

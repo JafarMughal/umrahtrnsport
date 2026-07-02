@@ -86,6 +86,7 @@ function addEntry() {
     const L = T[lang] || T.ur;
     const date = document.getElementById('e-date').value;
     const party = document.getElementById('e-party').value;
+    const newParty = document.getElementById('e-new-party').value.trim();
     const sector = document.getElementById('e-sector').value;
     const transport = document.getElementById('e-transport').value;
     const notes = document.getElementById('e-notes').value.trim();
@@ -106,7 +107,7 @@ function addEntry() {
         else { if (vehicleTotal <= 0) { al('al-entry', L.wholeNote, 'er'); return; } total = vehicleTotal; count = 1; fare = vehicleTotal; }
         mode = 'whole';
     }
-    records.push({ id: uid(), voucher, date, party, sector, transport, mode, count, fare, vehicleTotal, total, notes });
+    records.push({ id: uid(), voucher, date, party, newParty, sector, transport, mode, count, fare, vehicleTotal, total, notes });
     svR();
     al('al-entry', L.entrySaved, 'ok');
     clearEntryForm();
@@ -115,6 +116,7 @@ function addEntry() {
 
 function clearEntryForm() {
     document.getElementById('e-notes').value = '';
+    document.getElementById('e-new-party').value = '';
     sdClear('e-party');
     document.getElementById('e-sector').value = '';
     document.getElementById('e-transport').value = '';
