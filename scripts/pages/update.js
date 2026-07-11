@@ -60,15 +60,15 @@ function editRecord(id) {
     document.getElementById('u-fare').value = r.fare || 0;
 
     const sharing = isSharing(r.transport);
+    const countWrap = document.getElementById('u-count-wrap');
+    const fareWrap = document.getElementById('u-fare-wrap');
     const vehicleWrap = document.getElementById('u-vehicle-wrap');
     const vehicleTotalInput = document.getElementById('u-vehicle-total');
-    if (!sharing) {
-        vehicleTotalInput.value = (r.vehicleTotal || r.total || 0);
-        vehicleWrap.style.display = 'block';
-    } else {
-        vehicleTotalInput.value = '';
-        vehicleWrap.style.display = 'none';
-    }
+
+    if (countWrap) countWrap.style.display = '';
+    if (fareWrap) fareWrap.style.display = '';
+    if (vehicleWrap) vehicleWrap.style.display = 'none';
+    vehicleTotalInput.value = '';
 
     onTransportChange('u');
     document.getElementById('u-total').value = r.total;
@@ -89,20 +89,13 @@ function saveUpdate() {
     const idx = records.findIndex(x => x.id === id);
     if (idx === -1) return;
     const transport = document.getElementById('u-transport').value;
-    let count = 0, fare = 0, vehicleTotal = 0, total = 0, mode = 'sharing';
-    if (isSharing(transport)) {
-        count = parseInt(document.getElementById('u-count').value) || 0;
-        fare = parseFloat(document.getElementById('u-fare').value) || 0;
-        total = count * fare;
-        mode = 'sharing';
-    } else {
-        count = parseInt(document.getElementById('u-count').value) || 0;
-        fare = parseFloat(document.getElementById('u-fare').value) || 0;
-        vehicleTotal = parseFloat(document.getElementById('u-vehicle-total').value) || 0;
-        if (fare > 0) { count = count || 1; total = count * fare; vehicleTotal = total; }
-        else { total = vehicleTotal; count = 1; fare = vehicleTotal; }
-        mode = 'whole';
-    }
+    let countInput = parseInt(document.getElementById('u-count').value);
+    let count = isNaN(countInput) ? 0 : countInput;
+    let calcCount = count < 1 ? 1 : count;
+    let fare = parseFloat(document.getElementById('u-fare').value) || 0;
+    let total = Math.round(calcCount * fare);
+    let vehicleTotal = total;
+    let mode = 'sharing';
     records[idx] = {
         ...records[idx], date: document.getElementById('u-date').value,
         voucher: document.getElementById('u-voucher').value, party: document.getElementById('u-party').value,

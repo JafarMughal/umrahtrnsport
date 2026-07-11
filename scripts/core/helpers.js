@@ -3,7 +3,7 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
 function fd(d) { if (!d) return ''; const p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
-function sar(n) { return Number(n || 0).toLocaleString(); }
+function sar(n) { return Math.round(Number(n || 0)).toLocaleString(); }
 function today() { return new Date().toISOString().split('T')[0]; }
 function t(k) { return T[lang][k] || k; }
 

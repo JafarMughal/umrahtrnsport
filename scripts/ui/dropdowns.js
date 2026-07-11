@@ -56,7 +56,7 @@ function sdSetValue(prefix, partyName) {
 function sdClear(prefix) { sdSetValue(prefix, ''); }
 function refreshSdPlaceholders() {
     const L = T[lang] || T.ur;
-    ['e-party', 'p-party', 'u-party', 'dn-party'].forEach(p => {
+    ['u-party'].forEach(p => {
         const inp = document.getElementById(p + '-input');
         if (inp) inp.placeholder = L.searchParty;
     });
@@ -87,5 +87,8 @@ function refreshAllDrops() {
     fillDrop('u-transport', transports);
     fillDrop('dn-sector', sectors);
     fillDrop('r-party', parties, true);
-    ['e-party', 'p-party', 'u-party', 'dn-party'].forEach(p => sdBuild(p));
+    fillDrop('p-party', parties, false);
+    fillDrop('e-party', parties, false);
+    fillDrop('dn-party', parties, false);
+    ['u-party'].forEach(p => sdBuild(p));
 }

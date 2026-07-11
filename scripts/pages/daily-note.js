@@ -32,7 +32,7 @@ function clearDailyNoteForm() {
     document.getElementById('dn-id').value = '';
     document.getElementById('dn-date').value = today();
     document.getElementById('dn-ref').value = genDNRef();
-    sdClear('dn-party');
+    document.getElementById('dn-party').value = '';
     document.getElementById('dn-group').value = '';
     document.getElementById('dn-mobile').value = '';
     document.getElementById('dn-sector').value = '';
@@ -52,7 +52,7 @@ function editDailyNote(id) {
     document.getElementById('dn-id').value = id;
     document.getElementById('dn-date').value = note.date;
     document.getElementById('dn-ref').value = note.ref || '';
-    sdSetValue('dn-party', note.party);
+    document.getElementById('dn-party').value = note.party;
     document.getElementById('dn-group').value = note.group || '';
     document.getElementById('dn-mobile').value = note.mobile || '';
     fillDrop('dn-sector', sectors);
