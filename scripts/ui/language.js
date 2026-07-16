@@ -89,6 +89,7 @@ function setLang(l) {
     setText('lbl-dnParty', L.dnParty); setText('lbl-dnGroup', L.dnGroup); setText('lbl-dnMobile', L.dnMobile);
     setText('lbl-dnSector', L.dnSector); setText('lbl-dnCount', L.dnCount); setText('lbl-dnFlightNo', L.dnFlightNo);
     setText('lbl-dnFlightTime', L.dnFlightTime); setText('lbl-dnTripType', L.dnTripType); setText('lbl-dnFlightName', L.dnFlightName);
+    setText('lbl-dnNature', L.dnNature); setText('opt-dn-nature-sel', L.selectParty || '-- Select --'); setText('opt-dn-nature-arr', L.dnNatureArrival); setText('opt-dn-nature-oth', L.dnNatureOther);
     setText('btn-dn-save', L.dnSave); setText('btn-dn-clear', L.dnClear);
     setText('lbl-dnRepTitle', L.dnRepTitle); setText('lbl-dnRepFrom', L.dnRepFrom); setText('lbl-dnRepTo', L.dnRepTo);
     setText('btn-dn-resetrep', L.dnReset); document.getElementById('nav-dailynote').textContent = L.dnNav;

@@ -7,6 +7,151 @@ function printCurrentPage() {
 
     const L = T[lang] || T.ur;
 
+    // ── Daily Note: print only the report table in a clean new window ──
+    if (activePage.id === 'page-dailynote') {
+        const reportOut = document.getElementById('dn-report-out');
+        if (!reportOut || !reportOut.innerHTML.trim() || reportOut.querySelector('.empty')) {
+            alert(L.dnNoData || 'کوئی ڈیٹا نہیں ملا');
+            return;
+        }
+
+        const from = document.getElementById('dnr-from').value;
+        const to   = document.getElementById('dnr-to').value;
+        const rangeText = (from || to)
+            ? `${from ? fd(from) : '...'} &nbsp;—&nbsp; ${to ? fd(to) : '...'}`
+            : '';
+        const dateStr = new Date().toLocaleDateString('en-PK') + ' &nbsp; ' +
+                        new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+
+        const appTitle = document.getElementById('app-title')
+            ? document.getElementById('app-title').textContent
+            : 'Umrah Transport Management System';
+
+        const tableHTML = reportOut.innerHTML;
+
+        const win = window.open('', '_blank', 'width=1100,height=800');
+        win.document.write(`<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jeddah Arrival Report</title>
+<style>
+  @page { size: A4 landscape; margin: 10mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans', Arial, sans-serif;
+    font-size: 11px;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: #000;
+  }
+  .print-wrap { padding: 4mm 4mm 10mm; }
+
+  /* ── Page Header ── */
+  .rpt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid #054D28;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .rpt-header .logo-area { font-size: 26px; }
+  .rpt-header .title-area { text-align: center; flex: 1; }
+  .rpt-header .title-area h1 {
+    font-size: 18px; font-weight: 800;
+    color: #054D28; margin: 0 0 2px; letter-spacing: 1px;
+  }
+  .rpt-header .title-area .sub {
+    font-size: 11px; color: #666;
+  }
+  .rpt-header .meta-area { text-align: right; font-size: 10px; color: #555; min-width: 120px; }
+
+  /* ── Report Title ── */
+  .report-title-row {
+    text-align: center;
+    margin: 6px 0 8px;
+  }
+  .report-title-row h2 {
+    font-size: 16px; font-weight: 800;
+    letter-spacing: 2px; color: #000; margin: 0;
+    text-transform: uppercase;
+    border: 2px solid #000;
+    display: inline-block;
+    padding: 3px 20px;
+  }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    margin: 0;
+  }
+  thead th {
+    background: #054D28 !important;
+    color: #fff !important;
+    font-weight: 700;
+    border: 1px solid #333;
+    padding: 5px 6px;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  tbody td {
+    border: 1px solid #aaa;
+    padding: 4px 6px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  tbody tr:nth-child(even) { background: #f5f9f7; }
+  tbody tr:last-child { background: #E8F3EC !important; font-weight: bold; }
+  tbody tr:last-child td { border-top: 2px solid #054D28; }
+
+  /* hide extra wrappers from rendered html */
+  .tbl-wrap { overflow: visible !important; }
+
+  /* ── Footer ── */
+  .rpt-footer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    text-align: center; font-size: 9px; color: #888;
+    border-top: 1px solid #ccc; padding-top: 4px;
+    background: #fff;
+  }
+  
+  .no-print { display: none !important; }
+</style>
+</head>
+<body>
+<div class="print-wrap">
+
+  <div class="rpt-header">
+    <div class="logo-area">🕋</div>
+    <div class="title-area">
+      <h1>${appTitle}</h1>
+      <div class="sub">Daily Transport Note Report</div>
+    </div>
+    <div class="meta-area">
+      ${rangeText ? '<div>📅 ' + rangeText + '</div>' : ''}
+      <div>🖨️ ${dateStr}</div>
+    </div>
+  </div>
+
+  ${tableHTML}
+
+</div>
+<div class="rpt-footer">${appTitle} — Generated Report</div>
+<script>
+  window.onload = function() { window.print(); }
+<\/script>
+</body>
+</html>`);
+        win.document.close();
+        return;
+    }
+
+    // ── Other pages: standard print ──
     if (activePage.id === 'page-report') {
         const out = document.getElementById('rep-out');
         if (!out.innerHTML.trim()) {
@@ -30,10 +175,6 @@ function printCurrentPage() {
         pageTitle = (L.ledgerTitle || 'Party Ledger').replace(/📒/g, '').trim();
         const selParty = document.getElementById('l-party').value;
         pageSub = selParty || (L.selectAll || 'All Parties').replace(/--/g, '').trim();
-    } else if (activePage.id === 'page-dailynote') {
-        from = document.getElementById('dnr-from').value;
-        to = document.getElementById('dnr-to').value;
-        pageTitle = (L.dnRepTitle || 'Daily Note Report').replace(/📊/g, '').trim();
     }
 
     const rangeText = (from || to) ? `${from ? fd(from) : '...'} ${L_arrow()} ${to ? fd(to) : '...'}` : '';

@@ -228,17 +228,39 @@
                     <div id="al-dn"></div>
                     <input type="hidden" id="dn-id" />
                     <div class="grid">
-                        <div class="fg"><label id="lbl-dnDate">تاریخ</label><input type="date" id="dn-date" /></div>
-                        <div class="fg"><label id="lbl-dnRef">واوچر نمبر</label><input type="text" id="dn-ref" class="voucher-input" readonly /></div>
-                        <div class="fg"><label id="lbl-dnParty">پارٹی کا نام</label><select id="dn-party"><option value="">-- منتخب کریں --</option></select></div>
-                        <div class="fg"><label id="lbl-dnGroup">گروپ کوڈ</label><input type="text" id="dn-group" /></div>
-                        <div class="fg"><label id="lbl-dnMobile">موبائل نمبر</label><input type="text" id="dn-mobile" class="ltr-input" /></div>
-                        <div class="fg"><label id="lbl-dnSector">سیکٹر</label><div class="ddr"><select id="dn-sector"></select></div></div>
-                        <div class="fg"><label id="lbl-dnCount">حاجیوں کی تعداد</label><input type="number" id="dn-count" min="1" placeholder="0" /></div>
-                        <div class="fg"><label id="lbl-dnFlightNo">فلائیٹ نمبر</label><input type="text" id="dn-flight-no" /></div>
-                        <div class="fg"><label id="lbl-dnFlightTime">وقت</label><input type="time" id="dn-flight-time" /></div>
-                        <div class="fg"><label id="lbl-dnTripType">سفر کی نوعیت</label><div class="ddr"><select id="dn-trip-type"><option value="">-- منتخب کریں --</option><option value="arrival">آمد</option><option value="return">واپسی</option><option value="other">دیگر سفر</option></select></div></div>
-                        <div class="fg"><label id="lbl-dnFlightName">فلائیٹ کا نام</label><input type="text" id="dn-flight-name" /></div>
+                        <div class="fg"><label id="lbl-dnRef">واوچر نمبر (Voucher Number)</label><input type="text" id="dn-ref" class="voucher-input" /></div>
+                        <div class="fg"><label id="lbl-dnParty">پارٹی (Party)</label>
+                            <div class="ddr" style="display:flex; gap:5px;">
+                                <select id="dn-party" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
+                                <button class="btn btn-o btn-sm" tabindex="-1" onclick="openModal('party', 'dailynote')" style="padding:0 12px; font-weight:bold; font-size:16px;">+</button>
+                            </div>
+                        </div>
+                        <div class="fg"><label id="lbl-dnName">نام (NAME)</label><input type="text" id="dn-name" /></div>
+                        <div class="fg"><label id="lbl-dnDate">تاریخ آمد (Arrival Date)</label><input type="date" id="dn-date" /></div>
+                        <div class="fg"><label id="lbl-dnFlightTime">وقت آمد (Arrival Time)</label><input type="time" id="dn-flight-time" /></div>
+                        <div class="fg"><label id="lbl-dnFlightNo">فلائیٹ نمبر (Flight No)</label><input type="text" id="dn-flight-no" /></div>
+                        <div class="fg"><label id="lbl-dnAirport">ائیرپورٹ (Airport)</label><input type="text" id="dn-airport" /></div>
+                        <div class="fg"><label id="lbl-dnCount">افراد (T)</label><input type="number" id="dn-count" min="1" placeholder="0" /></div>
+                        <div class="fg"><label id="lbl-dnTransport">ٹرانسپورٹ (Transport)</label>
+                            <div class="ddr" style="display:flex; gap:5px;">
+                                <select id="dn-transport-sel" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
+                                <button class="btn btn-o btn-sm" tabindex="-1" onclick="openModal('transport', 'dailynote')" style="padding:0 12px; font-weight:bold; font-size:16px;">+</button>
+                            </div>
+                        </div>
+                        <div class="fg"><label id="lbl-dnTransportNature">ٹرانسپورٹ کی نوعیت (TRANSPORT By)</label>
+                            <div class="ddr" style="display:flex; gap:5px;">
+                                <select id="dn-transport-nature-sel" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
+                                <button class="btn btn-o btn-sm" tabindex="-1" onclick="openModal('nature', 'dailynote')" style="padding:0 12px; font-weight:bold; font-size:16px;">+</button>
+                            </div>
+                        </div>
+                        <div class="fg"><label id="lbl-dnShirka">شرکہ (Shirka)</label><input type="text" id="dn-shirka" /></div>
+                        <div class="fg"><label id="lbl-dnGroup">گروپ نمبر (Group No)</label><input type="text" id="dn-group" /></div>
+                        <div class="fg"><label id="lbl-dnMobile">موبائل نمبر (Contact)</label><input type="text" id="dn-mobile" class="ltr-input" /></div>
+                        
+                        <div class="fg" style="display:none;"><label id="lbl-dnSector">سیکٹر</label><div class="ddr"><select id="dn-sector"></select></div></div>
+                        <div class="fg" style="display:none;"><label id="lbl-dnTripType">سفر کی نوعیت</label><div class="ddr"><select id="dn-trip-type"><option value="">-- منتخب کریں --</option><option value="arrival">آمد</option><option value="return">واپسی</option><option value="other">دیگر سفر</option></select></div></div>
+                        <div class="fg" style="display:none;"><label id="lbl-dnNature">نوعیت</label><div class="ddr"><select id="dn-nature"><option value="" id="opt-dn-nature-sel">-- منتخب کریں --</option><option value="arrival" id="opt-dn-nature-arr">Arrivel</option><option value="other_transport" id="opt-dn-nature-oth">Other Trnsport</option></select></div></div>
+                        <div class="fg" style="display:none;"><label id="lbl-dnFlightName">فلائیٹ کا نام</label><input type="text" id="dn-flight-name" /></div>
                     </div>
                     <div class="btn-row">
                         <button class="btn btn-p" id="btn-dn-save" onclick="saveDailyNote()">✅ نوٹ محفوظ کریں</button>

@@ -4,8 +4,8 @@
 function openModal(type, ctx) {
     _mt = type; _mc = ctx;
     const L = T[lang] || T.ur;
-    const titles = { party: L.addPartyTitle, sector: L.addSectorTitle, transport: '➕ ' + L.newTransportLbl };
-    const holders = { party: L.partyPlaceholder, sector: L.sectorPlaceholder, transport: L.transportPlaceholder };
+    const titles = { party: L.addPartyTitle, sector: L.addSectorTitle, transport: '➕ ' + L.newTransportLbl, nature: '➕ نئی نوعیت' };
+    const holders = { party: L.partyPlaceholder, sector: L.sectorPlaceholder, transport: L.transportPlaceholder, nature: 'مثلاً: Marhba-Al Mosair' };
     document.getElementById('m-title').textContent = titles[type] || '➕';
     document.getElementById('m-input').placeholder = holders[type] || '';
     document.getElementById('m-input').value = '';
@@ -20,8 +20,12 @@ function confirmModal() {
     if (_mt === 'party') {
         if (parties.includes(val)) { alert(L.alreadyExists); return; }
         parties.push(val); getCode(val); svP(); refreshAllDrops();
-        const tgt = _mc === 'entry' ? 'e-party' : _mc === 'payment' ? 'p-party' : _mc === 'dailynote' ? 'dn-party' : 'u-party';
-        sdSetValue(tgt, val);
+        if (_mc === 'dailynote') {
+            document.getElementById('dn-party').value = val;
+        } else {
+            const tgt = _mc === 'entry' ? 'e-party' : _mc === 'payment' ? 'p-party' : 'u-party';
+            sdSetValue(tgt, val);
+        }
     } else if (_mt === 'sector') {
         if (sectors.includes(val)) { alert(L.alreadyExists); return; }
         sectors.push(val); svS(); refreshAllDrops();
@@ -29,8 +33,24 @@ function confirmModal() {
         document.getElementById(tgtSec).value = val;
     } else if (_mt === 'transport') {
         if (transports.includes(val)) { alert(L.alreadyExists); return; }
-        transports.push(val); svTr(); refreshAllDrops();
-        document.getElementById(_mc === 'entry' ? 'e-transport' : 'u-transport').value = val;
+        transports.push(val); svTr();
+        // rebuild dropdowns first, then select the new value
+        refreshAllDrops();
+        const tEl = _mc === 'entry' ? 'e-transport' : _mc === 'update' ? 'u-transport' : 'dn-transport-sel';
+        document.getElementById(tEl).value = val;
+    } else if (_mt === 'nature') {
+        const sel = document.getElementById('dn-transport-nature-sel');
+        if(sel) {
+            let exists = false;
+            for(let i=0; i<sel.options.length; i++) if(sel.options[i].value === val) exists = true;
+            if(!exists) {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = val;
+                sel.appendChild(opt);
+            }
+            sel.value = val;
+        }
     }
     closeModal();
     if (document.getElementById('page-settings').classList.contains('active')) {

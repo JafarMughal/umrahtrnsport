@@ -91,4 +91,5 @@ function refreshAllDrops() {
     fillDrop('e-party', parties, false);
     fillDrop('dn-party', parties, false);
     ['u-party'].forEach(p => sdBuild(p));
+    if (typeof fillDailyNoteDropdowns === 'function') fillDailyNoteDropdowns();
 }
