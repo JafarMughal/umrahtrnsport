@@ -17,11 +17,12 @@ function saveDailyNote() {
     const transport = document.getElementById('dn-transport-sel').value;
     const transportNature = document.getElementById('dn-transport-nature-sel').value;
     const shirka = document.getElementById('dn-shirka').value.trim();
+    const notes = document.getElementById('dn-notes').value.trim();
     const arrHotel = '';
 
     if (!date || !party || count <= 0) { al('al-dn', L.dnRequired || 'Please fill required fields', 'er'); return; }
     const id = document.getElementById('dn-id').value;
-    const noteData = { date, ref, party, newParty, name, group, mobile, airport, count, flightNo, flightTime, transport, transportNature, shirka, arrHotel };
+    const noteData = { date, ref, party, newParty, name, group, mobile, airport, count, flightNo, flightTime, transport, transportNature, shirka, notes, arrHotel };
     if (id) {
         const idx = dailyNotes.findIndex(n => n.id === id);
         if (idx !== -1) dailyNotes[idx] = { ...dailyNotes[idx], ...noteData };
@@ -50,6 +51,7 @@ function clearDailyNoteForm() {
     document.getElementById('dn-transport-sel').value = '';
     document.getElementById('dn-transport-nature-sel').value = '';
     document.getElementById('dn-shirka').value = '';
+    document.getElementById('dn-notes').value = '';
     document.getElementById('btn-dn-save').textContent = T[lang].dnSave;
     document.getElementById('lbl-dnTitle').textContent = T[lang].dnTitle;
     fillDailyNoteDropdowns();
@@ -96,6 +98,7 @@ function editDailyNote(id) {
     document.getElementById('dn-transport-sel').value = note.transport || '';
     document.getElementById('dn-transport-nature-sel').value = note.transportNature || note.transportBy || '';
     document.getElementById('dn-shirka').value = note.shirka || '';
+    document.getElementById('dn-notes').value = note.notes || '';
     document.getElementById('btn-dn-save').textContent = L.dnEditTitle;
     document.getElementById('lbl-dnTitle').textContent = L.dnEditTitle;
     document.getElementById('page-dailynote').scrollIntoView({ behavior: 'smooth' });
@@ -173,6 +176,7 @@ function renderDailyNoteReport() {
             <td>${r.shirka || '—'}</td>
             <td style="font-family:monospace;">${r.group || '—'}</td>
             <td style="font-family:monospace;">${r.mobile || '—'}</td>
+            <td>${r.notes || '—'}</td>
             <td class="action-btns no-print">
                 <button class="btn btn-sm btn-o no-print" onclick="editDailyNote('${r.id}')">${L.edit || 'Edit'}</button>
                 <button class="btn btn-sm btn-d no-print" onclick="deleteDailyNote('${r.id}')">${L.del || 'Del'}</button>
@@ -183,7 +187,7 @@ function renderDailyNoteReport() {
         const totalRow = `<tr style="background:var(--cream);font-weight:bold;">
             <td colspan="8" style="text-align:right;">Total</td>
             <td style="color:var(--green-dark);">${grandTotal}</td>
-            <td colspan="5"></td>
+            <td colspan="6"></td>
             <td class="no-print"></td>
         </tr>`;
 
@@ -210,6 +214,7 @@ function renderDailyNoteReport() {
                             <th>Shirka</th>
                             <th>Group No</th>
                             <th>CONTACT NUMBER</th>
+                            <th>Notes</th>
                             <th class="no-print">Actions</th>
                         </tr>
                     </thead>
