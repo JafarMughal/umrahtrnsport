@@ -86,7 +86,7 @@ function setLang(l) {
 
     // Daily Note
     setText('lbl-dnTitle', L.dnTitle); setText('lbl-dnDate', L.dnDate); setText('lbl-dnRef', L.dnRef);
-    setText('lbl-dnParty', L.dnParty); setText('lbl-dnGroup', L.dnGroup); setText('lbl-dnMobile', L.dnMobile);
+    setText('lbl-dnParty', L.dnParty); setText('lbl-dnNewParty', L.dnNewParty); setText('lbl-dnGroup', L.dnGroup); setText('lbl-dnMobile', L.dnMobile);
     setText('lbl-dnSector', L.dnSector); setText('lbl-dnCount', L.dnCount); setText('lbl-dnFlightNo', L.dnFlightNo);
     setText('lbl-dnFlightTime', L.dnFlightTime); setText('lbl-dnTripType', L.dnTripType); setText('lbl-dnFlightName', L.dnFlightName);
     setText('lbl-dnNature', L.dnNature); setText('opt-dn-nature-sel', L.selectParty || '-- Select --'); setText('opt-dn-nature-arr', L.dnNatureArrival); setText('opt-dn-nature-oth', L.dnNatureOther);

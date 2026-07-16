@@ -6,6 +6,7 @@ function saveDailyNote() {
     const date = document.getElementById('dn-date').value;
     const ref = document.getElementById('dn-ref').value.trim() || genDNRef();
     const party = document.getElementById('dn-party').value;
+    const newParty = document.getElementById('dn-new-party').value.trim();
     const name = document.getElementById('dn-name').value.trim();
     const group = document.getElementById('dn-group').value.trim();
     const mobile = document.getElementById('dn-mobile').value.trim();
@@ -20,7 +21,7 @@ function saveDailyNote() {
 
     if (!date || !party || count <= 0) { al('al-dn', L.dnRequired || 'Please fill required fields', 'er'); return; }
     const id = document.getElementById('dn-id').value;
-    const noteData = { date, ref, party, name, group, mobile, airport, count, flightNo, flightTime, transport, transportNature, shirka, arrHotel };
+    const noteData = { date, ref, party, newParty, name, group, mobile, airport, count, flightNo, flightTime, transport, transportNature, shirka, arrHotel };
     if (id) {
         const idx = dailyNotes.findIndex(n => n.id === id);
         if (idx !== -1) dailyNotes[idx] = { ...dailyNotes[idx], ...noteData };
@@ -38,6 +39,7 @@ function clearDailyNoteForm() {
     document.getElementById('dn-date').value = today();
     document.getElementById('dn-ref').value = genDNRef();
     document.getElementById('dn-party').value = '';
+    document.getElementById('dn-new-party').value = '';
     document.getElementById('dn-name').value = '';
     document.getElementById('dn-group').value = '';
     document.getElementById('dn-mobile').value = '';
@@ -83,6 +85,7 @@ function editDailyNote(id) {
     document.getElementById('dn-date').value = note.date;
     document.getElementById('dn-ref').value = note.ref || '';
     document.getElementById('dn-party').value = note.party;
+    document.getElementById('dn-new-party').value = note.newParty || '';
     document.getElementById('dn-name').value = note.name || '';
     document.getElementById('dn-group').value = note.group || '';
     document.getElementById('dn-mobile').value = note.mobile || '';
@@ -158,6 +161,7 @@ function renderDailyNoteReport() {
             return `<tr>
             <td style="font-weight:bold;font-family:monospace;">${r.ref || '—'}</td>
             <td><strong>${r.party || '—'}</strong></td>
+            <td><strong>${r.newParty || '—'}</strong></td>
             <td>${r.name || '—'}</td>
             <td style="font-family:monospace;">${fd(r.date) || '—'}</td>
             <td style="font-family:monospace;">${r.flightTime ? formatTime12(r.flightTime) : '—'}</td>
@@ -177,7 +181,7 @@ function renderDailyNoteReport() {
         }).join('');
 
         const totalRow = `<tr style="background:var(--cream);font-weight:bold;">
-            <td colspan="7" style="text-align:right;">Total</td>
+            <td colspan="8" style="text-align:right;">Total</td>
             <td style="color:var(--green-dark);">${grandTotal}</td>
             <td colspan="5"></td>
             <td class="no-print"></td>
@@ -193,7 +197,8 @@ function renderDailyNoteReport() {
                     <thead>
                         <tr>
                             <th style="min-width:100px;">Voucher Number</th>
-                            <th>Party</th>
+                            <th>Transporter</th>
+                            <th>Party Name</th>
                             <th>NAME</th>
                             <th style="min-width:90px;">Arrival Date</th>
                             <th>Arrival Time</th>
