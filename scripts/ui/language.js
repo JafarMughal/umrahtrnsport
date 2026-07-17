@@ -55,14 +55,7 @@ function setLang(l) {
         excelBtn.textContent = L.exportExcel || '📥 Excel';
     }
 
-    // Update
-    setText('lbl-updTitle', L.updTitle); setText('lbl-udate', L.date); setText('lbl-uparty', L.party);
-    setText('lbl-usector', L.sector); setText('lbl-utransport', L.transport); setText('lbl-ucount', L.count);
-    setText('lbl-ufare', L.fare); setText('lbl-utotal', L.total); setText('lbl-unotes', L.notes);
-    setText('btn-saveupd', L.saveUpd); setText('btn-cancel', L.cancel); setText('lbl-selrec', L.selectRecord);
-    setText('lbl-uvoucher', L.voucherLbl); setText('lbl-uvehicletotal', L.vehicleTotalLbl);
-    setText('lbl-updSearch', L.searchRec); setText('lbl-updFrom', L.fromDate); setText('lbl-updTo', L.toDate);
-    document.getElementById('upd-search').placeholder = L.searchHint || 'Search...';
+    // Update page was removed, so no translations needed here.
 
     // Settings
     setText('lbl-setParties', L.setParties); setText('lbl-setSectors', L.setSectors);
@@ -120,9 +113,8 @@ function setLang(l) {
         if (id === 'payment') { renderPayments(); renderPayHead(); }
         if (id === 'ledger') renderLedger();
         if (id === 'records') renderRecords(records);
-        if (id === 'update') renderUpdateTable();
         if (id === 'dailynote') renderDailyNoteReport();
         if (id === 'settings') { renderPartyList(); renderSectorList(); renderTransportList(); renderUsers(); }
     }
-    renderPayHead(); renderRecHead(); renderUpdHead();
+    renderPayHead(); renderRecHead();
 }

@@ -376,6 +376,7 @@ nav button.active {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
   margin-bottom: 12px;
+  align-items: end;
 }
 .ddr { display: flex; gap: 6px; align-items: stretch; }
 .ddr select { flex: 1; }

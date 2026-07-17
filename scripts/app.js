@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     checkAuth();
                     document.getElementById('e-date').value = today();
                     document.getElementById('p-date').value = today();
-                    document.getElementById('dn-date').value = today();
                     setNextVoucher();
                     renderDailyNoteReport();
                 }
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkAuth();
                 document.getElementById('e-date').value = today();
                 document.getElementById('p-date').value = today();
-                document.getElementById('dn-date').value = today();
                 setNextVoucher();
                 renderDailyNoteReport();
 
@@ -96,11 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const activePage = document.querySelector('.page.active');
                 if (activePage) {
-                    if (activePage.id === 'page-entry') todayStats();
+                    if (activePage.id === 'page-entry') { todayStats(); fillTransportNatureDropdown(); }
                     if (activePage.id === 'page-payment') renderPayments();
                     if (activePage.id === 'page-ledger') renderLedger();
                     if (activePage.id === 'page-records') filterRecords();
-                    if (activePage.id === 'page-update') renderUpdateTable();
                     if (activePage.id === 'page-dailynote') renderDailyNoteReport();
                     if (activePage.id === 'page-report') genReport();
                 }
@@ -147,8 +144,9 @@ window.addFromSettings = addFromSettings;
 window.deleteItem = deleteItem;
 window.onTransportChange = onTransportChange;
 window.calcE = calcE;
-window.calcU = calcU;
 window.addEntry = addEntry;
+window.editRecord = editRecord;
+window.deleteRecord = deleteRecord;
 window.clearEntryForm = clearEntryForm;
 window.addPayment = addPayment;
 window.deletePay = deletePay;
@@ -162,17 +160,9 @@ window.printCurrentPage = printCurrentPage;
 window.exportReportExcel = exportReportExcel;
 window.exportLedgerExcel = exportLedgerExcel;
 window.tripTypeLabel = tripTypeLabel;
-window.editRecord = editRecord;
-window.saveUpdate = saveUpdate;
-window.cancelUpdate = cancelUpdate;
-window.deleteRecord = deleteRecord;
-window.renderUpdateTable = renderUpdateTable;
-window.saveDailyNote = saveDailyNote;
-window.clearDailyNoteForm = clearDailyNoteForm;
-window.editDailyNote = editDailyNote;
-window.deleteDailyNote = deleteDailyNote;
 window.clearDailyNoteReport = clearDailyNoteReport;
 window.renderDailyNoteReport = renderDailyNoteReport;
+window.fillTransportNatureDropdown = fillTransportNatureDropdown;
 window.handleLogoUpload = handleLogoUpload;
 window.handleLogoDrop = handleLogoDrop;
 window.removeLogo = removeLogo;
@@ -194,7 +184,6 @@ window.renderTransportList = renderTransportList;
 window.renderPayments = renderPayments;
 window.renderPayHead = renderPayHead;
 window.renderRecHead = renderRecHead;
-window.renderUpdHead = renderUpdHead;
 window.renderRecords = renderRecords;
 window.setNextVoucher = setNextVoucher;
 window.genVoucher = genVoucher;

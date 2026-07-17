@@ -83,13 +83,8 @@ function refreshAllDrops() {
     fillDrop('l-party', parties, true);
     fillDrop('f-party', parties, true);
     fillDrop('f-sector', sectors, true);
-    fillDrop('u-sector', sectors);
-    fillDrop('u-transport', transports);
-    fillDrop('dn-sector', sectors);
     fillDrop('r-party', parties, true);
     fillDrop('p-party', parties, false);
     fillDrop('e-party', parties, false);
-    fillDrop('dn-party', parties, false);
-    ['u-party'].forEach(p => sdBuild(p));
-    if (typeof fillDailyNoteDropdowns === 'function') fillDailyNoteDropdowns();
+    if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
 }

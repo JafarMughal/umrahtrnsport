@@ -40,7 +40,10 @@ function renderRecords(rows) {
                 <td style="padding:4px;text-align:right;">${sharing ? sar(r.fare) : '—'}</td>
                 <td style="padding:4px;text-align:right;">${!sharing ? `<strong style="color:#E65100;">${sar(r.vehicleTotal || r.total)}</strong>` : '—'}</td>
                 <td style="padding:4px;text-align:right;"><strong style="color:var(--green-dark);">${sar(r.total)}</strong></td>
-                <td style="padding:4px;" class="no-print"><button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button></td>
+                <td style="padding:4px;" class="no-print">
+                    <button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>
+                    <button class="btn btn-sm btn-d" onclick="deleteRecord('${r.id}')">${L.del}</button>
+                </td>
             </tr>
         `;
     }).join('');
@@ -116,4 +119,12 @@ function clearFilter() {
     ['f-from', 'f-to'].forEach(id => document.getElementById(id).value = '');
     ['f-party', 'f-sector'].forEach(id => document.getElementById(id).value = '');
     renderRecords(records);
+}
+
+async function deleteRecord(id) {
+    const L = T[lang] || T.ur;
+    if (!(await verifyPassword(L.confirmDel || "کیا آپ واقعی یہ ریکارڈ حذف کرنا چاہتے ہیں؟"))) return;
+    records = records.filter(x => x.id !== id);
+    svR();
+    filterRecords();
 }
