@@ -1317,6 +1317,8 @@ body.lang-en .sd-dropdown { right: auto; }
 }
 #hp-dropdown-list {
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 .cms-label {
     display: flex;

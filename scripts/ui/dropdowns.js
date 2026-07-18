@@ -133,8 +133,8 @@ function toggleMultiSelect(e) {
     if(e) e.stopPropagation();
     const dd = document.getElementById('hp-dropdown-container');
     if (dd) {
-        dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-        if(dd.style.display === 'block') {
+        dd.style.display = dd.style.display === 'none' ? 'flex' : 'none';
+        if(dd.style.display === 'flex') {
             const searchInp = document.getElementById('hp-search-input');
             if (searchInp) { searchInp.value = ''; searchInp.focus(); }
             fillHajiPartyDropdown();
