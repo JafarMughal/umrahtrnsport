@@ -15,19 +15,53 @@ function fillTransportNatureDropdown() {
             allNatures.map(n => `<option value="${n}"${n === cur ? ' selected' : ''}>${n}</option>`).join('');
     }
 
-    const dnrSel = document.getElementById('dnr-nature');
-    if (dnrSel) {
-        const cur = dnrSel.value;
-        dnrSel.innerHTML = '<option value="">-- All --</option>' +
-            allNatures.map(n => `<option value="${n}"${n === cur ? ' selected' : ''}>${n}</option>`).join('');
+    const dnrCb = document.getElementById('dnr-nature-checkboxes');
+    if (dnrCb) {
+        const checkedBoxes = Array.from(dnrCb.querySelectorAll('input:checked')).map(cb => cb.value);
+        dnrCb.innerHTML = allNatures.map(n => {
+            const isChecked = checkedBoxes.includes(n);
+            return `<label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; direction:ltr; padding:4px 0;">
+                <input type="checkbox" value="${n}" class="dnr-cb-item" onchange="onDnrNatureCheckboxChange()" ${isChecked ? 'checked' : ''} style="width:16px !important; height:16px !important; margin:0; padding:0; cursor:pointer; box-shadow:none;" />
+                <span>${n}</span>
+            </label>`;
+        }).join('');
+        updateDnrNatureSelectionText();
     }
+}
+
+function toggleDnrNatureMultiSelect(e) {
+    if(e) e.stopPropagation();
+    const dd = document.getElementById('dnr-nature-dropdown-container');
+    if (dd) {
+        dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+function updateDnrNatureSelectionText() {
+    const dnrCb = document.getElementById('dnr-nature-checkboxes');
+    const txtSpan = document.getElementById('dnr-nature-selected-text');
+    if (!dnrCb || !txtSpan) return;
+
+    const checkedBoxes = Array.from(dnrCb.querySelectorAll('input:checked')).map(cb => cb.value);
+    if (checkedBoxes.length === 0) {
+        txtSpan.textContent = '-- All --';
+    } else if (checkedBoxes.length === 1) {
+        txtSpan.textContent = checkedBoxes[0];
+    } else {
+        txtSpan.textContent = checkedBoxes.length + ' Selected';
+    }
+}
+
+function onDnrNatureCheckboxChange() {
+    updateDnrNatureSelectionText();
+    renderDailyNoteReport();
 }
 
 function clearDailyNoteReport() {
     document.getElementById('dnr-from').value = '';
     document.getElementById('dnr-to').value = '';
-    const dnrSel = document.getElementById('dnr-nature');
-    if (dnrSel) dnrSel.value = '';
+    document.querySelectorAll('.dnr-cb-item').forEach(cb => cb.checked = false);
+    updateDnrNatureSelectionText();
     renderDailyNoteReport();
 }
 
@@ -37,7 +71,7 @@ function renderDailyNoteReport() {
     if (!out) return;
     const from = document.getElementById('dnr-from').value || '';
     const to = document.getElementById('dnr-to').value || '';
-    const natureFilter = document.getElementById('dnr-nature') ? document.getElementById('dnr-nature').value : '';
+    const checkedBoxes = Array.from(document.querySelectorAll('.dnr-cb-item:checked')).map(cb => cb.value);
 
     // Filter only records that have flight/transport nature data
     let recs = [...records]
@@ -46,7 +80,7 @@ function renderDailyNoteReport() {
 
     if (from) recs = recs.filter(r => r.date >= from);
     if (to) recs = recs.filter(r => r.date <= to);
-    if (natureFilter) recs = recs.filter(r => r.transportNature === natureFilter);
+    if (checkedBoxes.length > 0) recs = recs.filter(r => checkedBoxes.includes(r.transportNature));
 
     if (!recs.length) {
         out.innerHTML = `<div class="empty"><div class="ico">📋</div>${L.dnNoData || 'کوئی ڈیٹا موجود نہیں'}</div>`;

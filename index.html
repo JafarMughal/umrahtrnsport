@@ -272,7 +272,18 @@
                     <div class="fb">
                         <div class="fg"><label id="lbl-dnRepFrom">تاریخ سے</label><input type="date" id="dnr-from" onchange="renderDailyNoteReport()" /></div>
                         <div class="fg"><label id="lbl-dnRepTo">تاریخ تک</label><input type="date" id="dnr-to" onchange="renderDailyNoteReport()" /></div>
-                        <div class="fg"><label id="lbl-dnRepNature">TRANSPORT By</label><select id="dnr-nature" onchange="renderDailyNoteReport()"><option value="">-- All --</option></select></div>
+                        <div class="fg" style="flex:2;">
+                            <label id="lbl-dnRepNature">TRANSPORT By</label>
+                            <div class="custom-multi-select" id="dnr-nature-multi-select">
+                                <div class="cms-header" onclick="toggleDnrNatureMultiSelect(event)">
+                                    <span id="dnr-nature-selected-text">-- All --</span>
+                                    <span class="cms-arrow">▼</span>
+                                </div>
+                                <div class="cms-dropdown" id="dnr-nature-dropdown-container" style="display:none; padding:10px;">
+                                    <div id="dnr-nature-checkboxes" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;"></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="fb-actions">
                             <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️</button>
                             <button class="btn btn-o no-print" id="btn-dn-resetrep" onclick="clearDailyNoteReport()">↩ صاف</button>

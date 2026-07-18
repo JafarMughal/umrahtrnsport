@@ -159,4 +159,10 @@ document.addEventListener('click', function(e) {
     if (ms && dd && !ms.contains(e.target)) {
         dd.style.display = 'none';
     }
+    
+    const dnrMs = document.getElementById('dnr-nature-multi-select');
+    const dnrDd = document.getElementById('dnr-nature-dropdown-container');
+    if (dnrMs && dnrDd && !dnrMs.contains(e.target)) {
+        dnrDd.style.display = 'none';
+    }
 });
