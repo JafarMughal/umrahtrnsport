@@ -18,7 +18,7 @@ function setLang(l) {
     L.nav.forEach((txt, i) => { if (navBtns[i]) navBtns[i].textContent = txt; });
 
     // Entry
-    setText('lbl-entry', L.entry); setText('lbl-date', L.date); setText('lbl-transporter-dropdown', L.transporterLbl); setText('lbl-party', L.party);
+    setText('lbl-entry', L.entry); setText('lbl-date', L.date); setText('lbl-transporter-dropdown', L.transporterLbl); setText('lbl-party', L.hajiParty || L.party);
     setText('lbl-sector', L.sector); setText('lbl-transport', L.transport); setText('lbl-count', L.count);
     setText('lbl-fare', L.fare); setText('lbl-total', L.total); setText('lbl-notes', L.notes);
     setText('btn-save', L.save); setText('btn-clear', L.clear);
@@ -58,22 +58,29 @@ function setLang(l) {
     // Update page was removed, so no translations needed here.
 
     // Settings
-    setText('lbl-setParties', L.setParties); setText('lbl-setSectors', L.setSectors);
+    setText('tab-btn-app', L.setApp); setText('tab-btn-transporters', L.setParties);
+    setText('tab-btn-sectors', L.setSectors); setText('tab-btn-transports', L.setTransports);
+    setText('tab-btn-users', L.userManagement); setText('tab-btn-hajiparties', L.setHajiParties);
+    
     setText('lbl-newpartylbl', L.newPartyLbl); setText('lbl-newsectorlbl', L.newSectorLbl);
+    setText('lbl-newhajipartylbl', L.newHajiPartyLbl);
     document.getElementById('sp-in').placeholder = L.partyPlaceholder;
     document.getElementById('ss-in').placeholder = L.sectorPlaceholder;
-    setText('btn-addparty', L.add); setText('btn-addsector', L.add);
+    document.getElementById('shp-in').placeholder = L.hajiPartyPlaceholder;
+    setText('btn-addparty', L.add); setText('btn-addsector', L.add); setText('btn-addhajiparty', L.add);
 
-    setText('lbl-setTransports', L.setTransports); setText('lbl-newtransportlbl', L.newTransportLbl);
+    setText('lbl-newtransportlbl', L.newTransportLbl);
     document.getElementById('st-in').placeholder = L.transportPlaceholder;
     setText('btn-addtransport', L.add);
 
-    setText('lbl-setApp', L.setApp); setText('lbl-appNameLbl', L.appNameLbl); setText('lbl-appSubLbl', L.appSubLbl);
+    setText('lbl-appNameLbl', L.appNameLbl); setText('lbl-appSubLbl', L.appSubLbl);
     setText('lbl-logoLbl', L.logoLbl); setText('lbl-logoHint', L.logoHint); setText('btn-saveApp', L.saveApp);
-    setText('lbl-renameParty', L.renameParty); setText('lbl-oldName', L.oldName); setText('lbl-newName', L.newName);
-    setText('btn-renameSave', L.renameSave); document.getElementById('rename-to').placeholder = L.newName;
+    
+    setText('lbl-tbl-transporter', L.partyCol); setText('lbl-tbl-sector', L.sectorCol);
+    setText('lbl-tbl-transport', L.transportCol); setText('lbl-tbl-hajiparty', L.hajiPartyCol || L.hajiParty);
+    document.querySelectorAll('.lbl-tbl-action').forEach(el => el.textContent = L.actionCol);
 
-    setText('lbl-setUsers', L.userManagement); setText('lbl-su-username', L.username);
+    setText('lbl-su-username', L.username);
     setText('lbl-su-password', L.password); setText('lbl-su-title', L.addNewUser);
     setText('btn-add-user', L.add); setText('lbl-users-list-title', L.userList);
 

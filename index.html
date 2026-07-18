@@ -111,16 +111,24 @@
                         <div class="fg"><label id="lbl-date">تاریخ</label><input type="date" id="e-date" /></div>
                         <div class="fg"><label id="lbl-voucher">واوچر نمبر</label><input type="text" id="e-voucher" class="voucher-input" /></div>
                         <div class="fg"><label><span id="lbl-transporter-dropdown">ٹرانسپوٹر</span></label>
-                            <div class="ddr" style="display:flex; gap:5px;">
+                            <div class="ddr">
                                 <select id="e-party" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
-                                <button class="btn btn-o btn-sm" tabindex="-1" onclick="openModal('party', 'entry')" style="padding:0 12px; font-weight:bold; font-size:16px;">+</button>
                             </div>
                         </div>
-                        <div class="fg"><label id="lbl-party">پارٹی</label><input type="text" id="e-new-party" /></div>
+                        <div class="fg">
+                            <label id="lbl-party">پارٹی</label>
+                            <div class="custom-multi-select" id="hp-multi-select">
+                                <div class="cms-header" onclick="toggleMultiSelect(event)">
+                                    <span id="hp-selected-text">منتخب کریں...</span>
+                                    <span class="cms-arrow">▼</span>
+                                </div>
+                                <div class="cms-dropdown" id="hp-dropdown-list" style="display:none;"></div>
+                            </div>
+                            <input type="hidden" id="e-new-party" />
+                        </div>
                         <div class="fg"><label><span id="lbl-sector">سیکٹر</span></label>
-                            <div class="ddr" style="display:flex; gap:5px;">
+                            <div class="ddr">
                                 <select id="e-sector" style="flex:1;"></select>
-                                <button class="btn btn-o btn-sm" tabindex="-1" onclick="openModal('sector', 'entry')" style="padding:0 12px; font-weight:bold; font-size:16px;">+</button>
                             </div>
                         </div>
                         <div class="fg"><label><span id="lbl-transport">ٹرانسپورٹ</span></label><div class="ddr"><select id="e-transport" onchange="onTransportChange('e')"><option value="">-- منتخب کریں --</option></select></div></div>
@@ -142,9 +150,8 @@
                             <div class="fg"><label id="lbl-eFlightNo">فلائیٹ نمبر (Flight No)</label><input type="text" id="e-flight-no" /></div>
                             <div class="fg"><label id="lbl-eAirport">ائیرپورٹ (Airport)</label><input type="text" id="e-airport" /></div>
                             <div class="fg"><label id="lbl-eTransportNature">ٹرانسپورٹ کی نوعیت (TRANSPORT By)</label>
-                                <div class="ddr" style="display:flex; gap:5px;">
+                                <div class="ddr">
                                     <select id="e-transport-nature-sel" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
-                                    <button class="btn btn-o btn-sm" tabindex="-1" onclick="openModal('nature', 'entry')" style="padding:0 12px; font-weight:bold; font-size:16px;">+</button>
                                 </div>
                             </div>
                             <div class="fg"><label id="lbl-eShirka">شرکہ (Shirka)</label><input type="text" id="e-shirka" /></div>
@@ -260,6 +267,7 @@
                     <div class="fb">
                         <div class="fg"><label id="lbl-dnRepFrom">تاریخ سے</label><input type="date" id="dnr-from" onchange="renderDailyNoteReport()" /></div>
                         <div class="fg"><label id="lbl-dnRepTo">تاریخ تک</label><input type="date" id="dnr-to" onchange="renderDailyNoteReport()" /></div>
+                        <div class="fg"><label id="lbl-dnRepNature">TRANSPORT By</label><select id="dnr-nature" onchange="renderDailyNoteReport()"><option value="">-- All --</option></select></div>
                         <div class="fb-actions">
                             <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️</button>
                             <button class="btn btn-o no-print" id="btn-dn-resetrep" onclick="clearDailyNoteReport()">↩ صاف</button>
@@ -274,8 +282,17 @@
 
             <!-- ===== SETTINGS ===== -->
             <div id="page-settings" class="page">
-                <div class="card">
-                    <div class="card-title" id="lbl-setApp">ایپ کی ترتیب ⚙️</div>
+                <div class="settings-tabs">
+                    <button class="tab-btn active" onclick="switchSettingsTab('tab-app')" id="tab-btn-app">ایپ کی ترتیب ⚙️</button>
+                    <button class="tab-btn" onclick="switchSettingsTab('tab-transporters')" id="tab-btn-transporters">ٹرانسپورٹر 👥</button>
+                    <button class="tab-btn" onclick="switchSettingsTab('tab-hajiparties')" id="tab-btn-hajiparties">حاجی پارٹی 👥</button>
+                    <button class="tab-btn" onclick="switchSettingsTab('tab-sectors')" id="tab-btn-sectors">سیکٹر 🗺️</button>
+                    <button class="tab-btn" onclick="switchSettingsTab('tab-transports')" id="tab-btn-transports">ٹرانسپورٹ 🚌</button>
+                    <button class="tab-btn" onclick="switchSettingsTab('tab-users')" id="tab-btn-users">صارفین 👥</button>
+                </div>
+
+                <!-- Tab: App Settings -->
+                <div id="tab-app" class="tab-content active card">
                     <div class="sgr">
                         <div>
                             <div class="fg" style="margin-bottom:10px;"><label id="lbl-logoLbl">لوگو تبدیل کریں</label></div>
@@ -295,36 +312,56 @@
                     </div>
                 </div>
 
-                <div class="sgr">
-                    <div class="card">
-                        <div class="card-title" id="lbl-setParties">پارٹیاں 👥</div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newpartylbl">نئی پارٹی</label><input type="text" id="sp-in" placeholder="پارٹی کا نام" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addparty" onclick="addFromSettings('party')">➕ شامل</button></div></div>
-                        <div id="al-sp"></div>
-                        <div class="tags" id="parties-list"></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title" id="lbl-setSectors">سیکٹر 🗺️</div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newsectorlbl">نیا سیکٹر</label><input type="text" id="ss-in" placeholder="مثلاً: جدہ ➜ مکہ" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addsector" onclick="addFromSettings('sector')">➕ شامل</button></div></div>
-                        <div id="al-ss"></div>
-                        <div class="tags" id="sectors-list"></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title" id="lbl-setTransports">ٹرانسپورٹ 🚌</div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newtransportlbl">نئی ٹرانسپورٹ</label><input type="text" id="st-in" placeholder="مثلاً: بس، وین، کوچ" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addtransport" onclick="addFromSettings('transport')">➕ شامل</button></div></div>
-                        <div id="al-st"></div>
-                        <div class="tags" id="transports-list"></div>
+                <!-- Tab: Transporters -->
+                <div id="tab-transporters" class="tab-content card">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newpartylbl">نیا ٹرانسپورٹر</label><input type="text" id="sp-in" placeholder="ٹرانسپورٹر کا نام" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addparty" onclick="addFromSettings('party')">➕ شامل</button></div></div>
+                    <div id="al-sp"></div>
+                    <div class="settings-table-wrapper">
+                        <table class="settings-table">
+                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-transporter">ٹرانسپورٹر</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
+                            <tbody id="parties-list"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-title" id="lbl-renameParty">پارٹی کا نام تبدیل کریں ✏️</div>
-                    <div id="al-rename"></div>
-                    <div class="grid"><div class="fg"><label id="lbl-oldName">پرانا نام</label><select id="rename-from"></select></div><div class="fg"><label id="lbl-newName">نیا نام</label><input type="text" id="rename-to" placeholder="نیا نام" /></div></div>
-                    <button class="btn btn-p" id="btn-renameSave" onclick="renameParty()">💾 محفوظ</button>
+                <!-- Tab: Haji Parties -->
+                <div id="tab-hajiparties" class="tab-content card">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newhajipartylbl">نئی حاجی پارٹی</label><input type="text" id="shp-in" placeholder="حاجی پارٹی کا نام" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addhajiparty" onclick="addFromSettings('hajiParty')">➕ شامل</button></div></div>
+                    <div id="al-shp"></div>
+                    <div class="settings-table-wrapper">
+                        <table class="settings-table">
+                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-hajiparty">حاجی پارٹی</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
+                            <tbody id="hajiparties-list"></tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-title" id="lbl-setUsers">صارفین کی ترتیبات 👥</div>
+                <!-- Tab: Sectors -->
+                <div id="tab-sectors" class="tab-content card">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newsectorlbl">نیا سیکٹر</label><input type="text" id="ss-in" placeholder="مثلاً: جدہ ➜ مکہ" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addsector" onclick="addFromSettings('sector')">➕ شامل</button></div></div>
+                    <div id="al-ss"></div>
+                    <div class="settings-table-wrapper">
+                        <table class="settings-table">
+                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-sector">سیکٹر</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
+                            <tbody id="sectors-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab: Transports -->
+                <div id="tab-transports" class="tab-content card">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newtransportlbl">نئی ٹرانسپورٹ</label><input type="text" id="st-in" placeholder="مثلاً: بس، وین، کوچ" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addtransport" onclick="addFromSettings('transport')">➕ شامل</button></div></div>
+                    <div id="al-st"></div>
+                    <div class="settings-table-wrapper">
+                        <table class="settings-table">
+                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-transport">ٹرانسپورٹ</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
+                            <tbody id="transports-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab: Users -->
+                <div id="tab-users" class="tab-content card">
                     <div id="al-su"></div>
                     <div style="display:flex;gap:15px;flex-wrap:wrap;">
                         <div style="flex:1;min-width:260px;">

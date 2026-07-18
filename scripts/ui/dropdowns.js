@@ -87,4 +87,60 @@ function refreshAllDrops() {
     fillDrop('p-party', parties, false);
     fillDrop('e-party', parties, false);
     if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+    fillHajiPartyDropdown();
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  HAJI PARTY MULTI SELECT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function fillHajiPartyDropdown() {
+    const listEl = document.getElementById('hp-dropdown-list');
+    if (!listEl) return;
+    
+    const hiddenInp = document.getElementById('e-new-party');
+    const currentSelected = hiddenInp ? hiddenInp.value : '';
+    
+    listEl.innerHTML = hajiParties.map(hp => {
+        const isActive = currentSelected === hp ? 'active' : '';
+        return `<div class="cms-label ${isActive}" onclick="selectHajiParty('${hp.replace(/'/g, "\\'")}', event)">${hp}</div>`;
+    }).join('');
+    
+    updateHajiPartySelectionText();
+}
+
+function selectHajiParty(hp, event) {
+    if(event) event.stopPropagation();
+    const hiddenInp = document.getElementById('e-new-party');
+    if (hiddenInp) hiddenInp.value = hp;
+    
+    fillHajiPartyDropdown();
+    document.getElementById('hp-dropdown-list').style.display = 'none';
+}
+
+function toggleMultiSelect(e) {
+    if(e) e.stopPropagation();
+    const dd = document.getElementById('hp-dropdown-list');
+    if (dd) {
+        dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+        if(dd.style.display === 'block') fillHajiPartyDropdown();
+    }
+}
+
+function updateHajiPartySelectionText() {
+    const hiddenInp = document.getElementById('e-new-party');
+    const txtSpan = document.getElementById('hp-selected-text');
+    const selected = hiddenInp ? hiddenInp.value : '';
+    
+    if (txtSpan) {
+        if (!selected) txtSpan.textContent = (T[lang] || T.ur).selectParty || 'منتخب کریں...';
+        else txtSpan.textContent = selected;
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const ms = document.getElementById('hp-multi-select');
+    const dd = document.getElementById('hp-dropdown-list');
+    if (ms && dd && !ms.contains(e.target)) {
+        dd.style.display = 'none';
+    }
+});

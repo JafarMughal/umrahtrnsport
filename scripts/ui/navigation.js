@@ -14,7 +14,7 @@ function showPage(p, btn) {
     if (p === 'dailynote') { fillDrop('dn-sector', sectors); renderDailyNoteReport(); }
     if (p === 'report') { fillDrop('r-party', parties, true); genReport(); }
     if (p === 'settings') {
-        renderPartyList(); renderSectorList(); renderTransportList(); fillRenameFrom(); loadAppName(lang);
+        renderPartyList(); renderHajiPartyList(); renderSectorList(); renderTransportList(); loadAppName(lang);
         renderUsers();
         document.getElementById('set-appname').value = fbAppName[lang] || T[lang].appTitle;
         document.getElementById('set-appsub').value = fbAppSub[lang] || T[lang].appSub;

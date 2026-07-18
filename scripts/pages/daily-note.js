@@ -1,4 +1,4 @@
-﻿// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  DAILY NOTE REPORT — Data from main records[]
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -14,11 +14,20 @@ function fillTransportNatureDropdown() {
         sel.innerHTML = '<option value="">-- منتخب کریں --</option>' +
             allNatures.map(n => `<option value="${n}"${n === cur ? ' selected' : ''}>${n}</option>`).join('');
     }
+
+    const dnrSel = document.getElementById('dnr-nature');
+    if (dnrSel) {
+        const cur = dnrSel.value;
+        dnrSel.innerHTML = '<option value="">-- All --</option>' +
+            allNatures.map(n => `<option value="${n}"${n === cur ? ' selected' : ''}>${n}</option>`).join('');
+    }
 }
 
 function clearDailyNoteReport() {
     document.getElementById('dnr-from').value = '';
     document.getElementById('dnr-to').value = '';
+    const dnrSel = document.getElementById('dnr-nature');
+    if (dnrSel) dnrSel.value = '';
     renderDailyNoteReport();
 }
 
@@ -28,6 +37,7 @@ function renderDailyNoteReport() {
     if (!out) return;
     const from = document.getElementById('dnr-from').value || '';
     const to = document.getElementById('dnr-to').value || '';
+    const natureFilter = document.getElementById('dnr-nature') ? document.getElementById('dnr-nature').value : '';
 
     // Filter only records that have flight/transport nature data
     let recs = [...records]
@@ -36,6 +46,7 @@ function renderDailyNoteReport() {
 
     if (from) recs = recs.filter(r => r.date >= from);
     if (to) recs = recs.filter(r => r.date <= to);
+    if (natureFilter) recs = recs.filter(r => r.transportNature === natureFilter);
 
     if (!recs.length) {
         out.innerHTML = `<div class="empty"><div class="ico">📋</div>${L.dnNoData || 'کوئی ڈیٹا موجود نہیں'}</div>`;
@@ -66,6 +77,10 @@ function renderDailyNoteReport() {
     sortedKeys.forEach(nature => {
         const groupRecs = grouped[nature];
         let grandTotal = 0;
+
+        const isDeparture = nature.toLowerCase().includes('dep');
+        const dateHeader = isDeparture ? 'Departure Date' : 'Arrival Date';
+        const timeHeader = isDeparture ? 'Departure Time' : 'Arrival Time';
 
         const tbody = groupRecs.map(r => {
             grandTotal += (parseInt(r.count) || 0);
@@ -112,8 +127,8 @@ function renderDailyNoteReport() {
                             <th>Transporter</th>
                             <th>Party Name</th>
                             <th>NAME</th>
-                            <th style="min-width:90px;">Arrival Date</th>
-                            <th>Arrival Time</th>
+                            <th style="min-width:90px;">${dateHeader}</th>
+                            <th>${timeHeader}</th>
                             <th>Flight No</th>
                             <th>Airport</th>
                             <th>T</th>

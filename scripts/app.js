@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             partyCodes = data.partyCodes || {};
             users = data.users || [{ username: 'admin', role: 'admin' }];
             dailyNotes = data.dailyNotes || [];
+            hajiParties = data.hajiParties || [];
             const settings = data.settings || {};
             fbLogo = settings.logo || null;
             fbAppName = settings.appName || {};
@@ -26,6 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!sectors.length) { sectors = (T[lang] || T.ur).defaultSectors.slice(); svS(); }
             if (!transports.length) { transports = ['بس', 'وین', 'کار', 'کوچ']; svTr(); }
             parties.forEach(p => getCode(p));
+
+            if (!hajiParties.length && records.length > 0) {
+                const hSet = new Set();
+                records.forEach(r => {
+                    if (r.newParty) {
+                        r.newParty.split(',').map(s => s.trim()).filter(s => s).forEach(s => hSet.add(s));
+                    }
+                });
+                hajiParties = Array.from(hSet);
+                if (hajiParties.length) svHP();
+            }
 
             initUsers().then(() => {
                 if (!isFirebaseReady) {
@@ -167,7 +179,10 @@ window.handleLogoUpload = handleLogoUpload;
 window.handleLogoDrop = handleLogoDrop;
 window.removeLogo = removeLogo;
 window.saveAppSettings = saveAppSettings;
-window.renameParty = renameParty;
+window.switchSettingsTab = switchSettingsTab;
+window.editItem = editItem;
+window.cancelEditItem = cancelEditItem;
+window.saveItemEdit = saveItemEdit;
 window.sdFilter = sdFilter;
 window.sdOpen = sdOpen;
 window.sdBlur = sdBlur;
@@ -176,7 +191,6 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.confirmModal = confirmModal;
 window.todayStats = todayStats;
-window.fillRenameFrom = fillRenameFrom;
 window.renderUsers = renderUsers;
 window.renderPartyList = renderPartyList;
 window.renderSectorList = renderSectorList;

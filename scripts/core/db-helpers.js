@@ -8,6 +8,7 @@ function svS() { db.ref('sectors').set(sectors).catch(e => console.warn('Save er
 function svTr() { db.ref('transports').set(transports).catch(e => console.warn('Save error:', e)); }
 function svC() { db.ref('partyCodes').set(partyCodes).catch(e => console.warn('Save error:', e)); }
 function svU() { db.ref('users').set(users).catch(e => console.warn('Save error:', e)); }
+function svHP() { db.ref('hajiParties').set(hajiParties).catch(e => console.warn('Save error:', e)); }
 function svDN() { db.ref('dailyNotes').set(dailyNotes).catch(e => console.warn('Save error:', e)); }
 
 function saveAppSettingsToFb() {

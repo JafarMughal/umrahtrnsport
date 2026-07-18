@@ -97,6 +97,7 @@ function editRecord(id) {
     
     document.getElementById('e-party').value = r.party;
     document.getElementById('e-new-party').value = r.newParty || '';
+    if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
     document.getElementById('e-sector').value = r.sector;
     document.getElementById('e-transport').value = r.transport;
 
@@ -139,6 +140,7 @@ function clearEntryForm() {
     document.getElementById('e-id').value = '';
     document.getElementById('e-notes').value = '';
     document.getElementById('e-new-party').value = '';
+    if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
     document.getElementById('e-party').value = '';
     document.getElementById('e-sector').value = '';
     document.getElementById('e-transport').value = '';

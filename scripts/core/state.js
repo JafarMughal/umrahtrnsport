@@ -4,6 +4,7 @@
 let records = [];
 let payments = [];
 let parties = [];
+let hajiParties = [];
 let sectors = [];
 let transports = [];
 let partyCodes = {};
