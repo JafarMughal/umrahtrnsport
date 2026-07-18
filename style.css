@@ -1289,7 +1289,33 @@ body.lang-en .sd-dropdown { right: auto; }
     margin-top: 4px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     z-index: 100;
-    max-height: 200px;
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+.cms-search {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    z-index: 10;
+}
+.cms-search input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1.5px solid #d5d0c8;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+.cms-search input:focus {
+    border-color: var(--gold);
+}
+#hp-dropdown-list {
     overflow-y: auto;
 }
 .cms-label {

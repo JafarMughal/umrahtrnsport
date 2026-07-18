@@ -93,19 +93,31 @@ function refreshAllDrops() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  HAJI PARTY MULTI SELECT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function fillHajiPartyDropdown() {
+function fillHajiPartyDropdown(query = '') {
     const listEl = document.getElementById('hp-dropdown-list');
     if (!listEl) return;
     
     const hiddenInp = document.getElementById('e-new-party');
     const currentSelected = hiddenInp ? hiddenInp.value : '';
     
-    listEl.innerHTML = hajiParties.map(hp => {
-        const isActive = currentSelected === hp ? 'active' : '';
-        return `<div class="cms-label ${isActive}" onclick="selectHajiParty('${hp.replace(/'/g, "\\'")}', event)">${hp}</div>`;
-    }).join('');
+    const q = query.toLowerCase().trim();
+    const filtered = hajiParties.filter(hp => !q || hp.toLowerCase().includes(q));
+    
+    if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="cms-label" style="color:var(--muted); justify-content:center;">کوئی نتیجہ نہیں</div>`;
+    } else {
+        listEl.innerHTML = filtered.map(hp => {
+            const isActive = currentSelected === hp ? 'active' : '';
+            return `<div class="cms-label ${isActive}" onclick="selectHajiParty('${hp.replace(/'/g, "\\'")}', event)">${hp}</div>`;
+        }).join('');
+    }
     
     updateHajiPartySelectionText();
+}
+
+function filterHajiPartyDropdown() {
+    const searchInp = document.getElementById('hp-search-input');
+    if (searchInp) fillHajiPartyDropdown(searchInp.value);
 }
 
 function selectHajiParty(hp, event) {
@@ -114,15 +126,19 @@ function selectHajiParty(hp, event) {
     if (hiddenInp) hiddenInp.value = hp;
     
     fillHajiPartyDropdown();
-    document.getElementById('hp-dropdown-list').style.display = 'none';
+    document.getElementById('hp-dropdown-container').style.display = 'none';
 }
 
 function toggleMultiSelect(e) {
     if(e) e.stopPropagation();
-    const dd = document.getElementById('hp-dropdown-list');
+    const dd = document.getElementById('hp-dropdown-container');
     if (dd) {
         dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-        if(dd.style.display === 'block') fillHajiPartyDropdown();
+        if(dd.style.display === 'block') {
+            const searchInp = document.getElementById('hp-search-input');
+            if (searchInp) { searchInp.value = ''; searchInp.focus(); }
+            fillHajiPartyDropdown();
+        }
     }
 }
 
@@ -139,7 +155,7 @@ function updateHajiPartySelectionText() {
 
 document.addEventListener('click', function(e) {
     const ms = document.getElementById('hp-multi-select');
-    const dd = document.getElementById('hp-dropdown-list');
+    const dd = document.getElementById('hp-dropdown-container');
     if (ms && dd && !ms.contains(e.target)) {
         dd.style.display = 'none';
     }

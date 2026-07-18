@@ -122,7 +122,12 @@
                                     <span id="hp-selected-text">منتخب کریں...</span>
                                     <span class="cms-arrow">▼</span>
                                 </div>
-                                <div class="cms-dropdown" id="hp-dropdown-list" style="display:none;"></div>
+                                <div class="cms-dropdown" id="hp-dropdown-container" style="display:none;">
+                                    <div class="cms-search">
+                                        <input type="text" id="hp-search-input" placeholder="تلاش کریں..." oninput="filterHajiPartyDropdown()" onclick="event.stopPropagation()" />
+                                    </div>
+                                    <div id="hp-dropdown-list"></div>
+                                </div>
                             </div>
                             <input type="hidden" id="e-new-party" />
                         </div>
