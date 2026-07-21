@@ -153,7 +153,13 @@
                             <div class="fg"><label id="lbl-eName">نام (NAME)</label><input type="text" id="e-name" /></div>
                             <div class="fg"><label id="lbl-eFlightTime">وقت آمد (Arrival Time)</label><input type="time" id="e-flight-time" /></div>
                             <div class="fg"><label id="lbl-eFlightNo">فلائیٹ نمبر (Flight No)</label><input type="text" id="e-flight-no" /></div>
-                            <div class="fg"><label id="lbl-eAirport">ائیرپورٹ (Airport)</label><input type="text" id="e-airport" /></div>
+                            <div class="fg"><label id="lbl-eAirport">ائیرپورٹ (Airport)</label>
+                                <input type="text" id="e-airport" list="airport-list" />
+                                <datalist id="airport-list">
+                                    <option value="Jeddah Airport (KAIA)"></option>
+                                    <option value="Madinah Airport (AMAA)"></option>
+                                </datalist>
+                            </div>
                             <div class="fg"><label id="lbl-eTransportNature">ٹرانسپورٹ کی نوعیت (TRANSPORT By)</label>
                                 <div class="ddr">
                                     <select id="e-transport-nature-sel" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
