@@ -118,7 +118,7 @@ function renderDailyNoteReport() {
 
         const tbody = groupRecs.map(r => {
             grandTotal += (parseInt(r.count) || 0);
-            return `<tr>
+            return `<tr class="dn-data-row" data-hujjaj="${r.count || 0}">
             <td style="font-weight:bold;font-family:monospace;">${r.voucher || '—'}</td>
             <td><strong>${r.party || '—'}</strong></td>
             <td><strong>${r.newParty || '—'}</strong></td>
@@ -141,9 +141,9 @@ function renderDailyNoteReport() {
         </tr>`;
         }).join('');
 
-        const totalRow = `<tr style="background:var(--cream);font-weight:bold;">
+        const totalRow = `<tr class="dn-total-row" style="background:var(--cream);font-weight:bold;">
             <td colspan="8" style="text-align:right;">Total</td>
-            <td style="color:var(--green-dark);">${grandTotal}</td>
+            <td class="dn-total-hujjaj" style="color:var(--green-dark);">${grandTotal}</td>
             <td colspan="6"></td>
             <td class="no-print"></td>
         </tr>`;
@@ -174,6 +174,24 @@ function renderDailyNoteReport() {
                             <th>Notes</th>
                             <th class="no-print">Actions</th>
                         </tr>
+                        <tr class="no-print" style="background: #f8f9fa; border-bottom: 1px solid #ddd;">
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                            <td style="padding:2px;"></td>
+                        </tr>
                     </thead>
                     <tbody>
                         ${tbody}
@@ -194,4 +212,37 @@ function tripTypeLabel(type) {
     if (type === 'return') return L.dnTripReturn;
     if (type === 'other') return L.dnTripOther;
     return '—';
+}
+
+function filterDailyNoteTable(inputElem) {
+    const table = inputElem.closest('table');
+    if (!table) return;
+    const inputs = table.querySelectorAll('.dn-col-filter');
+    const filters = Array.from(inputs).map(inp => inp.value.toLowerCase().trim());
+    
+    const rows = table.querySelectorAll('tbody tr.dn-data-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        let match = true;
+        const cells = row.querySelectorAll('td');
+        filters.forEach((filterText, index) => {
+            if (filterText && cells[index]) {
+                const cellText = (cells[index].innerText || cells[index].textContent).toLowerCase();
+                if (!cellText.includes(filterText)) {
+                    match = false;
+                }
+            }
+        });
+        
+        if (match) {
+            row.style.display = '';
+            visibleCount += parseInt(row.getAttribute('data-hujjaj') || '0', 10);
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    const totalEl = table.querySelector('.dn-total-hujjaj');
+    if (totalEl) totalEl.innerText = visibleCount;
 }

@@ -28,7 +28,7 @@ function renderRecords(rows) {
             : `<span style="background:#FFF8E1;color:#E65100;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">🚐 ${L.typeWhole}</span>`;
             
         return `
-            <tr>
+            <tr class="rec-data-row" data-hujjaj="${sharing ? r.count : 0}" data-amount="${r.total}">
                 <td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>
                 <td style="padding:4px;">${fd(r.date)}</td>
                 <td style="padding:4px;"><span class="party-code">${getCode(r.party)}</span></td>
@@ -57,13 +57,13 @@ function renderRecords(rows) {
         <table style="width: 100%; border: none; font-size: 12px; margin-bottom: 15px;">
             <tr>
                 <td style="font-weight: bold; width: 120px;">Total Records:</td>
-                <td>${rows.length}</td>
+                <td id="top-total-records">${rows.length}</td>
                 <td style="font-weight: bold; text-align: right; width: 100px;">Total Amount:</td>
-                <td style="text-align: right; font-weight: bold; width: 100px;">${sar(tAmount)}</td>
+                <td id="top-total-amount" style="text-align: right; font-weight: bold; width: 100px;">${sar(tAmount)}</td>
             </tr>
             <tr>
                 <td style="font-weight: bold;">Total Hujjaj:</td>
-                <td colspan="3">${tCount}</td>
+                <td id="top-total-hujjaj" colspan="3">${tCount}</td>
             </tr>
             <tr>
                 <td style="font-weight: bold;">Print Date:</td>
@@ -87,17 +87,33 @@ function renderRecords(rows) {
                     <th style="text-align: right; padding: 4px;">${L.totalCol}</th>
                     <th style="text-align: left; padding: 4px;" class="no-print">${L.actionCol}</th>
                 </tr>
+                <tr class="no-print" style="background: #f8f9fa; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="0" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="1" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="2" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="3" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="4" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="5" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="6" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="7" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="8" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="9" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="10" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"></td>
+                </tr>
             </thead>
-            <tbody>
+            <tbody id="records-tbody">
                 ${tblRows}
-                <tr style="border-top: 1px dashed #000; font-weight: bold; page-break-inside: avoid;">
+            </tbody>
+            <tfoot>
+                <tr id="gt-row" style="border-top: 1px dashed #000; font-weight: bold; page-break-inside: avoid;">
                     <td colspan="7" style="padding: 6px 4px; text-align: right;">Grand Total:</td>
-                    <td style="padding: 6px 4px; text-align: center;">${tCount}</td>
+                    <td id="gt-hujjaj" style="padding: 6px 4px; text-align: center;">${tCount}</td>
                     <td colspan="2" style="padding: 6px 4px;"></td>
-                    <td style="padding: 6px 4px; text-align: right;">${sar(tAmount)}</td>
+                    <td id="gt-amount" style="padding: 6px 4px; text-align: right;">${sar(tAmount)}</td>
                     <td class="no-print"></td>
                 </tr>
-            </tbody>
+            </tfoot>
         </table>
     </div>`;
     
@@ -128,3 +144,52 @@ async function deleteRecord(id) {
     svR();
     filterRecords();
 }
+
+function filterTableColumns() {
+    const inputs = document.querySelectorAll('.col-filter');
+    const filters = Array.from(inputs).map(inp => inp.value.toLowerCase().trim());
+    const tbody = document.getElementById('records-tbody');
+    if (!tbody) return;
+    
+    const rows = tbody.querySelectorAll('tr.rec-data-row');
+    
+    let visibleCount = 0;
+    let visibleAmount = 0;
+    let visibleRows = 0;
+    
+    rows.forEach(row => {
+        let match = true;
+        const cells = row.querySelectorAll('td');
+        filters.forEach((filterText, index) => {
+            if (filterText && cells[index]) {
+                const cellText = (cells[index].innerText || cells[index].textContent).toLowerCase();
+                if (!cellText.includes(filterText)) {
+                    match = false;
+                }
+            }
+        });
+        
+        if (match) {
+            row.style.display = '';
+            visibleRows++;
+            const hujjaj = parseInt(row.getAttribute('data-hujjaj') || '0', 10);
+            const amount = parseFloat(row.getAttribute('data-amount') || '0');
+            visibleCount += hujjaj;
+            visibleAmount += amount;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    const elRecords = document.getElementById('top-total-records');
+    const elAmount = document.getElementById('top-total-amount');
+    const elHujjaj = document.getElementById('top-total-hujjaj');
+    const elGtHujjaj = document.getElementById('gt-hujjaj');
+    const elGtAmount = document.getElementById('gt-amount');
+    
+    if (elRecords) elRecords.innerText = visibleRows;
+    if (elAmount) elAmount.innerText = sar(visibleAmount);
+    if (elHujjaj) elHujjaj.innerText = visibleCount;
+    if (elGtHujjaj) elGtHujjaj.innerText = visibleCount;
+    if (elGtAmount) elGtAmount.innerText = sar(visibleAmount);
+}
