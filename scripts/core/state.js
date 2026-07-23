@@ -6,6 +6,7 @@ let payments = [];
 let parties = [];
 let hajiParties = [];
 let sectors = [];
+let shirkas = [];
 let transports = [];
 let partyCodes = {};
 let users = [];

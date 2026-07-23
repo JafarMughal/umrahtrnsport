@@ -2,32 +2,34 @@
 //  SETTINGS (add/delete items)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function addFromSettings(type) {
-    const inpMap = { party: 'sp-in', sector: 'ss-in', transport: 'st-in', hajiParty: 'shp-in' };
-    const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st', hajiParty: 'al-shp' };
+    const inpMap = { party: 'sp-in', sector: 'ss-in', transport: 'st-in', hajiParty: 'shp-in', shirka: 'ssh-in' };
+    const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st', hajiParty: 'al-shp', shirka: 'al-ssh' };
     const L = T[lang] || T.ur;
     const val = document.getElementById(inpMap[type]).value.trim();
-    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : hajiParties;
+    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
     if (!val) { al(alMap[type], L.enterName, 'er'); return; }
     if (arr.includes(val)) { al(alMap[type], L.alreadyExists, 'er'); return; }
     arr.push(val);
-    if (type === 'party') { getCode(val); svP(); } else if (type === 'sector') svS(); else if (type === 'transport') svTr(); else svHP();
+    if (type === 'party') { getCode(val); svP(); } else if (type === 'sector') svS(); else if (type === 'transport') svTr(); else if (type === 'shirka') svSh(); else svHP();
     refreshAllDrops();
     document.getElementById(inpMap[type]).value = '';
     al(alMap[type], L.addedOk, 'ok');
     if (type === 'party') renderPartyList();
     else if (type === 'sector') renderSectorList();
     else if (type === 'transport') renderTransportList();
+    else if (type === 'shirka') renderShirkaList();
     else renderHajiPartyList();
 }
 
 async function deleteItem(type, idx) {
     const L = T[lang] || T.ur;
-    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : hajiParties;
+    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
     const name = arr[idx];
     let used = false;
     if (type === 'party') used = records.some(r => r.party === name) || payments.some(p => p.party === name);
     else if (type === 'sector') used = records.some(r => r.sector === name);
     else if (type === 'transport') used = records.some(r => r.transport === name);
+    else if (type === 'shirka') used = records.some(r => r.shirka === name);
     else used = records.some(r => r.newParty && r.newParty.split(',').map(s=>s.trim()).includes(name));
     
     if (used) {
@@ -37,11 +39,12 @@ async function deleteItem(type, idx) {
     }
 
     arr.splice(idx, 1);
-    if (type === 'party') svP(); else if (type === 'sector') svS(); else if (type === 'transport') svTr(); else svHP();
+    if (type === 'party') svP(); else if (type === 'sector') svS(); else if (type === 'transport') svTr(); else if (type === 'shirka') svSh(); else svHP();
     refreshAllDrops();
     if (type === 'party') renderPartyList();
     else if (type === 'sector') renderSectorList();
     else if (type === 'transport') renderTransportList();
+    else if (type === 'shirka') renderShirkaList();
     else renderHajiPartyList();
 }
 
@@ -100,6 +103,24 @@ function renderTransportList() {
     `).join('');
 }
 
+function renderShirkaList() {
+    const el = document.getElementById('shirkas-list');
+    if (!el) return;
+    if (!shirkas.length) { el.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);">کوئی شرکہ موجود نہیں</td></tr>`; return; }
+    el.innerHTML = shirkas.map((s, i) => `
+        <tr id="row-shirka-${i}">
+            <td>${i + 1}</td>
+            <td>🏢 <span id="val-shirka-${i}">${s}</span></td>
+            <td>
+                <div class="st-actions">
+                    <button class="btn btn-o btn-sm" onclick="editItem('shirka', ${i})">✏️</button>
+                    <button class="btn btn-o btn-sm" style="color:var(--red);" onclick="deleteItem('shirka', ${i})">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
 function renderHajiPartyList() {
     const el = document.getElementById('hajiparties-list');
     if (!el) return;
@@ -129,7 +150,7 @@ function switchSettingsTab(tabId) {
 }
 
 function editItem(type, idx) {
-    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : hajiParties;
+    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
     const val = arr[idx];
     const tdContent = document.getElementById(`row-${type}-${idx}`).cells[1];
     tdContent.innerHTML = `<input type="text" class="inline-edit-input" id="edit-input-${type}-${idx}" value="${val}">`;
@@ -146,12 +167,13 @@ function cancelEditItem(type) {
     if (type === 'party') renderPartyList();
     else if (type === 'sector') renderSectorList();
     else if (type === 'transport') renderTransportList();
+    else if (type === 'shirka') renderShirkaList();
     else renderHajiPartyList();
 }
 
 function saveItemEdit(type, idx) {
     const L = T[lang] || T.ur;
-    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : hajiParties;
+    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
     const oldName = arr[idx];
     const inputEl = document.getElementById(`edit-input-${type}-${idx}`);
     if (!inputEl) return;
@@ -195,6 +217,10 @@ function saveItemEdit(type, idx) {
                 }
             });
             svHP(); svR();
+        } else if (type === 'shirka') {
+            shirkas[idx] = newName;
+            records.forEach(r => { if (r.shirka === oldName) r.shirka = newName; });
+            svSh(); svR();
         }
         refreshAllDrops();
     }

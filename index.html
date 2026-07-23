@@ -165,7 +165,7 @@
                                     <select id="e-transport-nature-sel" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
                                 </div>
                             </div>
-                            <div class="fg"><label id="lbl-eShirka">شرکہ (Shirka)</label><input type="text" id="e-shirka" /></div>
+                            <div class="fg"><label id="lbl-eShirka">شرکہ (Shirka)</label><input type="text" id="e-shirka" list="shirka-list" /><datalist id="shirka-list"></datalist></div>
                             <div class="fg"><label id="lbl-eGroup">گروپ نمبر (Group No)</label><input type="text" id="e-group" /></div>
                             <div class="fg"><label id="lbl-eMobile">موبائل نمبر (Contact)</label><input type="text" id="e-mobile" class="ltr-input" /></div>
                         </div>
@@ -310,6 +310,7 @@
                     <button class="tab-btn" onclick="switchSettingsTab('tab-hajiparties')" id="tab-btn-hajiparties">حاجی پارٹی 👥</button>
                     <button class="tab-btn" onclick="switchSettingsTab('tab-sectors')" id="tab-btn-sectors">سیکٹر 🗺️</button>
                     <button class="tab-btn" onclick="switchSettingsTab('tab-transports')" id="tab-btn-transports">ٹرانسپورٹ 🚌</button>
+                    <button class="tab-btn" onclick="switchSettingsTab('tab-shirkas')" id="tab-btn-shirkas">شرکہ 🏢</button>
                     <button class="tab-btn" onclick="switchSettingsTab('tab-users')" id="tab-btn-users">صارفین 👥</button>
                 </div>
 
@@ -366,6 +367,18 @@
                         <table class="settings-table">
                             <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-sector">سیکٹر</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
                             <tbody id="sectors-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab: Shirkas -->
+                <div id="tab-shirkas" class="tab-content card">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newshirkalbl">نیا شرکہ</label><input type="text" id="ssh-in" placeholder="شرکہ کا نام" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addshirka" onclick="addFromSettings('shirka')">➕ شامل</button></div></div>
+                    <div id="al-ssh"></div>
+                    <div class="settings-table-wrapper">
+                        <table class="settings-table">
+                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-shirka">شرکہ</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
+                            <tbody id="shirkas-list"></tbody>
                         </table>
                     </div>
                 </div>

@@ -88,6 +88,19 @@ function refreshAllDrops() {
     fillDrop('e-party', parties, false);
     if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
     fillHajiPartyDropdown();
+    fillShirkaDatalist();
+}
+
+function fillShirkaDatalist() {
+    const list = document.getElementById('shirka-list');
+    if (!list) return;
+    let allShirkas = typeof shirkas !== 'undefined' ? [...shirkas] : [];
+    if (typeof records !== 'undefined') {
+        allShirkas = [...allShirkas, ...records.map(r => r.shirka)];
+    }
+    const uniqueShirkas = [...new Set(allShirkas.filter(s => s && s.trim() !== ''))];
+    uniqueShirkas.sort();
+    list.innerHTML = uniqueShirkas.map(s => `<option value="${s}">`).join('');
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

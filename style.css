@@ -1346,4 +1346,17 @@ body.lang-en .sd-dropdown { right: auto; }
     margin-inline-end: 8px;
     accent-color: var(--gold);
     cursor: pointer;
+}
+
+/* --- Daily Note Report Font Adjustments --- */
+#dn-report-out table th, 
+#dn-report-out table td {
+    font-size: 13.5px !important;
+}
+
+@media print {
+    #dn-report-out table th, 
+    #dn-report-out table td {
+        font-size: 13px !important;
+    }
 }
