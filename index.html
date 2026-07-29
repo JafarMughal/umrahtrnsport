@@ -290,6 +290,18 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="fg" style="flex:2;">
+                            <label id="lbl-dnRepTransporter">Transporter / ٹرانسپورٹر</label>
+                            <div class="custom-multi-select" id="dnr-transporter-multi-select">
+                                <div class="cms-header" onclick="toggleDnrTransporterMultiSelect(event)">
+                                    <span id="dnr-transporter-selected-text">-- All --</span>
+                                    <span class="cms-arrow">▼</span>
+                                </div>
+                                <div class="cms-dropdown" id="dnr-transporter-dropdown-container" style="display:none; padding:10px;">
+                                    <div id="dnr-transporter-checkboxes" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;"></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="fb-actions">
                             <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️</button>
                             <button class="btn btn-o no-print" id="btn-dn-resetrep" onclick="clearDailyNoteReport()">↩ صاف</button>

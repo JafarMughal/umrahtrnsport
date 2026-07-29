@@ -178,4 +178,10 @@ document.addEventListener('click', function(e) {
     if (dnrMs && dnrDd && !dnrMs.contains(e.target)) {
         dnrDd.style.display = 'none';
     }
+    
+    const dnrTransMs = document.getElementById('dnr-transporter-multi-select');
+    const dnrTransDd = document.getElementById('dnr-transporter-dropdown-container');
+    if (dnrTransMs && dnrTransDd && !dnrTransMs.contains(e.target)) {
+        dnrTransDd.style.display = 'none';
+    }
 });
