@@ -5,7 +5,8 @@ function addFromSettings(type) {
     const inpMap = { party: 'sp-in', sector: 'ss-in', transport: 'st-in', hajiParty: 'shp-in', shirka: 'ssh-in' };
     const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st', hajiParty: 'al-shp', shirka: 'al-ssh' };
     const L = T[lang] || T.ur;
-    const val = document.getElementById(inpMap[type]).value.trim();
+    let val = document.getElementById(inpMap[type]).value.trim();
+    val = val.replace(/[.#$\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
     const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
     if (!val) { al(alMap[type], L.enterName, 'er'); return; }
     if (arr.includes(val)) { al(alMap[type], L.alreadyExists, 'er'); return; }
@@ -177,7 +178,8 @@ function saveItemEdit(type, idx) {
     const oldName = arr[idx];
     const inputEl = document.getElementById(`edit-input-${type}-${idx}`);
     if (!inputEl) return;
-    const newName = inputEl.value.trim();
+    let newName = inputEl.value.trim();
+    newName = newName.replace(/[.#$\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
 
     if (!newName) {
         alert(L.renameErr || 'Error');
