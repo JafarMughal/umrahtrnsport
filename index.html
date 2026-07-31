@@ -74,6 +74,18 @@
                         <p id="app-sub">حاجیوں کی آمدورفت کا مکمل ریکارڈ</p>
                     </div>
                 </div>
+
+                <!-- NAV in the Middle -->
+                <nav id="main-nav">
+                    <button class="active" onclick="showPage('entry',this)">📝 نئی</button>
+                    <button onclick="showPage('payment',this)">💰 ادائیگی</button>
+                    <button onclick="showPage('ledger',this)">📒 لیجر</button>
+                    <button onclick="showPage('records',this)">📋 ریکارڈ</button>
+                    <button onclick="showPage('report',this)">📊 رپورٹ</button>
+                    <button onclick="showPage('dailynote',this)" id="nav-dailynote">📊 ڈیلی رپورٹ</button>
+                    <button onclick="showPage('settings',this)">⚙️ سیٹنگ</button>
+                </nav>
+
                 <div class="header-right">
                     <div class="header-user-wrap" id="user-status-wrap">
                         <span class="header-user-name" id="lbl-logged-in-user">صارف: admin</span>
@@ -88,18 +100,8 @@
             </div>
         </header>
 
-        <!-- NAV -->
-        <nav id="main-nav">
-            <button class="active" onclick="showPage('entry',this)">📝 نئی</button>
-            <button onclick="showPage('payment',this)">💰 ادائیگی</button>
-            <button onclick="showPage('ledger',this)">📒 لیجر</button>
-            <button onclick="showPage('records',this)">📋 ریکارڈ</button>
-            <button onclick="showPage('report',this)">📊 رپورٹ</button>
-            <button onclick="showPage('dailynote',this)" id="nav-dailynote">📊 ڈیلی رپورٹ</button>
-            <button onclick="showPage('settings',this)">⚙️ سیٹنگ</button>
-        </nav>
-
         <div class="wrap">
+            <div id="mdi-tabs" class="mdi-tabs no-print"></div>
 
             <!-- ===== ENTRY ===== -->
             <div id="page-entry" class="page active">
