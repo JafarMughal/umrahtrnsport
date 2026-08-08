@@ -436,6 +436,53 @@
     <div class="mo" id="modal"><div class="md"><h3 id="m-title"></h3><input type="text" id="m-input" placeholder="" /><div class="md-btns"><button class="btn btn-p" id="btn-msave" onclick="confirmModal()">✅ شامل کریں</button><button class="btn btn-o" id="btn-mcancel" onclick="closeModal()">❌ منسوخ</button></div></div></div>
     <div class="mo" id="del-modal"><div class="md del-md"><div class="del-icon">⚠️</div><h3 id="del-m-title"></h3><p id="del-m-msg"></p><input type="password" id="del-m-input" placeholder="" /><div class="md-btns" style="justify-content:center;margin-top:20px;"><button class="btn btn-d" id="btn-del-confirm" onclick="confirmDeleteModal()">🗑️</button><button class="btn btn-o" id="btn-del-cancel" onclick="closeDeleteModal()">❌</button></div></div></div>
 
+    <!-- ===== COPY VOUCHER MODAL ===== -->
+    <div class="mo" id="copy-modal" onclick="if(event.target===this)closeCopyModal()">
+        <div class="md" style="max-width:520px;width:95%;padding:0;overflow:hidden;border-radius:16px;">
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg,#2D6A4F,#40916C);padding:18px 22px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:26px;">📋</span>
+                <div>
+                    <h3 style="margin:0;color:#fff;font-size:16px;">واوچر کاپی کریں</h3>
+                    <p style="margin:0;color:rgba(255,255,255,0.75);font-size:12px;" id="copy-modal-voucher-label">واوچر: —</p>
+                </div>
+                <button onclick="closeCopyModal()" style="margin-right:auto;background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+            </div>
+            <!-- Original Record Info -->
+            <div style="background:#f0faf4;border-bottom:1px solid #d1e9db;padding:12px 22px;font-size:12px;color:#2D6A4F;" id="copy-modal-info"></div>
+            <!-- Form -->
+            <div style="padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="fg" style="grid-column:1/-1;">
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">📅 نئی تاریخ</label>
+                    <input type="date" id="copy-date" style="width:100%;box-sizing:border-box;" />
+                </div>
+                <div class="fg">
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">🗺️ نیا سیکٹر</label>
+                    <select id="copy-sector" style="width:100%;box-sizing:border-box;"></select>
+                </div>
+                <div class="fg">
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">🚌 ٹرانسپورٹ</label>
+                    <select id="copy-transport" style="width:100%;box-sizing:border-box;"></select>
+                </div>
+                <div class="fg">
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">💰 فی کس کرایہ</label>
+                    <input type="number" id="copy-fare" style="width:100%;box-sizing:border-box;" min="0" />
+                </div>
+                <div class="fg">
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">👥 حجاج (تعداد)</label>
+                    <input type="number" id="copy-count" style="width:100%;box-sizing:border-box;" min="0" />
+                </div>
+            </div>
+            <div id="al-copy" style="padding:0 22px;"></div>
+            <!-- Footer Buttons -->
+            <div style="padding:14px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);background:#fafafa;">
+                <button class="btn btn-o" onclick="closeCopyModal()" id="btn-copy-cancel">❌ منسوخ</button>
+                <button class="btn btn-p" onclick="confirmCopyVoucher()" id="btn-copy-confirm" style="background:linear-gradient(135deg,#2D6A4F,#40916C);border:none;color:#fff;">✅ کاپی کریں</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ===== FIREBASE SDK ===== -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
     </script>

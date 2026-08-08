@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 partyCodes = data.partyCodes || partyCodes;
                 users = data.users || users;
                 dailyNotes = data.dailyNotes || dailyNotes;
+                hajiParties = data.hajiParties || hajiParties;
                 const settings = data.settings || {};
                 fbLogo = settings.logo || fbLogo;
                 fbAppName = settings.appName || fbAppName;
@@ -115,6 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activePage.id === 'page-records') filterRecords();
                     if (activePage.id === 'page-dailynote') renderDailyNoteReport();
                     if (activePage.id === 'page-report') genReport();
+                    if (activePage.id === 'page-settings') {
+                        renderPartyList();
+                        renderSectorList();
+                        renderTransportList();
+                        renderShirkaList();
+                        renderHajiPartyList();
+                    }
                 }
             }
         }, (error) => {
@@ -198,6 +206,8 @@ window.renderUsers = renderUsers;
 window.renderPartyList = renderPartyList;
 window.renderSectorList = renderSectorList;
 window.renderTransportList = renderTransportList;
+window.renderShirkaList = renderShirkaList;
+window.renderHajiPartyList = renderHajiPartyList;
 window.renderPayments = renderPayments;
 window.renderPayHead = renderPayHead;
 window.renderRecHead = renderRecHead;
@@ -216,3 +226,7 @@ window.L_arrow = L_arrow;
 window.togglePasswordVisibility = togglePasswordVisibility;
 window.exportReportExcel = exportReportExcel;
 window.exportLedgerExcel = exportLedgerExcel;
+window.copyVoucher = copyVoucher;
+window.closeCopyModal = closeCopyModal;
+window.confirmCopyVoucher = confirmCopyVoucher;
+window.filterTableColumns = filterTableColumns;

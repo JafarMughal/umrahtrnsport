@@ -75,6 +75,7 @@ function renderRecords(rows) {
                 <td style="padding:4px;" class="no-print">
                     <button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>
                     <button class="btn btn-sm btn-d" onclick="deleteRecord('${r.id}')">${L.del}</button>
+                    <button class="btn btn-sm" onclick="copyVoucher('${r.id}')" title="کاپی کریں" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;">📋</button>
                 </td>
             </tr>
         `;
@@ -232,4 +233,98 @@ function filterTableColumns() {
     if (elHujjaj) elHujjaj.innerText = visibleCount;
     if (elGtHujjaj) elGtHujjaj.innerText = visibleCount;
     if (elGtAmount) elGtAmount.innerText = sar(visibleAmount);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  COPY VOUCHER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let _copySourceId = null;
+
+function copyVoucher(id) {
+    const r = records.find(x => x.id === id);
+    if (!r) return;
+    _copySourceId = id;
+
+    // Header label
+    document.getElementById('copy-modal-voucher-label').textContent =
+        `واوچر: ${r.voucher || '—'}  |  پارٹی: ${r.party}`;
+
+    // Info strip
+    document.getElementById('copy-modal-info').innerHTML =
+        `<span style="margin-left:16px;">📅 ${fd(r.date)}</span>` +
+        `<span style="margin-left:16px;">🗺️ ${r.sector}</span>` +
+        `<span style="margin-left:16px;">🚌 ${r.transport || '—'}</span>` +
+        `<span style="margin-left:16px;">👥 ${r.count || 0} حجاج</span>` +
+        `<span style="margin-left:16px;">💰 ${sar(r.fare || 0)} فی کس</span>`;
+
+    // Prefill form with same values (user can change)
+    document.getElementById('copy-date').value = today();
+
+    // Sector dropdown
+    const secSel = document.getElementById('copy-sector');
+    secSel.innerHTML = sectors.map(s =>
+        `<option value="${s}" ${s === r.sector ? 'selected' : ''}>${s}</option>`
+    ).join('');
+
+    // Transport dropdown
+    const trSel = document.getElementById('copy-transport');
+    trSel.innerHTML = transports.map(t =>
+        `<option value="${t}" ${t === r.transport ? 'selected' : ''}>${t}</option>`
+    ).join('');
+
+    document.getElementById('copy-fare').value = r.fare || 0;
+    document.getElementById('copy-count').value = r.count || 0;
+
+    // Clear alert
+    document.getElementById('al-copy').innerHTML = '';
+
+    // Show modal
+    document.getElementById('copy-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCopyModal() {
+    document.getElementById('copy-modal').style.display = 'none';
+    document.body.style.overflow = '';
+    _copySourceId = null;
+}
+
+function confirmCopyVoucher() {
+    if (!_copySourceId) return;
+    const src = records.find(x => x.id === _copySourceId);
+    if (!src) return;
+
+    const newDate   = document.getElementById('copy-date').value;
+    const newSector = document.getElementById('copy-sector').value;
+    const newTrans  = document.getElementById('copy-transport').value;
+    const newFare   = parseFloat(document.getElementById('copy-fare').value) || 0;
+    const newCount  = parseInt(document.getElementById('copy-count').value) || 0;
+
+    if (!newDate || !newSector || !newTrans) {
+        al('al-copy', 'تاریخ، سیکٹر اور ٹرانسپورٹ ضروری ہیں', 'er');
+        return;
+    }
+
+    const calcCount = newCount < 1 ? 1 : newCount;
+    const newTotal  = Math.round(calcCount * newFare);
+
+    const newRecord = {
+        ...src,
+        id:          uid(),
+        voucher:     genVoucher(),
+        date:        newDate,
+        sector:      newSector,
+        transport:   newTrans,
+        fare:        newFare,
+        count:       newCount,
+        total:       newTotal,
+        vehicleTotal: newTotal,
+        checked:     false,
+    };
+
+    records.push(newRecord);
+    svR();
+    closeCopyModal();
+    filterRecords();
+    al('al-entry', `✅ واوچر ${newRecord.voucher} کاپی ہوگیا — ${newSector}`, 'ok');
 }
