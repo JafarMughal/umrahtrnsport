@@ -230,3 +230,5 @@ window.copyVoucher = copyVoucher;
 window.closeCopyModal = closeCopyModal;
 window.confirmCopyVoucher = confirmCopyVoucher;
 window.filterTableColumns = filterTableColumns;
+window.switchRecordsTab = switchRecordsTab;
+window.toggleRecordCheck = toggleRecordCheck;

@@ -53,9 +53,6 @@ function renderRecords(rows) {
         if (sharing) tCount += r.count;
         tAmount += r.total;
         
-        const modeTag = sharing ? `<span style="background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">🚌 ${L.typeSharing}</span>`
-            : `<span style="background:#FFF8E1;color:#E65100;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">🚐 ${L.typeWhole}</span>`;
-            
         return `
             <tr class="rec-data-row" data-hujjaj="${sharing ? r.count : 0}" data-amount="${r.total}">
                 <td style="padding:4px; text-align:center;" class="no-print">
@@ -63,14 +60,12 @@ function renderRecords(rows) {
                 </td>
                 <td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>
                 <td style="padding:4px;">${fd(r.date)}</td>
-                <td style="padding:4px;"><span class="party-code">${getCode(r.party)}</span></td>
                 <td style="padding:4px;"><strong>${r.party}</strong></td>
                 <td style="padding:4px;"><span class="badge">${r.sector}</span></td>
                 <td style="padding:4px;">${r.transport || '—'}</td>
-                <td style="padding:4px;">${modeTag}</td>
                 <td style="padding:4px;text-align:center;">${sharing ? `<strong>${r.count}</strong>` : '—'}</td>
                 <td style="padding:4px;text-align:right;">${sharing ? sar(r.fare) : '—'}</td>
-                <td style="padding:4px;text-align:right;">${!sharing ? `<strong style="color:#E65100;">${sar(r.vehicleTotal || r.total)}</strong>` : '—'}</td>
+                <td style="padding:4px;text-align:left;"><span style="font-family:monospace;color:#1565c0;font-weight:600;">${r.flightNo || '—'}</span></td>
                 <td style="padding:4px;text-align:right;"><strong style="color:var(--green-dark);">${sar(r.total)}</strong></td>
                 <td style="padding:4px;" class="no-print">
                     <button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>
@@ -116,14 +111,12 @@ function renderRecords(rows) {
                     <th style="text-align: center; padding: 4px; width: 30px;" class="no-print">✔</th>
                     <th style="text-align: left; padding: 4px;">${L.voucherCol}</th>
                     <th style="text-align: left; padding: 4px;">${L.dateCol}</th>
-                    <th style="text-align: left; padding: 4px;">${L.codeCol}</th>
                     <th style="text-align: left; padding: 4px;">${L.partyCol}</th>
                     <th style="text-align: left; padding: 4px;">${L.sectorCol}</th>
                     <th style="text-align: left; padding: 4px;">${L.transportCol}</th>
-                    <th style="text-align: left; padding: 4px;">${L.typeSharing}/${L.typeWhole}</th>
                     <th style="text-align: center; padding: 4px;">${L.hujjajCol}</th>
                     <th style="text-align: right; padding: 4px;">${L.fareCol}</th>
-                    <th style="text-align: right; padding: 4px;">${L.vehicleTotalCol || 'گاڑی رقم'}</th>
+                    <th style="text-align: left; padding: 4px;">✈️ Flight No</th>
                     <th style="text-align: right; padding: 4px;">${L.totalCol}</th>
                     <th style="text-align: left; padding: 4px;" class="no-print">${L.actionCol}</th>
                 </tr>
@@ -137,9 +130,6 @@ function renderRecords(rows) {
                     <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="5" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
                     <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="6" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
                     <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="7" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="8" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="9" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="10" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
                     <td style="padding: 2px;"></td>
                 </tr>
             </thead>
@@ -148,7 +138,7 @@ function renderRecords(rows) {
             </tbody>
             <tfoot>
                 <tr id="gt-row" style="border-top: 1px dashed #000; font-weight: bold; page-break-inside: avoid;">
-                    <td colspan="8" style="padding: 6px 4px; text-align: right;">Grand Total:</td>
+                    <td colspan="6" style="padding: 6px 4px; text-align: right;">Grand Total:</td>
                     <td id="gt-hujjaj" style="padding: 6px 4px; text-align: center;">${tCount}</td>
                     <td colspan="2" style="padding: 6px 4px;"></td>
                     <td id="gt-amount" style="padding: 6px 4px; text-align: right;">${sar(tAmount)}</td>
@@ -279,12 +269,12 @@ function copyVoucher(id) {
     document.getElementById('al-copy').innerHTML = '';
 
     // Show modal
-    document.getElementById('copy-modal').style.display = 'flex';
+    document.getElementById('copy-modal').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
 function closeCopyModal() {
-    document.getElementById('copy-modal').style.display = 'none';
+    document.getElementById('copy-modal').classList.remove('open');
     document.body.style.overflow = '';
     _copySourceId = null;
 }
