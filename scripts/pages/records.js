@@ -2,6 +2,7 @@
 //  RECORDS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let currentRecordsTab = 'pending';
+let previousRecordsTab = 'pending';
 
 function switchRecordsTab(tab) {
     currentRecordsTab = tab;
@@ -25,15 +26,22 @@ function renderRecords(rows) {
     const L = T[lang] || T.ur;
     const out = document.getElementById('rec-output');
     
-    const filteredRows = currentRecordsTab === 'checked' ? rows.filter(r => r.checked) : rows.filter(r => !r.checked);
+    const filteredRows = currentRecordsTab === 'all'
+        ? rows
+        : currentRecordsTab === 'checked'
+            ? rows.filter(r => r.checked)
+            : rows.filter(r => !r.checked);
     
     let tabsHtml = `
-    <div style="display: flex; background: #f1f3f5; border-radius: 8px; padding: 4px; margin-bottom: 15px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;" class="no-print">
-        <div onclick="switchRecordsTab('pending')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'pending' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #1976d2;' : 'color: #6c757d;'}">
-            🕒 Pending (پینڈنگ)
+    <div style="display: flex; background: #f1f3f5; border-radius: 8px; padding: 4px; margin-bottom: 15px; width: 100%; max-width: 700px; margin-left: auto; margin-right: auto;" class="no-print">
+        <div onclick="switchRecordsTab('pending')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'pending' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #1976d2;' : 'color: #6c757d;'}">
+            🕒 Pending
         </div>
-        <div onclick="switchRecordsTab('checked')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'checked' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #2e7d32;' : 'color: #6c757d;'}">
-            ✔ Checked (چیک شدہ)
+        <div onclick="switchRecordsTab('checked')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'checked' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #2e7d32;' : 'color: #6c757d;'}">
+            ✔ Checked
+        </div>
+        <div onclick="switchRecordsTab('all')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'all' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #6a1b9a;' : 'color: #6c757d;'}">
+            📋 تمام ریکارڈ
         </div>
     </div>
     `;
@@ -53,6 +61,9 @@ function renderRecords(rows) {
         if (sharing) tCount += r.count;
         tAmount += r.total;
         
+        const statusBadge = currentRecordsTab === 'all'
+            ? `<span style="font-size:10px;padding:2px 6px;border-radius:10px;font-weight:bold;background:${r.checked ? '#e8f5e9' : '#e3f2fd'};color:${r.checked ? '#2e7d32' : '#1565c0'};">${r.checked ? '✔' : '🕒'}</span>`
+            : '';
         return `
             <tr class="rec-data-row" data-hujjaj="${sharing ? r.count : 0}" data-amount="${r.total}">
                 <td style="padding:4px; text-align:center;" class="no-print">
@@ -61,7 +72,7 @@ function renderRecords(rows) {
                 <td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>
                 <td style="padding:4px;">${fd(r.date)}</td>
                 <td style="padding:4px;"><strong>${r.party}</strong></td>
-                <td style="padding:4px;"><span class="badge">${r.sector}</span></td>
+                <td style="padding:4px;"><span class="badge">${r.sector}</span>${statusBadge}</td>
                 <td style="padding:4px;">${r.transport || '—'}</td>
                 <td style="padding:4px;text-align:center;">${sharing ? `<strong>${r.count}</strong>` : '—'}</td>
                 <td style="padding:4px;text-align:right;">${sharing ? sar(r.fare) : '—'}</td>
@@ -76,10 +87,10 @@ function renderRecords(rows) {
         `;
     }).join('');
 
-    const titleBg = currentRecordsTab === 'pending' ? '#e3f2fd' : '#e8f5e9';
-    const titleBorder = currentRecordsTab === 'pending' ? '#90caf9' : '#a5d6a7';
-    const titleColor = currentRecordsTab === 'pending' ? '#1565c0' : '#1b5e20';
-    const titleText = currentRecordsTab === 'pending' ? '⏳ Pending Records (باقی ماندہ)' : '✅ Checked Records (مکمل شدہ)';
+    const titleBg = currentRecordsTab === 'pending' ? '#e3f2fd' : currentRecordsTab === 'checked' ? '#e8f5e9' : '#f3e5f5';
+    const titleBorder = currentRecordsTab === 'pending' ? '#90caf9' : currentRecordsTab === 'checked' ? '#a5d6a7' : '#ce93d8';
+    const titleColor = currentRecordsTab === 'pending' ? '#1565c0' : currentRecordsTab === 'checked' ? '#1b5e20' : '#6a1b9a';
+    const titleText = currentRecordsTab === 'pending' ? '⏳ Pending Records (باقی ماندہ)' : currentRecordsTab === 'checked' ? '✅ Checked Records (مکمل شدہ)' : '📋 تمام ریکارڈ (All Records)';
 
     const html = `
     <div style="font-family: sans-serif; color: #000; background: #fff; padding: 10px; border: 1px solid #ccc; margin-bottom: 20px; border-radius: 8px;">
