@@ -2,6 +2,7 @@
 //  STATE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let records = [];
+let deletedRecords = [];
 let payments = [];
 let parties = [];
 let hajiParties = [];

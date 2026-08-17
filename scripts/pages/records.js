@@ -6,7 +6,11 @@ let previousRecordsTab = 'pending';
 
 function switchRecordsTab(tab) {
     currentRecordsTab = tab;
-    filterRecords();
+    if (tab === 'trash') {
+        renderTrash();
+    } else {
+        filterRecords();
+    }
 }
 
 function toggleRecordCheck(id) {
@@ -32,8 +36,9 @@ function renderRecords(rows) {
             ? rows.filter(r => r.checked)
             : rows.filter(r => !r.checked);
     
+    const trashCount = (deletedRecords || []).length;
     let tabsHtml = `
-    <div style="display: flex; background: #f1f3f5; border-radius: 8px; padding: 4px; margin-bottom: 15px; width: 100%; max-width: 700px; margin-left: auto; margin-right: auto;" class="no-print">
+    <div style="display: flex; background: #f1f3f5; border-radius: 8px; padding: 4px; margin-bottom: 15px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;" class="no-print">
         <div onclick="switchRecordsTab('pending')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'pending' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #1976d2;' : 'color: #6c757d;'}">
             🕒 Pending
         </div>
@@ -42,6 +47,9 @@ function renderRecords(rows) {
         </div>
         <div onclick="switchRecordsTab('all')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'all' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #6a1b9a;' : 'color: #6c757d;'}">
             📋 تمام ریکارڈ
+        </div>
+        <div onclick="switchRecordsTab('trash')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'trash' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #c62828;' : 'color: #6c757d;'}">
+            🗑️ ٹریش${trashCount > 0 ? ` <span style="background:#c62828;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;">${trashCount}</span>` : ''}
         </div>
     </div>
     `;
@@ -182,9 +190,101 @@ function clearFilter() {
 async function deleteRecord(id) {
     const L = T[lang] || T.ur;
     if (!(await verifyPassword(L.confirmDel || "کیا آپ واقعی یہ ریکارڈ حذف کرنا چاہتے ہیں؟"))) return;
+    const rec = records.find(x => x.id === id);
+    if (!rec) return;
+    // Move to trash instead of permanent delete
+    deletedRecords = deletedRecords || [];
+    deletedRecords.push({ ...rec, deletedAt: new Date().toISOString() });
     records = records.filter(x => x.id !== id);
     svR();
+    svDR();
     filterRecords();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TRASH (ٹریش)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function renderTrash() {
+    const L = T[lang] || T.ur;
+    const out = document.getElementById('rec-output');
+    const trashCount = (deletedRecords || []).length;
+
+    const trashTabsHtml = `
+    <div style="display: flex; background: #f1f3f5; border-radius: 8px; padding: 4px; margin-bottom: 15px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;" class="no-print">
+        <div onclick="switchRecordsTab('pending')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; color: #6c757d;">
+            🕒 Pending
+        </div>
+        <div onclick="switchRecordsTab('checked')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; color: #6c757d;">
+            ✔ Checked
+        </div>
+        <div onclick="switchRecordsTab('all')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; color: #6c757d;">
+            📋 تمام ریکارڈ
+        </div>
+        <div onclick="switchRecordsTab('trash')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #c62828;">
+            🗑️ ٹریش${trashCount > 0 ? ` <span style="background:#c62828;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;">${trashCount}</span>` : ''}
+        </div>
+    </div>`;
+
+    if (!trashCount) {
+        out.innerHTML = trashTabsHtml + `<div class="empty"><div class="ico">🗑️</div>ٹریش خالی ہے — کوئی حذف شدہ ریکارڈ نہیں</div>`;
+        return;
+    }
+
+    const sorted = [...deletedRecords].sort((a, b) => (b.deletedAt || '').localeCompare(a.deletedAt || ''));
+
+    const rows = sorted.map(r => `
+        <tr style="background:#fff8f8;">
+            <td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:#c62828;font-size:11px;">${r.voucher || '—'}</span></td>
+            <td style="padding:4px;">${fd(r.date)}</td>
+            <td style="padding:4px;"><strong>${r.party}</strong></td>
+            <td style="padding:4px;"><span class="badge">${r.sector}</span></td>
+            <td style="padding:4px;">${r.transport || '—'}</td>
+            <td style="padding:4px;text-align:center;">${r.count || '—'}</td>
+            <td style="padding:4px;text-align:right;"><strong style="color:#c62828;">${sar(r.total)}</strong></td>
+            <td style="padding:4px;font-size:10px;color:#888;">${r.deletedAt ? new Date(r.deletedAt).toLocaleString('ur-PK') : '—'}</td>
+            <td style="padding:4px;">
+                <button class="btn btn-sm btn-g" onclick="restoreRecord('${r.id}')" title="واپس کریں" style="background:linear-gradient(135deg,#2e7d32,#388e3c);color:#fff;border:none;padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;">↩ Restore</button>
+            </td>
+        </tr>
+    `).join('');
+
+    out.innerHTML = trashTabsHtml + `
+    <div style="font-family:sans-serif;color:#000;background:#fff;padding:10px;border:1px solid #ffcdd2;margin-bottom:20px;border-radius:8px;">
+        <div style="background:#ffebee;border:1px solid #ef9a9a;border-radius:6px;text-align:center;padding:10px;font-weight:bold;font-size:16px;margin-bottom:15px;color:#c62828;">
+            🗑️ ٹریش — حذف شدہ ریکارڈ (${trashCount})
+        </div>
+        <p style="font-size:12px;color:#888;text-align:center;margin-bottom:10px;">یہ ریکارڈ ریکارڈز پیج سے ہٹا دیے گئے ہیں۔ Restore بٹن سے واپس لا سکتے ہیں۔</p>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+                <tr style="border-top:1px solid #000;border-bottom:1px solid #000;">
+                    <th style="text-align:left;padding:4px;">واوچر</th>
+                    <th style="text-align:left;padding:4px;">تاریخ</th>
+                    <th style="text-align:left;padding:4px;">پارٹی</th>
+                    <th style="text-align:left;padding:4px;">سیکٹر</th>
+                    <th style="text-align:left;padding:4px;">ٹرانسپورٹ</th>
+                    <th style="text-align:center;padding:4px;">حجاج</th>
+                    <th style="text-align:right;padding:4px;">رقم</th>
+                    <th style="text-align:left;padding:4px;">حذف کی تاریخ</th>
+                    <th style="text-align:left;padding:4px;">عمل</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+    </div>`;
+}
+
+async function restoreRecord(id) {
+    const L = T[lang] || T.ur;
+    const rec = (deletedRecords || []).find(x => x.id === id);
+    if (!rec) return;
+    // Remove deletedAt before restoring
+    const { deletedAt, ...restored } = rec;
+    records.push(restored);
+    deletedRecords = deletedRecords.filter(x => x.id !== id);
+    svR();
+    svDR();
+    renderTrash();
+    al('al-entry', `✅ واوچر ${rec.voucher || ''} بحال ہوگیا`, 'ok');
 }
 
 function filterTableColumns() {

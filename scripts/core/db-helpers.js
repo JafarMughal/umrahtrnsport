@@ -2,6 +2,7 @@
 //  DATABASE HELPERS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function svR() { db.ref('records').set(records).catch(e => console.warn('Save error:', e)); }
+function svDR() { db.ref('deletedRecords').set(deletedRecords).catch(e => console.warn('Save error:', e)); }
 function svPy() { db.ref('payments').set(payments).catch(e => console.warn('Save error:', e)); }
 function svP() { db.ref('parties').set(parties).catch(e => console.warn('Save error:', e)); }
 function svS() { db.ref('sectors').set(sectors).catch(e => console.warn('Save error:', e)); }

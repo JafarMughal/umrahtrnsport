@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('/').once('value').then(snapshot => {
             const data = snapshot.val() || {};
             records = data.records || [];
+            deletedRecords = data.deletedRecords || [];
             payments = data.payments || [];
             parties = data.parties || [];
             sectors = data.sectors || [];
