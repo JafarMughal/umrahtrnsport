@@ -411,21 +411,22 @@ function confirmCopyVoucher() {
 
     const newRecord = {
         ...src,
-        id:          uid(),
-        voucher:     genVoucher(),
-        date:        newDate,
-        sector:      newSector,
-        transport:   newTrans,
-        fare:        newFare,
-        count:       newCount,
-        total:       newTotal,
+        id:           uid(),
+        // واوچر نمبر وہی رہے گا (src.voucher) — صرف نئی ID
+        date:         newDate,
+        sector:       newSector,
+        transport:    newTrans,
+        fare:         newFare,
+        count:        newCount,
+        total:        newTotal,
         vehicleTotal: newTotal,
-        checked:     false,
+        checked:      false,
     };
 
     records.push(newRecord);
     svR();
     closeCopyModal();
+    currentRecordsTab = 'pending'; // ڈپلیکیٹ ریکارڈ Pending میں جاتا ہے
     filterRecords();
-    al('al-entry', `✅ واوچر ${newRecord.voucher} کاپی ہوگیا — ${newSector}`, 'ok');
+    al('al-entry', `✅ واوچر ${newRecord.voucher} کا ڈپلیکیٹ بن گیا — ${newSector}`, 'ok');
 }

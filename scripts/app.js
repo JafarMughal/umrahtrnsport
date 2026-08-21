@@ -90,7 +90,11 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('/').on('value', snapshot => {
             if (isFirebaseReady && snapshot.exists()) {
                 const data = snapshot.val() || {};
-                records = data.records || records;
+                // Firebase سے آنے والا records merge کریں — local میں موجود IDs کو محفوظ رکھیں
+                const fbRecords = data.records || [];
+                const fbIds = new Set(fbRecords.map(r => r.id));
+                const localOnly = records.filter(r => !fbIds.has(r.id));
+                records = localOnly.length > 0 ? [...fbRecords, ...localOnly] : fbRecords;
                 payments = data.payments || payments;
                 parties = data.parties || parties;
                 sectors = data.sectors || sectors;
