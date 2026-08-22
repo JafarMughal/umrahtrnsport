@@ -99,12 +99,16 @@ function renderRecords(rows) {
     const titleBorder = currentRecordsTab === 'pending' ? '#90caf9' : currentRecordsTab === 'checked' ? '#a5d6a7' : '#ce93d8';
     const titleColor = currentRecordsTab === 'pending' ? '#1565c0' : currentRecordsTab === 'checked' ? '#1b5e20' : '#6a1b9a';
     const titleText = currentRecordsTab === 'pending' ? '⏳ Pending Records (باقی ماندہ)' : currentRecordsTab === 'checked' ? '✅ Checked Records (مکمل شدہ)' : '📋 تمام ریکارڈ (All Records)';
+    const excelBtn = currentRecordsTab === 'all'
+        ? `<button onclick="exportRecordsToExcel()" class="no-print" title="Excel میں محفوظ کریں" style="margin-right:10px;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.2);">📥 Excel ڈاؤنلوڈ</button>`
+        : '';
 
     const html = `
     <div style="font-family: sans-serif; color: #000; background: #fff; padding: 10px; border: 1px solid #ccc; margin-bottom: 20px; border-radius: 8px;">
         ${tabsHtml}
-        <div style="background-color: ${titleBg}; border: 1px solid ${titleBorder}; border-radius: 6px; text-align: center; padding: 10px; font-weight: bold; font-size: 16px; margin-bottom: 15px; color: ${titleColor};">
-            ${titleText}
+        <div style="background-color: ${titleBg}; border: 1px solid ${titleBorder}; border-radius: 6px; text-align: center; padding: 10px; font-weight: bold; font-size: 16px; margin-bottom: 15px; color: ${titleColor}; display: flex; align-items: center; justify-content: center;">
+            <span style="flex:1;">${titleText}</span>
+            ${excelBtn}
         </div>
         
         <table style="width: 100%; border: none; font-size: 12px; margin-bottom: 15px;">
@@ -429,4 +433,95 @@ function confirmCopyVoucher() {
     currentRecordsTab = 'pending'; // ڈپلیکیٹ ریکارڈ Pending میں جاتا ہے
     filterRecords();
     al('al-entry', `✅ واوچر ${newRecord.voucher} کا ڈپلیکیٹ بن گیا — ${newSector}`, 'ok');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  EXCEL EXPORT (تمام ریکارڈ)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function exportRecordsToExcel() {
+    const L = T[lang] || T.ur;
+
+    // موجودہ فلٹر سے ریکارڈ حاصل کریں
+    const from   = document.getElementById('f-from')   ? document.getElementById('f-from').value   : '';
+    const to     = document.getElementById('f-to')     ? document.getElementById('f-to').value     : '';
+    const party  = document.getElementById('f-party')  ? document.getElementById('f-party').value  : '';
+    const sector = document.getElementById('f-sector') ? document.getElementById('f-sector').value : '';
+
+    let rows = [...records];
+    if (from)   rows = rows.filter(r => r.date >= from);
+    if (to)     rows = rows.filter(r => r.date <= to);
+    if (party)  rows = rows.filter(r => r.party === party);
+    if (sector) rows = rows.filter(r => r.sector === sector);
+
+    // تاریخ کے مطابق ترتیب (نیا پہلے)
+    rows = [...rows].sort((a, b) => b.date.localeCompare(a.date));
+
+    // ━━ CSV ہیڈر ━━
+    const headers = [
+        'واوچر نمبر',
+        'تاریخ',
+        'پارٹی',
+        'سیکٹر',
+        'ٹرانسپورٹ',
+        'حجاج تعداد',
+        'کرایہ فی کس (SAR)',
+        'فلائٹ نمبر',
+        'کل رقم (SAR)',
+        'اسٹیٹس'
+    ];
+
+    const csvRows = [headers.join(',')];
+
+    let totalHujjaj = 0;
+    let totalAmount = 0;
+
+    rows.forEach(r => {
+        const sharing = r.mode === 'sharing' || isSharing(r.transport);
+        const count   = sharing ? (r.count || 0) : 0;
+        const fare    = sharing ? (r.fare  || 0) : 0;
+        if (sharing) totalHujjaj += count;
+        totalAmount += (r.total || 0);
+
+        const status = r.checked ? 'مکمل (Checked)' : 'باقی (Pending)';
+
+        // خصوصی حروف سے بچاؤ کے لیے ہر سیل کو quotes میں لپیٹیں
+        const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+        csvRows.push([
+            esc(r.voucher || ''),
+            esc(fd(r.date)),
+            esc(r.party   || ''),
+            esc(r.sector  || ''),
+            esc(r.transport || ''),
+            esc(sharing ? count : ''),
+            esc(sharing ? fare  : ''),
+            esc(r.flightNo || ''),
+            esc(r.total || 0),
+            esc(status)
+        ].join(','));
+    });
+
+    // ━━ خالی لائن اور سم ━━
+    csvRows.push('');
+    csvRows.push(`"کل ریکارڈ:","${rows.length}"`);
+    csvRows.push(`"کل حجاج:","${totalHujjaj}"`);
+    csvRows.push(`"کل رقم (SAR):","${totalAmount}"`);
+    csvRows.push(`"رپورٹ تاریخ:","${fd(today())}"`);
+
+    // ━━ BOM + ڈاؤنلوڈ ━━
+    const bom    = '\uFEFF';   // Urdu / Arabic کے لیے UTF-8 BOM
+    const blob   = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url    = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const date   = today().replace(/-/g, '');
+    const tab    = currentRecordsTab === 'all' ? 'تمام' : currentRecordsTab === 'checked' ? 'مکمل' : 'باقی';
+
+    anchor.href     = url;
+    anchor.download = `UmrahTransport_Records_${tab}_${date}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+
+    al('al-entry', `✅ Excel فائل ڈاؤنلوڈ ہوگئی — ${rows.length} ریکارڈ`, 'ok');
 }
