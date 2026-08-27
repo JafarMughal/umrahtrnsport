@@ -12,7 +12,8 @@ const tabNames = {
     'report': '📊 رپورٹ',
     'dailynote': '📊 ڈیلی رپورٹ',
     'settings': '⚙️ سیٹنگ',
-    'update': '✏️ اپڈیٹ'
+    'update': '✏️ اپڈیٹ',
+    'admin': '👑 سوپر ایڈمن'
 };
 
 function renderMdiTabs() {
@@ -44,11 +45,19 @@ function renderMdiTabs() {
 }
 
 function closeAllMdiTabs() {
-    openedTabs = ['entry'];
-    switchToTab('entry');
+    const def = (typeof canDo === 'function' && canDo('entry')) ? 'entry' : 'records';
+    openedTabs = [def];
+    switchToTab(def);
 }
 
 function switchToTab(tab) {
+    if (typeof canDo === 'function') {
+        if (tab === 'entry' && !canDo('entry')) tab = 'records';
+        else if (tab === 'payment' && !canDo('payment')) tab = 'records';
+        else if (tab === 'settings' && !canDo('settings')) tab = 'records';
+        else if (tab === 'admin' && !canDo('adminPanel')) tab = 'records';
+    }
+
     if (!openedTabs.includes(tab)) {
         openedTabs.push(tab);
     }
@@ -62,12 +71,13 @@ function closeMdiTab(tab, event) {
     if (event) event.stopPropagation();
     
     openedTabs = openedTabs.filter(t => t !== tab);
+    const def = (typeof canDo === 'function' && canDo('entry')) ? 'entry' : 'records';
     
     if (currentActiveTab === tab) {
         if (openedTabs.length > 0) {
             switchToTab(openedTabs[openedTabs.length - 1]);
         } else {
-            switchToTab('entry');
+            switchToTab(def);
         }
     } else {
         renderMdiTabs();
@@ -102,6 +112,7 @@ function _executeShowPageLogic(p) {
     if (p === 'update') { fillDrop('u-sector', sectors); fillDrop('u-transport', transports); renderUpdateTable(); renderUpdHead(); }
     if (p === 'dailynote') { fillDrop('dn-sector', sectors); renderDailyNoteReport(); }
     if (p === 'report') { fillDrop('r-party', parties, true); genReport(); }
+    if (p === 'admin') { if (canDo('adminPanel')) renderAdminPanel(); }
     if (p === 'settings') {
         renderPartyList(); renderHajiPartyList(); renderSectorList(); renderTransportList(); renderShirkaList(); loadAppName(lang);
         renderUsers();

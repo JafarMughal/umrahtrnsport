@@ -41,6 +41,15 @@ function calcE() {
 function setNextVoucher() { document.getElementById('e-voucher').value = genVoucher(); }
 
 function addEntry() {
+    const editId = document.getElementById('e-id').value;
+    if (editId && typeof canDo === 'function' && !canDo('edit')) {
+        alert('⚠️ آپ کو ریکارڈ میں تبدیلی کی اجازت نہیں ہے');
+        return;
+    }
+    if (!editId && typeof canDo === 'function' && !canDo('entry')) {
+        alert('⚠️ آپ کو نئی انٹری کرنے کی اجازت نہیں ہے');
+        return;
+    }
     const L = T[lang] || T.ur;
     const date = document.getElementById('e-date').value;
     const party = document.getElementById('e-party').value;
@@ -68,8 +77,6 @@ function addEntry() {
     const group = document.getElementById('e-group').value.trim();
     const mobile = document.getElementById('e-mobile').value.trim();
 
-    const editId = document.getElementById('e-id').value;
-
     if (editId) {
         const idx = records.findIndex(r => r.id === editId);
         if (idx !== -1) {
@@ -87,6 +94,10 @@ function addEntry() {
 }
 
 function editRecord(id) {
+    if (typeof canDo === 'function' && !canDo('edit')) {
+        alert('⚠️ آپ کو ریکارڈ میں تبدیلی کی اجازت نہیں ہے');
+        return;
+    }
     const r = records.find(x => x.id === id);
     if (!r) return;
 

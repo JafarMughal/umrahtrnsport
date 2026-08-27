@@ -77,18 +77,20 @@
 
                 <!-- NAV in the Middle -->
                 <nav id="main-nav">
-                    <button class="active" onclick="showPage('entry',this)">📝 نئی</button>
-                    <button onclick="showPage('payment',this)">💰 ادائیگی</button>
-                    <button onclick="showPage('ledger',this)">📒 لیجر</button>
-                    <button onclick="showPage('records',this)">📋 ریکارڈ</button>
-                    <button onclick="showPage('report',this)">📊 رپورٹ</button>
-                    <button onclick="showPage('dailynote',this)" id="nav-dailynote">📊 ڈیلی رپورٹ</button>
-                    <button onclick="showPage('settings',this)">⚙️ سیٹنگ</button>
+                    <button class="active" id="nav-entry" onclick="showPage('entry',this)">📝 نئی</button>
+                    <button id="nav-payment" onclick="showPage('payment',this)">💰 ادائیگی</button>
+                    <button id="nav-ledger" onclick="showPage('ledger',this)">📒 لیجر</button>
+                    <button id="nav-records" onclick="showPage('records',this)">📋 ریکارڈ</button>
+                    <button id="nav-report" onclick="showPage('report',this)">📊 رپورٹ</button>
+                    <button id="nav-dailynote" onclick="showPage('dailynote',this)">📊 ڈیلی رپورٹ</button>
+                    <button id="nav-settings" onclick="showPage('settings',this)">⚙️ سیٹنگ</button>
+                    <button id="nav-admin-panel" onclick="showPage('admin',this)" style="display:none;background:linear-gradient(135deg,#7B2FF7,#F107A3);color:#fff;border:none;">👑 ایڈمن</button>
                 </nav>
 
                 <div class="header-right">
                     <div class="header-user-wrap" id="user-status-wrap">
                         <span class="header-user-name" id="lbl-logged-in-user">صارف: admin</span>
+                        <span class="role-badge" id="role-badge" style="display:none;"></span>
                         <button class="btn-logout" id="btn-logout" onclick="logout()">لاگ آؤٹ 🚪</button>
                     </div>
                     <div class="lang-switcher">
@@ -409,19 +411,12 @@
                     </div>
                 </div>
 
-                <!-- Tab: Users -->
+                <!-- Tab: Users (redirects to admin panel) -->
                 <div id="tab-users" class="tab-content card">
-                    <div id="al-su"></div>
-                    <div style="display:flex;gap:15px;flex-wrap:wrap;">
-                        <div style="flex:1;min-width:260px;">
-                            <h4 style="font-size:13px;color:var(--green-dark);margin-bottom:10px;" id="lbl-su-title">نیا صارف شامل کریں</h4>
-                            <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;"><div class="fg"><label id="lbl-su-username">صارف نام</label><input type="text" id="su-username" /></div><div class="fg"><label id="lbl-su-password">پاس ورڈ</label><input type="password" id="su-password" /></div></div>
-                            <button class="btn btn-p" id="btn-add-user" onclick="addUser()">➕ شامل</button>
-                        </div>
-                        <div style="flex:1;min-width:200px;border-inline-start:1px dashed var(--border);padding-inline-start:15px;" class="no-print">
-                            <h4 style="font-size:13px;color:var(--green-dark);margin-bottom:10px;" id="lbl-users-list-title">صارفین کی فہرست</h4>
-                            <div class="user-tags" id="users-list"></div>
-                        </div>
+                    <div style="text-align:center;padding:30px;color:var(--muted);">
+                        <div style="font-size:36px;margin-bottom:10px;">👑</div>
+                        <p style="font-size:14px;font-weight:600;color:var(--primary);">یوزر مینجمنٹ ایڈمن پینل میں منتقل ہوگئی</p>
+                        <button class="btn btn-p" onclick="showPage('admin',null)" style="margin-top:10px;">👑 سوپر ایڈمن پینل کھولیں</button>
                     </div>
                 </div>
             </div>
@@ -431,6 +426,117 @@
         <div class="nav-spacer"></div>
 
     </div><!-- /main-app-container -->
+
+    <!-- ===== ADMIN PANEL PAGE (outside wrap, inside main-app-container) ===== -->
+    <div id="page-admin" class="page" style="padding:0;">
+        <!-- Admin Header -->
+        <div class="admin-panel-header">
+            <div class="admin-panel-title">
+                <span class="admin-crown">👑</span>
+                <div>
+                    <h2 style="margin:0;font-size:20px;color:#fff;">سوپر ایڈمن پینل</h2>
+                    <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.75);">یوزر مینجمنٹ اور رول کنٹرول</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding:20px;">
+            <!-- Admin Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" id="atb-admin-tab-dashboard" onclick="switchAdminTab('admin-tab-dashboard')">📊 ڈیش بورڈ</button>
+                <button class="admin-tab-btn" id="atb-admin-tab-users" onclick="switchAdminTab('admin-tab-users')">👥 یوزر مینجمنٹ</button>
+                <button class="admin-tab-btn" id="atb-admin-tab-perms" onclick="switchAdminTab('admin-tab-perms')">🔒 اجازتیں</button>
+            </div>
+
+            <div id="al-admin"></div>
+
+            <!-- Tab: Dashboard -->
+            <div id="admin-tab-dashboard" class="admin-tab-content active">
+                <div id="admin-dashboard" class="admin-dash-grid"></div>
+                <div id="admin-total-stats" class="admin-total-stats"></div>
+            </div>
+
+            <!-- Tab: Users -->
+            <div id="admin-tab-users" class="admin-tab-content">
+                <!-- Add New User -->
+                <div class="card" style="margin-bottom:16px;">
+                    <div class="card-title" style="font-size:14px;">➕ نیا یوزر شامل کریں</div>
+                    <div id="adm-al-su"></div>
+                    <div class="grid" style="grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end;">
+                        <div class="fg">
+                            <label>صارف نام</label>
+                            <input type="text" id="adm-su-username" placeholder="مثلاً: ahmed" autocomplete="off" />
+                        </div>
+                        <div class="fg">
+                            <label>پاس ورڈ</label>
+                            <input type="password" id="adm-su-password" placeholder="کم از کم 6 حروف" autocomplete="new-password" />
+                        </div>
+                        <div class="fg">
+                            <label>رول منتخب کریں</label>
+                            <select id="adm-su-role" style="width:100%;">
+                                <option value="admin">ایڈمن 🔑</option>
+                                <option value="operator" selected>آپریٹر ✍️</option>
+                                <option value="viewer">ویور 👁️</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-p" id="adm-btn-add-user" onclick="addUser()">➕ شامل</button>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="card">
+                    <div class="card-title" style="font-size:14px;">📋 صارفین کی فہرست</div>
+                    <div class="tbl-wrap">
+                        <table class="settings-table">
+                            <thead>
+                                <tr>
+                                    <th>صارف نام</th>
+                                    <th style="min-width:160px;">رول</th>
+                                    <th style="width:80px;">فعال</th>
+                                    <th style="width:100px;">تاریخ</th>
+                                    <th style="width:100px;">آخری لاگ ان</th>
+                                    <th style="width:60px;">حذف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <button class="btn btn-p" onclick="saveAdminUsers()" style="display:inline-flex; align-items:center; gap:6px; font-weight:bold;">
+                            💾 صارفین کی تبدیلیاں محفوظ کریں
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Permissions -->
+            <div id="admin-tab-perms" class="admin-tab-content">
+                <div class="card">
+                    <div class="card-title" style="font-size:14px;">🔒 رول وائز اجازتیں</div>
+                    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">ہر رول کے لیے نیچے Toggle کریں — تبدیلیاں فوری محفوظ ہوں گی</p>
+                    <div class="tbl-wrap">
+                        <table class="settings-table perms-table">
+                            <thead>
+                                <tr>
+                                    <th style="min-width:200px;">اجازت</th>
+                                    <th style="width:110px;text-align:center;">ایڈمن 🔑</th>
+                                    <th style="width:110px;text-align:center;">آپریٹر ✍️</th>
+                                    <th style="width:110px;text-align:center;">ویور 👁️</th>
+                                </tr>
+                            </thead>
+                            <tbody id="perms-table-body"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:12px;text-align:left;">
+                        <button class="btn btn-p" onclick="savePermissions()">💾 محفوظ کریں</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /admin padding -->
+    </div><!-- /page-admin -->
+
+    <!-- end of wrap was already closed above, admin page is sibling -->
 
     <!-- ===== MODALS ===== -->
     <div class="mo" id="modal"><div class="md"><h3 id="m-title"></h3><input type="text" id="m-input" placeholder="" /><div class="md-btns"><button class="btn btn-p" id="btn-msave" onclick="confirmModal()">✅ شامل کریں</button><button class="btn btn-o" id="btn-mcancel" onclick="closeModal()">❌ منسوخ</button></div></div></div>
@@ -531,6 +637,10 @@
     <script src="scripts/ui/logo-settings.js">
     </script>
     <script src="scripts/ui/print-export.js">
+    </script>
+    <script src="scripts/core/permissions.js">
+    </script>
+    <script src="scripts/pages/admin-panel.js">
     </script>
     <script src="scripts/app.js">
     </script>

@@ -17,13 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
             shirkas = data.shirkas || [];
             transports = data.transports || [];
             partyCodes = data.partyCodes || {};
-            users = data.users || [{ username: 'admin', role: 'admin' }];
+            users = data.users || [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
             dailyNotes = data.dailyNotes || [];
             hajiParties = data.hajiParties || [];
             const settings = data.settings || {};
             fbLogo = settings.logo || null;
             fbAppName = settings.appName || {};
             fbAppSub = settings.appSub || {};
+            // Load role permissions from Firebase
+            if (data.rolePermissions) applyGranularPerms(data.rolePermissions);
 
             if (!parties.length) { parties = (T[lang] || T.ur).defaultParties.slice(); svP(); }
             if (!sectors.length) { sectors = (T[lang] || T.ur).defaultSectors.slice(); svS(); }
@@ -121,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activePage.id === 'page-records') filterRecords();
                     if (activePage.id === 'page-dailynote') renderDailyNoteReport();
                     if (activePage.id === 'page-report') genReport();
+                    if (activePage.id === 'page-admin') renderAdminPanel();
                     if (activePage.id === 'page-settings') {
                         renderPartyList();
                         renderSectorList();
@@ -129,6 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderHajiPartyList();
                     }
                 }
+                // Always re-apply permissions when Firebase data updates
+                if (data.rolePermissions) applyGranularPerms(data.rolePermissions);
+                else enforcePermissions();
             }
         }, (error) => {
             console.warn("Firebase listener error:", error);
@@ -140,10 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = user.email || '';
             loggedInUser = email.split('@')[0] || 'admin';
             const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
-            if (!found && loggedInUser !== 'admin') {
-                users.push({ username: loggedInUser, role: 'operator' });
+            if (!found) {
+                const isFirstAdmin = (loggedInUser === 'admin' || loggedInUser === 'jafarmughal');
+                users.push({ username: loggedInUser, role: isFirstAdmin ? 'superadmin' : 'operator', disabled: false, createdAt: new Date().toISOString().slice(0, 10), createdBy: 'system' });
                 svU();
             }
+            setCurrentUserRole(loggedInUser);
             loadData();
         } else {
             loggedInUser = null;
@@ -166,6 +174,18 @@ window.login = login;
 window.logout = logout;
 window.addUser = addUser;
 window.deleteUser = deleteUser;
+window.toggleUserDisabled = toggleUserDisabled;
+window.changeUserRole = changeUserRole;
+window.renderAdminUserTable = renderAdminUserTable;
+window.renderAdminPanel = renderAdminPanel;
+window.switchAdminTab = switchAdminTab;
+window.onPermToggle = onPermToggle;
+window.savePermissions = savePermissions;
+window.saveAdminUsers = saveAdminUsers;
+window.canDo = canDo;
+window.getMyPerms = getMyPerms;
+window.enforcePermissions = enforcePermissions;
+window.applyGranularPerms = applyGranularPerms;
 window.setLang = setLang;
 window.showPage = showPage;
 window.addFromSettings = addFromSettings;

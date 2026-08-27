@@ -10,6 +10,7 @@ function clearLedgerFilter() {
 
 function renderLedger() {
     const L = T[lang] || T.ur;
+    const perms = (typeof getMyPerms === 'function') ? getMyPerms() : { showAmounts: true, showPayments: true, canExport: true, canPrint: true, showReport: true, showDailyNote: true, showVoucher: true };
     const selParty = document.getElementById('l-party').value;
     const from = document.getElementById('l-from').value;
     const to = document.getElementById('l-to').value;
@@ -18,9 +19,9 @@ function renderLedger() {
     if (!pList.length) { out.innerHTML = `<div class="empty"><div class="ico">📒</div>${L.noData}</div>`; return; }
 
     let summaryHtml = '';
-    if (!selParty && parties.length) {
+    if (!selParty && parties.length && perms.showAmounts) {
         let sumRecs = [...records];
-        let sumPays = [...payments];
+        let sumPays = perms.showPayments ? [...payments] : [];
         if (from) { sumRecs = sumRecs.filter(r => r.date >= from); sumPays = sumPays.filter(p => p.date >= from); }
         if (to) { sumRecs = sumRecs.filter(r => r.date <= to); sumPays = sumPays.filter(p => p.date <= to); }
 
@@ -71,9 +72,9 @@ function renderLedger() {
     let html = '';
     pList.forEach(party => {
         let recs = [...records].filter(r => r.party === party);
-        let pays = [...payments].filter(p => p.party === party);
+        let pays = perms.showPayments ? [...payments].filter(p => p.party === party) : [];
         const overallDebit = records.filter(r => r.party === party).reduce((s, r) => s + r.total, 0);
-        const overallCredit = payments.filter(p => p.party === party).reduce((s, p) => s + p.amount, 0);
+        const overallCredit = pays.reduce((s, p) => s + p.amount, 0);
         const overallBal = overallCredit - overallDebit;
 
         if (from) { recs = recs.filter(r => r.date >= from); pays = pays.filter(p => p.date >= from); }
@@ -97,12 +98,13 @@ function renderLedger() {
             return `<tr>
             <td style="padding:4px;">${fd(tx.date)}</td>
             <td style="padding:4px;">${tx.type}</td>
-            <td style="padding:4px;">${tx.voucher}</td>
+            ${perms.showVoucher ? `<td style="padding:4px;">${tx.voucher}</td>` : ''}
             <td style="padding:4px;">${tx.desc}</td>
             <td style="padding:4px;">—</td>
+            ${perms.showAmounts ? `
             <td style="padding:4px;text-align:right;">${tx.type === 'Debit' ? sar(tx.amount) : ''}</td>
             <td style="padding:4px;text-align:right;">${tx.type === 'Credit' ? sar(tx.amount) : ''}</td>
-            <td style="padding:4px;text-align:right;">${sign}${sar(Math.abs(running))}</td>
+            <td style="padding:4px;text-align:right;">${sign}${sar(Math.abs(running))}</td>` : ''}
             </tr>`;
         }).join('');
 
@@ -117,8 +119,9 @@ function renderLedger() {
                     <tr>
                         <td style="font-weight: bold; width: 120px;">Account Code:</td>
                         <td>${getCode(party)}</td>
+                        ${perms.showAmounts ? `
                         <td style="font-weight: bold; text-align: right; width: 100px;">Balance SAR:</td>
-                        <td style="text-align: right; font-weight: bold; width: 100px;">${balSign}${sar(Math.abs(overallBal))}</td>
+                        <td style="text-align: right; font-weight: bold; width: 100px;">${balSign}${sar(Math.abs(overallBal))}</td>` : '<td colspan="2"></td>'}
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">Account Title:</td>
@@ -139,22 +142,24 @@ function renderLedger() {
                         <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000;">
                             <th style="text-align: left; padding: 4px;">Date</th>
                             <th style="text-align: left; padding: 4px;">Type</th>
-                            <th style="text-align: left; padding: 4px;">Trans.#</th>
+                            ${perms.showVoucher ? `<th style="text-align: left; padding: 4px;">Trans.#</th>` : ''}
                             <th style="text-align: left; padding: 4px;">Particulars</th>
                             <th style="text-align: left; padding: 4px;">Inv/Ref</th>
+                            ${perms.showAmounts ? `
                             <th style="text-align: right; padding: 4px;">Debit</th>
                             <th style="text-align: right; padding: 4px;">Credit</th>
-                            <th style="text-align: right; padding: 4px;">Balance</th>
+                            <th style="text-align: right; padding: 4px;">Balance</th>` : ''}
                         </tr>
                     </thead>
                     <tbody>
                         ${rows}
                         <tr style="border-top: 1px dashed #000; font-weight: bold; page-break-inside: avoid;">
-                            <td colspan="4" style="padding: 6px 4px;">Total Hujjaj: ${totalHujjaj}</td>
+                            <td colspan="${perms.showVoucher ? '4' : '3'}" style="padding: 6px 4px;">Total Hujjaj: ${totalHujjaj}</td>
+                            ${perms.showAmounts ? `
                             <td style="text-align: right; padding: 6px 4px;">Total Amount SAR:</td>
                             <td style="text-align: right; padding: 6px 4px;">${sar(totalDebit)}</td>
                             <td style="text-align: right; padding: 6px 4px;">${sar(totalCredit)}</td>
-                            <td style="text-align: right; padding: 6px 4px;">${balance >= 0 ? '' : '-'}${sar(Math.abs(balance))}</td>
+                            <td style="text-align: right; padding: 6px 4px;">${balance >= 0 ? '' : '-'}${sar(Math.abs(balance))}</td>` : '<td colspan="2"></td>'}
                         </tr>
                     </tbody>
                 </table>

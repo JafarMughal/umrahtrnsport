@@ -8,6 +8,10 @@ function renderPayHead() {
 }
 
 function addPayment() {
+    if (typeof canDo === 'function' && !canDo('payment')) {
+        alert('⚠️ آپ کو ادائیگی درج کرنے کی اجازت نہیں ہے');
+        return;
+    }
     const L = T[lang] || T.ur;
     const date = document.getElementById('p-date').value;
     const party = document.getElementById('p-party').value;
@@ -30,6 +34,9 @@ function renderPayments() {
     const tbody = document.getElementById('pay-tbody');
     const sorted = [...payments].sort((a, b) => b.date.localeCompare(a.date));
     if (!sorted.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ico">💳</div>${L.noPayments}</div></td></tr>`; return; }
+    
+    const canDelPay = (typeof canDo === 'function') ? (canDo('deletePay') || canDo('delete')) : true;
+
     tbody.innerHTML = sorted.map((p, i) =>
         `<tr><td>${i + 1}</td><td>${fd(p.date)}</td>
     <td><span class="party-code">${getCode(p.party)}</span></td>
@@ -37,11 +44,15 @@ function renderPayments() {
     <td><strong class="led-cr">${sar(p.amount)}</strong></td>
     <td><span class="badge">${getMethodLabel(p.method)}</span></td>
     <td style="font-size:11px;color:var(--muted);">${p.notes || '—'}</td>
-    <td><button class="btn btn-sm btn-d" onclick="deletePay('${p.id}')">${L.del}</button></td></tr>`
+    <td>${canDelPay ? `<button class="btn btn-sm btn-d" onclick="deletePay('${p.id}')">${L.del}</button>` : '—'}</td></tr>`
     ).join('');
 }
 
 async function deletePay(id) {
+    if (typeof canDo === 'function' && !canDo('deletePay') && !canDo('delete')) {
+        alert('⚠️ آپ کو ادائیگی حذف کرنے کی اجازت نہیں ہے');
+        return;
+    }
     const L = T[lang] || T.ur;
     if (!(await verifyPassword(L.confirmDelPay))) return;
     payments = payments.filter(x => x.id !== id);

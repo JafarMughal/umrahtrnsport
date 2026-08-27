@@ -182,8 +182,9 @@ function renderDailyNoteReport() {
             <td style="font-family:monospace;">${r.mobile || '—'}</td>
             <td>${r.notes || '—'}</td>
             <td class="action-btns no-print">
-                <button class="btn btn-sm btn-o no-print" onclick="editRecord('${r.id}')">${L.edit || 'Edit'}</button>
-                <button class="btn btn-sm btn-d no-print" onclick="deleteRecord('${r.id}')">${L.del || 'Del'}</button>
+                ${(typeof canDo === 'function' && canDo('edit')) ? `<button class="btn btn-sm btn-o no-print" onclick="editRecord('${r.id}')">${L.edit || 'Edit'}</button>` : ''}
+                ${(typeof canDo === 'function' && canDo('delete')) ? `<button class="btn btn-sm btn-d no-print" onclick="deleteRecord('${r.id}')">${L.del || 'Del'}</button>` : ''}
+                ${(!canDo('edit') && !canDo('delete')) ? '—' : ''}
             </td>
         </tr>`;
         }).join('');

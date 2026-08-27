@@ -29,6 +29,10 @@ function renderRecHead() {
 function renderRecords(rows) {
     const L = T[lang] || T.ur;
     const out = document.getElementById('rec-output');
+    const perms = (typeof getMyPerms === 'function') ? getMyPerms() : { showAmounts: true, showPayments: true, canExport: true, canPrint: true, showReport: true, showDailyNote: true, showVoucher: true };
+    const canEdit = (typeof canDo === 'function') ? canDo('edit') : true;
+    const canDel = (typeof canDo === 'function') ? canDo('delete') : true;
+    const canEntry = (typeof canDo === 'function') ? canDo('entry') : true;
     
     const filteredRows = currentRecordsTab === 'all'
         ? rows
@@ -37,6 +41,11 @@ function renderRecords(rows) {
             : rows.filter(r => !r.checked);
     
     const trashCount = (deletedRecords || []).length;
+    const trashTabHtml = canDel ? `
+        <div onclick="switchRecordsTab('trash')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'trash' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #c62828;' : 'color: #6c757d;'}">
+            🗑️ ٹریش${trashCount > 0 ? ` <span style="background:#c62828;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;">${trashCount}</span>` : ''}
+        </div>` : '';
+
     let tabsHtml = `
     <div style="display: flex; background: #f1f3f5; border-radius: 8px; padding: 4px; margin-bottom: 15px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;" class="no-print">
         <div onclick="switchRecordsTab('pending')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'pending' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #1976d2;' : 'color: #6c757d;'}">
@@ -48,9 +57,7 @@ function renderRecords(rows) {
         <div onclick="switchRecordsTab('all')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'all' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #6a1b9a;' : 'color: #6c757d;'}">
             📋 تمام ریکارڈ
         </div>
-        <div onclick="switchRecordsTab('trash')" style="flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; ${currentRecordsTab === 'trash' ? 'background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #c62828;' : 'color: #6c757d;'}">
-            🗑️ ٹریش${trashCount > 0 ? ` <span style="background:#c62828;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;">${trashCount}</span>` : ''}
-        </div>
+        ${trashTabHtml}
     </div>
     `;
 
@@ -72,25 +79,27 @@ function renderRecords(rows) {
         const statusBadge = currentRecordsTab === 'all'
             ? `<span style="font-size:10px;padding:2px 6px;border-radius:10px;font-weight:bold;background:${r.checked ? '#e8f5e9' : '#e3f2fd'};color:${r.checked ? '#2e7d32' : '#1565c0'};">${r.checked ? '✔' : '🕒'}</span>`
             : '';
+        
+        const editBtn = canEdit ? `<button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>` : '';
+        const delBtn = canDel ? `<button class="btn btn-sm btn-d" onclick="deleteRecord('${r.id}')">${L.del}</button>` : '';
+        const copyBtn = canEntry ? `<button class="btn btn-sm" onclick="copyVoucher('${r.id}')" title="کاپی کریں" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;">📋</button>` : '';
+        const actionHtml = (editBtn || delBtn || copyBtn) ? `${editBtn} ${delBtn} ${copyBtn}` : '—';
+
         return `
             <tr class="rec-data-row" data-hujjaj="${sharing ? r.count : 0}" data-amount="${r.total}">
                 <td style="padding:4px; text-align:center;" class="no-print">
                     <input type="checkbox" onchange="toggleRecordCheck('${r.id}')" ${r.checked ? 'checked' : ''} style="transform: scale(1.4); cursor: pointer; accent-color: #2E7D32;">
                 </td>
-                <td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>
+                ${perms.showVoucher ? `<td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>` : ''}
                 <td style="padding:4px;">${fd(r.date)}</td>
                 <td style="padding:4px;"><strong>${r.party}</strong></td>
                 <td style="padding:4px;"><span class="badge">${r.sector}</span>${statusBadge}</td>
                 <td style="padding:4px;">${r.transport || '—'}</td>
                 <td style="padding:4px;text-align:center;">${sharing ? `<strong>${r.count}</strong>` : '—'}</td>
-                <td style="padding:4px;text-align:right;">${sharing ? sar(r.fare) : '—'}</td>
+                ${perms.showAmounts ? `<td style="padding:4px;text-align:right;">${sharing ? sar(r.fare) : '—'}</td>` : ''}
                 <td style="padding:4px;text-align:left;"><span style="font-family:monospace;color:#1565c0;font-weight:600;">${r.flightNo || '—'}</span></td>
-                <td style="padding:4px;text-align:right;"><strong style="color:var(--green-dark);">${sar(r.total)}</strong></td>
-                <td style="padding:4px;" class="no-print">
-                    <button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>
-                    <button class="btn btn-sm btn-d" onclick="deleteRecord('${r.id}')">${L.del}</button>
-                    <button class="btn btn-sm" onclick="copyVoucher('${r.id}')" title="کاپی کریں" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;">📋</button>
-                </td>
+                ${perms.showAmounts ? `<td style="padding:4px;text-align:right;"><strong style="color:var(--green-dark);">${sar(r.total)}</strong></td>` : ''}
+                <td style="padding:4px;" class="no-print">${actionHtml}</td>
             </tr>
         `;
     }).join('');
@@ -99,7 +108,7 @@ function renderRecords(rows) {
     const titleBorder = currentRecordsTab === 'pending' ? '#90caf9' : currentRecordsTab === 'checked' ? '#a5d6a7' : '#ce93d8';
     const titleColor = currentRecordsTab === 'pending' ? '#1565c0' : currentRecordsTab === 'checked' ? '#1b5e20' : '#6a1b9a';
     const titleText = currentRecordsTab === 'pending' ? '⏳ Pending Records (باقی ماندہ)' : currentRecordsTab === 'checked' ? '✅ Checked Records (مکمل شدہ)' : '📋 تمام ریکارڈ (All Records)';
-    const excelBtn = currentRecordsTab === 'all'
+    const excelBtn = (currentRecordsTab === 'all' && perms.canExport)
         ? `<button onclick="exportRecordsToExcel()" class="no-print" title="Excel میں محفوظ کریں" style="margin-right:10px;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.2);">📥 Excel ڈاؤنلوڈ</button>`
         : '';
 
@@ -115,8 +124,9 @@ function renderRecords(rows) {
             <tr>
                 <td style="font-weight: bold; width: 120px;">Total Records:</td>
                 <td id="top-total-records">${s.length}</td>
+                ${perms.showAmounts ? `
                 <td style="font-weight: bold; text-align: right; width: 100px;">Total Amount:</td>
-                <td id="top-total-amount" style="text-align: right; font-weight: bold; width: 100px;">${sar(tAmount)}</td>
+                <td id="top-total-amount" style="text-align: right; font-weight: bold; width: 100px;">${sar(tAmount)}</td>` : '<td colspan="2"></td>'}
             </tr>
             <tr>
                 <td style="font-weight: bold;">Total Hujjaj:</td>
@@ -132,28 +142,16 @@ function renderRecords(rows) {
             <thead>
                 <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000;">
                     <th style="text-align: center; padding: 4px; width: 30px;" class="no-print">✔</th>
-                    <th style="text-align: left; padding: 4px;">${L.voucherCol}</th>
+                    ${perms.showVoucher ? `<th style="text-align: left; padding: 4px;">${L.voucherCol}</th>` : ''}
                     <th style="text-align: left; padding: 4px;">${L.dateCol}</th>
                     <th style="text-align: left; padding: 4px;">${L.partyCol}</th>
                     <th style="text-align: left; padding: 4px;">${L.sectorCol}</th>
                     <th style="text-align: left; padding: 4px;">${L.transportCol}</th>
                     <th style="text-align: center; padding: 4px;">${L.hujjajCol}</th>
-                    <th style="text-align: right; padding: 4px;">${L.fareCol}</th>
+                    ${perms.showAmounts ? `<th style="text-align: right; padding: 4px;">${L.fareCol}</th>` : ''}
                     <th style="text-align: left; padding: 4px;">✈️ Flight No</th>
-                    <th style="text-align: right; padding: 4px;">${L.totalCol}</th>
+                    ${perms.showAmounts ? `<th style="text-align: right; padding: 4px;">${L.totalCol}</th>` : ''}
                     <th style="text-align: left; padding: 4px;" class="no-print">${L.actionCol}</th>
-                </tr>
-                <tr class="no-print" style="background: #f8f9fa; border-bottom: 1px solid #ddd;">
-                    <td style="padding: 2px;"><input type="hidden" class="col-filter"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="0" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="1" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="2" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="3" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="4" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="5" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="6" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" class="col-filter" data-col="7" placeholder="🔍" style="width:100%; box-sizing:border-box; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
-                    <td style="padding: 2px;"></td>
                 </tr>
             </thead>
             <tbody id="records-tbody">
@@ -161,10 +159,10 @@ function renderRecords(rows) {
             </tbody>
             <tfoot>
                 <tr id="gt-row" style="border-top: 1px dashed #000; font-weight: bold; page-break-inside: avoid;">
-                    <td colspan="6" style="padding: 6px 4px; text-align: right;">Grand Total:</td>
+                    <td colspan="${perms.showVoucher ? '6' : '5'}" style="padding: 6px 4px; text-align: right;">Grand Total:</td>
                     <td id="gt-hujjaj" style="padding: 6px 4px; text-align: center;">${tCount}</td>
-                    <td colspan="2" style="padding: 6px 4px;"></td>
-                    <td id="gt-amount" style="padding: 6px 4px; text-align: right;">${sar(tAmount)}</td>
+                    <td colspan="${perms.showAmounts ? '2' : '1'}" style="padding: 6px 4px;"></td>
+                    ${perms.showAmounts ? `<td id="gt-amount" style="padding: 6px 4px; text-align: right;">${sar(tAmount)}</td>` : ''}
                     <td class="no-print"></td>
                 </tr>
             </tfoot>
@@ -192,6 +190,10 @@ function clearFilter() {
 }
 
 async function deleteRecord(id) {
+    if (typeof canDo === 'function' && !canDo('delete')) {
+        alert('⚠️ آپ کو ریکارڈ حذف کرنے کی اجازت نہیں ہے');
+        return;
+    }
     const L = T[lang] || T.ur;
     if (!(await verifyPassword(L.confirmDel || "کیا آپ واقعی یہ ریکارڈ حذف کرنا چاہتے ہیں؟"))) return;
     const rec = records.find(x => x.id === id);

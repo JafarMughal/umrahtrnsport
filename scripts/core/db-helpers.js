@@ -12,6 +12,7 @@ function svC() { db.ref('partyCodes').set(partyCodes).catch(e => console.warn('S
 function svU() { db.ref('users').set(users).catch(e => console.warn('Save error:', e)); }
 function svHP() { db.ref('hajiParties').set(hajiParties).catch(e => console.warn('Save error:', e)); }
 function svDN() { db.ref('dailyNotes').set(dailyNotes).catch(e => console.warn('Save error:', e)); }
+function svRP() { db.ref('rolePermissions').set(rolePermissions).catch(e => console.warn('Save rolePermissions error:', e)); }
 
 function saveAppSettingsToFb() {
     db.ref('settings').set({ logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} })
