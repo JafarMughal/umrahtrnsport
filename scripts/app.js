@@ -257,3 +257,4 @@ window.confirmCopyVoucher = confirmCopyVoucher;
 window.filterTableColumns = filterTableColumns;
 window.switchRecordsTab = switchRecordsTab;
 window.toggleRecordCheck = toggleRecordCheck;
+window.filterPayments = filterPayments;

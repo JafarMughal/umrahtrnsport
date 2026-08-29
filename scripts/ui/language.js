@@ -30,6 +30,8 @@ function setLang(l) {
     setText('lbl-payTitle', L.payTitle); setText('lbl-paydate', L.date); setText('lbl-payparty', L.party);
     setText('lbl-received', L.received); setText('lbl-method', L.method); setText('lbl-paynotes', L.notes);
     setText('btn-savepay', L.savePay); setText('lbl-recentpay', L.recentPay);
+    const paySearch = document.getElementById('pay-search');
+    if (paySearch) paySearch.placeholder = L.searchHint || 'تلاش کریں...';
     setOpt('opt-cash', L.cash, 'cash'); setOpt('opt-bank', L.bank, 'bank');
     setOpt('opt-cheque', L.cheque, 'cheque'); setOpt('opt-online', L.online, 'online');
 
@@ -41,6 +43,9 @@ function setLang(l) {
     // Records
     setText('lbl-recTitle', L.recTitle); setText('lbl-recfrom', L.fromDate); setText('lbl-recto', L.toDate);
     setText('lbl-recparty', L.party); setText('lbl-recsector', L.sector);
+    setText('lbl-recsearch', L.searchRec || 'سرچ (واوچر / پارٹی / فلائیٹ)');
+    const fSearch = document.getElementById('f-search');
+    if (fSearch) fSearch.placeholder = L.searchHint || 'تلاش کریں...';
     setText('btn-filter', L.filter); setText('btn-clearfilter', L.resetFilter);
     setText('lbl-totalrec', L.totalRec); setText('lbl-totalhj', L.totalHujjaj); setText('lbl-totalamt', L.totalAmt);
 

@@ -61,48 +61,50 @@ function renderRecords(rows) {
     </div>
     `;
 
-    if (!filteredRows.length && !rows.length) { 
-        out.innerHTML = tabsHtml + `<div class="empty"><div class="ico">📂</div>${L.noRec}</div>`; 
-        return; 
-    }
+    const totalCols = 1 + (perms.showVoucher ? 1 : 0) + 5 + (perms.showAmounts ? 1 : 0) + 1 + (perms.showAmounts ? 1 : 0) + 1;
     
     const s = [...filteredRows].sort((a, b) => b.date.localeCompare(a.date));
     
     let tCount = 0; // total hujjaj
     let tAmount = 0; // total amount
     
-    const tblRows = s.map(r => {
-        const sharing = r.mode === 'sharing' || isSharing(r.transport);
-        if (sharing) tCount += r.count;
-        tAmount += r.total;
-        
-        const statusBadge = currentRecordsTab === 'all'
-            ? `<span style="font-size:10px;padding:2px 6px;border-radius:10px;font-weight:bold;background:${r.checked ? '#e8f5e9' : '#e3f2fd'};color:${r.checked ? '#2e7d32' : '#1565c0'};">${r.checked ? '✔' : '🕒'}</span>`
-            : '';
-        
-        const editBtn = canEdit ? `<button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>` : '';
-        const delBtn = canDel ? `<button class="btn btn-sm btn-d" onclick="deleteRecord('${r.id}')">${L.del}</button>` : '';
-        const copyBtn = canEntry ? `<button class="btn btn-sm" onclick="copyVoucher('${r.id}')" title="کاپی کریں" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;">📋</button>` : '';
-        const actionHtml = (editBtn || delBtn || copyBtn) ? `${editBtn} ${delBtn} ${copyBtn}` : '—';
+    let tblRows = '';
+    if (s.length === 0) {
+        tblRows = `<tr><td colspan="${totalCols}" style="text-align:center;padding:35px 20px;color:var(--muted);background:#fafafa;"><div style="font-size:36px;margin-bottom:8px;">📂</div><div style="font-size:14px;font-weight:600;">${L.noRec || 'کوئی ریکارڈ نہیں ملا'}</div></td></tr>`;
+    } else {
+        tblRows = s.map(r => {
+            const sharing = r.mode === 'sharing' || isSharing(r.transport);
+            if (sharing) tCount += r.count;
+            tAmount += r.total;
+            
+            const statusBadge = currentRecordsTab === 'all'
+                ? `<span style="font-size:10px;padding:2px 6px;border-radius:10px;font-weight:bold;background:${r.checked ? '#e8f5e9' : '#e3f2fd'};color:${r.checked ? '#2e7d32' : '#1565c0'};">${r.checked ? '✔' : '🕒'}</span>`
+                : '';
+            
+            const editBtn = canEdit ? `<button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>` : '';
+            const delBtn = canDel ? `<button class="btn btn-sm btn-d" onclick="deleteRecord('${r.id}')">${L.del}</button>` : '';
+            const copyBtn = canEntry ? `<button class="btn btn-sm" onclick="copyVoucher('${r.id}')" title="کاپی کریں" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;">📋</button>` : '';
+            const actionHtml = (editBtn || delBtn || copyBtn) ? `${editBtn} ${delBtn} ${copyBtn}` : '—';
 
-        return `
-            <tr class="rec-data-row" data-hujjaj="${sharing ? r.count : 0}" data-amount="${r.total}">
-                <td style="padding:4px; text-align:center;" class="no-print">
-                    <input type="checkbox" onchange="toggleRecordCheck('${r.id}')" ${r.checked ? 'checked' : ''} style="transform: scale(1.4); cursor: pointer; accent-color: #2E7D32;">
-                </td>
-                ${perms.showVoucher ? `<td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>` : ''}
-                <td style="padding:4px;">${fd(r.date)}</td>
-                <td style="padding:4px;"><strong>${r.party}</strong></td>
-                <td style="padding:4px;"><span class="badge">${r.sector}</span>${statusBadge}</td>
-                <td style="padding:4px;">${r.transport || '—'}</td>
-                <td style="padding:4px;text-align:center;">${sharing ? `<strong>${r.count}</strong>` : '—'}</td>
-                ${perms.showAmounts ? `<td style="padding:4px;text-align:right;">${sharing ? sar(r.fare) : '—'}</td>` : ''}
-                <td style="padding:4px;text-align:left;"><span style="font-family:monospace;color:#1565c0;font-weight:600;">${r.flightNo || '—'}</span></td>
-                ${perms.showAmounts ? `<td style="padding:4px;text-align:right;"><strong style="color:var(--green-dark);">${sar(r.total)}</strong></td>` : ''}
-                <td style="padding:4px;" class="no-print">${actionHtml}</td>
-            </tr>
-        `;
-    }).join('');
+            return `
+                <tr class="rec-data-row" data-hujjaj="${sharing ? r.count : 0}" data-amount="${r.total}">
+                    <td style="padding:4px; text-align:center;" class="no-print">
+                        <input type="checkbox" onchange="toggleRecordCheck('${r.id}')" ${r.checked ? 'checked' : ''} style="transform: scale(1.4); cursor: pointer; accent-color: #2E7D32;">
+                    </td>
+                    ${perms.showVoucher ? `<td style="padding:4px;"><span style="font-family:monospace;font-weight:700;color:var(--green-dark);font-size:11px;">${r.voucher || '—'}</span></td>` : ''}
+                    <td style="padding:4px;">${fd(r.date)}</td>
+                    <td style="padding:4px;"><strong>${r.party}</strong></td>
+                    <td style="padding:4px;"><span class="badge">${r.sector}</span>${statusBadge}</td>
+                    <td style="padding:4px;">${r.transport || '—'}</td>
+                    <td style="padding:4px;text-align:center;">${sharing ? `<strong>${r.count}</strong>` : '—'}</td>
+                    ${perms.showAmounts ? `<td style="padding:4px;text-align:right;">${sharing ? sar(r.fare) : '—'}</td>` : ''}
+                    <td style="padding:4px;text-align:left;"><span style="font-family:monospace;color:#1565c0;font-weight:600;">${r.flightNo || '—'}</span></td>
+                    ${perms.showAmounts ? `<td style="padding:4px;text-align:right;"><strong style="color:var(--green-dark);">${sar(r.total)}</strong></td>` : ''}
+                    <td style="padding:4px;" class="no-print">${actionHtml}</td>
+                </tr>
+            `;
+        }).join('');
+    }
 
     const titleBg = currentRecordsTab === 'pending' ? '#e3f2fd' : currentRecordsTab === 'checked' ? '#e8f5e9' : '#f3e5f5';
     const titleBorder = currentRecordsTab === 'pending' ? '#90caf9' : currentRecordsTab === 'checked' ? '#a5d6a7' : '#ce93d8';
@@ -138,6 +140,7 @@ function renderRecords(rows) {
             </tr>
         </table>
 
+        <div class="tbl-wrap">
         <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
             <thead>
                 <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000;">
@@ -153,6 +156,19 @@ function renderRecords(rows) {
                     ${perms.showAmounts ? `<th style="text-align: right; padding: 4px;">${L.totalCol}</th>` : ''}
                     <th style="text-align: left; padding: 4px;" class="no-print">${L.actionCol}</th>
                 </tr>
+                <tr id="records-filter-row" class="no-print" style="background: #f8f9fa; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 2px;"></td>
+                    ${perms.showVoucher ? `<td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>` : ''}
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    ${perms.showAmounts ? `<td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>` : ''}
+                    <td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>
+                    ${perms.showAmounts ? `<td style="padding: 2px;"><input type="text" onkeyup="filterTableColumns()" oninput="filterTableColumns()" class="col-filter" placeholder="🔍 تلاش" style="width:100%; box-sizing:border-box; padding:2px 4px; font-size:11px; border:1px solid #ccc; border-radius:3px;"></td>` : ''}
+                    <td style="padding: 2px;"></td>
+                </tr>
             </thead>
             <tbody id="records-tbody">
                 ${tblRows}
@@ -167,25 +183,51 @@ function renderRecords(rows) {
                 </tr>
             </tfoot>
         </table>
+        </div>
     </div>`;
     
     out.innerHTML = html;
 }
 
 function filterRecords() {
-    const from = document.getElementById('f-from').value, to = document.getElementById('f-to').value;
-    const party = document.getElementById('f-party').value, sector = document.getElementById('f-sector').value;
+    const from = document.getElementById('f-from') ? document.getElementById('f-from').value : '';
+    const to = document.getElementById('f-to') ? document.getElementById('f-to').value : '';
+    const party = document.getElementById('f-party') ? document.getElementById('f-party').value : '';
+    const sector = document.getElementById('f-sector') ? document.getElementById('f-sector').value : '';
+    const search = document.getElementById('f-search') ? document.getElementById('f-search').value.toLowerCase().trim() : '';
+
     let rows = [...records];
     if (from) rows = rows.filter(r => r.date >= from);
     if (to) rows = rows.filter(r => r.date <= to);
     if (party) rows = rows.filter(r => r.party === party);
     if (sector) rows = rows.filter(r => r.sector === sector);
+    if (search) {
+        rows = rows.filter(r => 
+            (r.voucher && r.voucher.toLowerCase().includes(search)) ||
+            (r.party && r.party.toLowerCase().includes(search)) ||
+            (r.sector && r.sector.toLowerCase().includes(search)) ||
+            (r.transport && r.transport.toLowerCase().includes(search)) ||
+            (r.flightNo && r.flightNo.toLowerCase().includes(search)) ||
+            (r.notes && r.notes.toLowerCase().includes(search)) ||
+            (r.date && r.date.toLowerCase().includes(search))
+        );
+    }
     renderRecords(rows);
 }
 
 function clearFilter() {
-    ['f-from', 'f-to'].forEach(id => document.getElementById(id).value = '');
-    ['f-party', 'f-sector'].forEach(id => document.getElementById(id).value = '');
+    ['f-from', 'f-to'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    ['f-party', 'f-sector'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const fSearch = document.getElementById('f-search');
+    if (fSearch) fSearch.value = '';
+    const colFilters = document.querySelectorAll('.col-filter');
+    colFilters.forEach(inp => inp.value = '');
     renderRecords(records);
 }
 
@@ -294,8 +336,13 @@ async function restoreRecord(id) {
 }
 
 function filterTableColumns() {
-    const inputs = document.querySelectorAll('.col-filter');
-    const filters = Array.from(inputs).map(inp => inp.value.toLowerCase().trim());
+    const filterRow = document.getElementById('records-filter-row');
+    if (!filterRow) return;
+    const filterTds = filterRow.querySelectorAll('td');
+    const filters = Array.from(filterTds).map(td => {
+        const inp = td.querySelector('.col-filter');
+        return inp ? inp.value.toLowerCase().trim() : '';
+    });
     const tbody = document.getElementById('records-tbody');
     if (!tbody) return;
     
@@ -448,12 +495,24 @@ function exportRecordsToExcel() {
     const to     = document.getElementById('f-to')     ? document.getElementById('f-to').value     : '';
     const party  = document.getElementById('f-party')  ? document.getElementById('f-party').value  : '';
     const sector = document.getElementById('f-sector') ? document.getElementById('f-sector').value : '';
+    const search = document.getElementById('f-search') ? document.getElementById('f-search').value.toLowerCase().trim() : '';
 
     let rows = [...records];
     if (from)   rows = rows.filter(r => r.date >= from);
     if (to)     rows = rows.filter(r => r.date <= to);
     if (party)  rows = rows.filter(r => r.party === party);
     if (sector) rows = rows.filter(r => r.sector === sector);
+    if (search) {
+        rows = rows.filter(r => 
+            (r.voucher && r.voucher.toLowerCase().includes(search)) ||
+            (r.party && r.party.toLowerCase().includes(search)) ||
+            (r.sector && r.sector.toLowerCase().includes(search)) ||
+            (r.transport && r.transport.toLowerCase().includes(search)) ||
+            (r.flightNo && r.flightNo.toLowerCase().includes(search)) ||
+            (r.notes && r.notes.toLowerCase().includes(search)) ||
+            (r.date && r.date.toLowerCase().includes(search))
+        );
+    }
 
     // تاریخ کے مطابق ترتیب (نیا پہلے)
     rows = [...rows].sort((a, b) => b.date.localeCompare(a.date));

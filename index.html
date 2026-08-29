@@ -208,7 +208,12 @@
                     <button class="btn btn-p" id="btn-savepay" onclick="addPayment()">✅ ادائیگی محفوظ کریں</button>
                 </div>
                 <div class="card">
-                    <div class="card-title" id="lbl-recentpay">حالیہ ادائیگیاں 💳</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
+                        <div class="card-title" id="lbl-recentpay" style="margin:0;">حالیہ ادائیگیاں 💳</div>
+                        <div style="max-width:280px; width:100%;">
+                            <input type="text" id="pay-search" placeholder="🔍 تلاش کریں..." oninput="filterPayments()" style="width:100%; box-sizing:border-box; padding:6px 12px; font-size:12px; border:1px solid var(--border); border-radius:6px;" />
+                        </div>
+                    </div>
                     <div class="tbl-wrap"><table><thead><tr id="pay-head"></tr></thead><tbody id="pay-tbody"></tbody></table></div>
                 </div>
             </div>
@@ -238,10 +243,11 @@
                 <div class="card">
                     <div class="card-title" id="lbl-recTitle">تمام ریکارڈ 📋</div>
                     <div class="fb">
-                        <div class="fg"><label id="lbl-recfrom">تاریخ سے</label><input type="date" id="f-from" /></div>
-                        <div class="fg"><label id="lbl-recto">تاریخ تک</label><input type="date" id="f-to" /></div>
-                        <div class="fg"><label id="lbl-recparty">پارٹی</label><select id="f-party"></select></div>
-                        <div class="fg"><label id="lbl-recsector">سیکٹر</label><select id="f-sector"></select></div>
+                        <div class="fg" style="min-width: 180px;"><label id="lbl-recsearch">سرچ (واوچر / پارٹی / فلائیٹ)</label><input type="text" id="f-search" placeholder="تلاش کریں..." oninput="filterRecords()" /></div>
+                        <div class="fg"><label id="lbl-recfrom">تاریخ سے</label><input type="date" id="f-from" onchange="filterRecords()" /></div>
+                        <div class="fg"><label id="lbl-recto">تاریخ تک</label><input type="date" id="f-to" onchange="filterRecords()" /></div>
+                        <div class="fg"><label id="lbl-recparty">پارٹی</label><select id="f-party" onchange="filterRecords()"></select></div>
+                        <div class="fg"><label id="lbl-recsector">سیکٹر</label><select id="f-sector" onchange="filterRecords()"></select></div>
                         <div class="fb-actions">
                             <button class="btn btn-g" id="btn-filter" onclick="filterRecords()">🔍 فلٹر</button>
                             <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️ پرنٹ</button>

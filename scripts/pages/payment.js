@@ -29,10 +29,11 @@ function addPayment() {
     renderPayments();
 }
 
-function renderPayments() {
+function renderPayments(list = payments) {
     const L = T[lang] || T.ur;
     const tbody = document.getElementById('pay-tbody');
-    const sorted = [...payments].sort((a, b) => b.date.localeCompare(a.date));
+    if (!tbody) return;
+    const sorted = [...list].sort((a, b) => b.date.localeCompare(a.date));
     if (!sorted.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ico">💳</div>${L.noPayments}</div></td></tr>`; return; }
     
     const canDelPay = (typeof canDo === 'function') ? (canDo('deletePay') || canDo('delete')) : true;
@@ -46,6 +47,23 @@ function renderPayments() {
     <td style="font-size:11px;color:var(--muted);">${p.notes || '—'}</td>
     <td>${canDelPay ? `<button class="btn btn-sm btn-d" onclick="deletePay('${p.id}')">${L.del}</button>` : '—'}</td></tr>`
     ).join('');
+}
+
+function filterPayments() {
+    const searchInp = document.getElementById('pay-search');
+    const q = searchInp ? searchInp.value.toLowerCase().trim() : '';
+    if (!q) {
+        renderPayments(payments);
+        return;
+    }
+    const filtered = payments.filter(p => 
+        (p.party && p.party.toLowerCase().includes(q)) ||
+        (p.method && p.method.toLowerCase().includes(q)) ||
+        (p.notes && p.notes.toLowerCase().includes(q)) ||
+        (p.date && p.date.toLowerCase().includes(q)) ||
+        (getCode(p.party) && getCode(p.party).toLowerCase().includes(q))
+    );
+    renderPayments(filtered);
 }
 
 async function deletePay(id) {
