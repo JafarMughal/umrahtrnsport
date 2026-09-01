@@ -9,17 +9,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadData = () => {
         db.ref('/').once('value').then(snapshot => {
             const data = snapshot.val() || {};
-            records = data.records || [];
-            deletedRecords = data.deletedRecords || [];
-            payments = data.payments || [];
-            parties = data.parties || [];
-            sectors = data.sectors || [];
-            shirkas = data.shirkas || [];
-            transports = data.transports || [];
+            const toArray = (v) => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
+            records = toArray(data.records);
+            deletedRecords = toArray(data.deletedRecords);
+            payments = toArray(data.payments);
+            parties = toArray(data.parties);
+            sectors = toArray(data.sectors);
+            shirkas = toArray(data.shirkas);
+            transports = toArray(data.transports);
             partyCodes = data.partyCodes || {};
-            users = data.users || [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
-            dailyNotes = data.dailyNotes || [];
-            hajiParties = data.hajiParties || [];
+            users = toArray(data.users);
+            if (!users.length) users = [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
+            dailyNotes = toArray(data.dailyNotes);
+            hajiParties = toArray(data.hajiParties);
             const settings = data.settings || {};
             fbLogo = settings.logo || null;
             fbAppName = settings.appName || {};
@@ -92,20 +94,21 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('/').on('value', snapshot => {
             if (isFirebaseReady && snapshot.exists()) {
                 const data = snapshot.val() || {};
+                const toArray = (v) => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
                 // Firebase سے آنے والا records merge کریں — local میں موجود IDs کو محفوظ رکھیں
-                const fbRecords = data.records || [];
+                const fbRecords = toArray(data.records);
                 const fbIds = new Set(fbRecords.map(r => r.id));
                 const localOnly = records.filter(r => !fbIds.has(r.id));
                 records = localOnly.length > 0 ? [...fbRecords, ...localOnly] : fbRecords;
-                payments = data.payments || payments;
-                parties = data.parties || parties;
-                sectors = data.sectors || sectors;
-                shirkas = data.shirkas || shirkas;
-                transports = data.transports || transports;
+                payments = data.payments !== undefined ? toArray(data.payments) : payments;
+                parties = data.parties !== undefined ? toArray(data.parties) : parties;
+                sectors = data.sectors !== undefined ? toArray(data.sectors) : sectors;
+                shirkas = data.shirkas !== undefined ? toArray(data.shirkas) : shirkas;
+                transports = data.transports !== undefined ? toArray(data.transports) : transports;
                 partyCodes = data.partyCodes || partyCodes;
-                users = data.users || users;
-                dailyNotes = data.dailyNotes || dailyNotes;
-                hajiParties = data.hajiParties || hajiParties;
+                users = data.users !== undefined ? toArray(data.users) : users;
+                dailyNotes = data.dailyNotes !== undefined ? toArray(data.dailyNotes) : dailyNotes;
+                hajiParties = data.hajiParties !== undefined ? toArray(data.hajiParties) : hajiParties;
                 const settings = data.settings || {};
                 fbLogo = settings.logo || fbLogo;
                 fbAppName = settings.appName || fbAppName;
@@ -121,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activePage.id === 'page-payment') renderPayments();
                     if (activePage.id === 'page-ledger') renderLedger();
                     if (activePage.id === 'page-records') filterRecords();
-                    if (activePage.id === 'page-dailynote') renderDailyNoteReport();
+                    if (activePage.id === 'page-dailynote') { fillTransportNatureDropdown(); renderDailyNoteReport(); }
                     if (activePage.id === 'page-report') genReport();
                     if (activePage.id === 'page-admin') renderAdminPanel();
                     if (activePage.id === 'page-settings') {

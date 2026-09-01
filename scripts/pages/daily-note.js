@@ -29,7 +29,7 @@ function fillTransportNatureDropdown() {
     }
 
     // Also fill Transporter dropdown for Daily Note Report
-    const allTransporters = [...new Set(records.map(r => r.party).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+    const allTransporters = [...new Set([...(parties || []), ...records.map(r => r.party).filter(Boolean)])].sort((a,b) => a.localeCompare(b));
     const dnrTransCb = document.getElementById('dnr-transporter-checkboxes');
     if (dnrTransCb) {
         const checkedTrans = Array.from(dnrTransCb.querySelectorAll('input:checked')).map(cb => cb.value);

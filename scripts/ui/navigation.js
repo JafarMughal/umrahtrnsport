@@ -105,12 +105,28 @@ function _executeShowPageLogic(p) {
     const pageEl = document.getElementById('page-' + p);
     if (pageEl) pageEl.classList.add('active');
     
-    if (p === 'entry') { fillDrop('e-sector', sectors); fillDrop('e-transport', transports); todayStats(); }
-    if (p === 'payment') { renderPayments(); renderPayHead(); }
+    if (p === 'entry') { 
+        fillDrop('e-party', parties, false);
+        fillDrop('e-sector', sectors); 
+        fillDrop('e-transport', transports); 
+        if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+        if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
+        if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
+        todayStats(); 
+    }
+    if (p === 'payment') { 
+        fillDrop('p-party', parties, false);
+        renderPayments(); 
+        renderPayHead(); 
+    }
     if (p === 'ledger') { fillDrop('l-party', parties, true); renderLedger(); }
     if (p === 'records') { fillDrop('f-party', parties, true); fillDrop('f-sector', sectors, true); renderRecords(records); renderRecHead(); }
     if (p === 'update') { fillDrop('u-sector', sectors); fillDrop('u-transport', transports); renderUpdateTable(); renderUpdHead(); }
-    if (p === 'dailynote') { fillDrop('dn-sector', sectors); renderDailyNoteReport(); }
+    if (p === 'dailynote') { 
+        fillDrop('dn-sector', sectors); 
+        if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+        renderDailyNoteReport(); 
+    }
     if (p === 'report') { fillDrop('r-party', parties, true); genReport(); }
     if (p === 'admin') { if (canDo('adminPanel')) renderAdminPanel(); }
     if (p === 'settings') {

@@ -25,7 +25,9 @@ function addPayment() {
     document.getElementById('p-amount').value = '';
     document.getElementById('p-notes').value = '';
     document.getElementById('p-date').value = today();
-    sdClear('p-party');
+    const pPartyEl = document.getElementById('p-party');
+    if (pPartyEl) pPartyEl.value = '';
+    if (typeof sdClear === 'function') sdClear('p-party');
     renderPayments();
 }
 
