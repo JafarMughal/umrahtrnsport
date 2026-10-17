@@ -35,7 +35,7 @@ function printCurrentPage() {
 <html dir="ltr" lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jeddah Arrival Report</title>
+<title>Daily Operations Report</title>
 <style>
   @page { size: A4 landscape; margin: 10mm; }
   * { box-sizing: border-box; }
@@ -51,23 +51,47 @@ function printCurrentPage() {
 
   /* ── Page Header ── */
   .rpt-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    border-bottom: 2px solid #054D28;
-    padding-bottom: 6px;
-    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    align-items: center;
+    border-bottom: 2.5px solid #054D28;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
   }
-  .rpt-header .logo-area { font-size: 26px; }
-  .rpt-header .title-area { text-align: center; flex: 1; }
+  .rpt-header .logo-area {
+    font-size: 32px;
+    font-weight: 800;
+    color: #054D28;
+    letter-spacing: 1.5px;
+    justify-self: start;
+  }
+  .rpt-header .title-area {
+    text-align: center;
+    justify-self: center;
+    width: 100%;
+  }
   .rpt-header .title-area h1 {
-    font-size: 18px; font-weight: 800;
-    color: #054D28; margin: 0 0 2px; letter-spacing: 1px;
+    font-size: 26px;
+    font-weight: 800;
+    color: #054D28;
+    margin: 0 0 4px;
+    letter-spacing: 1px;
+    line-height: 1.2;
   }
   .rpt-header .title-area .sub {
-    font-size: 11px; color: #666;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: 0.5px;
   }
-  .rpt-header .meta-area { text-align: right; font-size: 10px; color: #555; min-width: 120px; }
+  .rpt-header .meta-area {
+    text-align: right;
+    font-size: 11px;
+    font-weight: 600;
+    color: #333;
+    justify-self: end;
+    line-height: 1.5;
+  }
 
   /* ── Report Title ── */
   .report-title-row {
@@ -81,6 +105,62 @@ function printCurrentPage() {
     border: 2px solid #000;
     display: inline-block;
     padding: 3px 20px;
+  }
+
+  /* ── Operations Sections & Badges ── */
+  .dn-report-section {
+    margin-top: 14px;
+    margin-bottom: 14px;
+    page-break-inside: avoid;
+  }
+  .dn-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0f7f3 !important;
+    border: 1.5px solid #054D28;
+    border-bottom: none;
+    padding: 6px 12px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .dn-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dn-nature-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #054D28;
+    text-transform: uppercase;
+  }
+  .dn-nature-badge svg {
+    stroke: #054D28;
+    width: 16px;
+    height: 16px;
+  }
+  .dn-nature-title {
+    display: none;
+  }
+  .dn-group-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+  }
+  .dn-stat-pill {
+    background: #fff !important;
+    border: 1px solid #054D28;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: #054D28;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   /* ── Table ── */
@@ -122,6 +202,8 @@ function printCurrentPage() {
   }
   
   .no-print { display: none !important; }
+  .col-party-name { display: none !important; }
+  .print-only { display: table-cell !important; }
 </style>
 </head>
 <body>
@@ -131,7 +213,7 @@ function printCurrentPage() {
     <div class="logo-area" style="font-weight:700;color:#054D28;letter-spacing:1px;">UT</div>
     <div class="title-area">
       <h1>${appTitle}</h1>
-      <div class="sub">Daily Transport Note Report</div>
+      <div class="sub">Daily Operations Report</div>
     </div>
     <div class="meta-area">
       ${rangeText ? '<div>' + rangeText + '</div>' : ''}

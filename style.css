@@ -1788,11 +1788,13 @@ body.lang-en .sd-dropdown { right: auto; }
 .mt-8 { margin-top: 8px; }
 .mb-8 { margin-bottom: 8px; }
 .gap-4 { gap: 4px; }
+.print-only { display: none !important; }
 
 /* ═══════════ PRINT REPORT STYLES ═══════════ */
 @media print {
   @page { size: A4; margin: 12mm 10mm; }
-  .fb, .card-title, .no-print, header, nav, .header-inner, .lang-switcher { display: none !important; }
+  .fb, .card-title, .no-print, .col-party-name, header, nav, .header-inner, .lang-switcher { display: none !important; }
+  .print-only { display: table-cell !important; }
   .page:not(.active) { display: none !important; }
   .page.active { display: block !important; }
   .card { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
@@ -1804,8 +1806,8 @@ body.lang-en .sd-dropdown { right: auto; }
     padding-bottom: 15px;
     margin-bottom: 20px;
   }
-  .print-header .ph-title { font-size: 24px; font-weight: 800; color: #000; letter-spacing: 1px; }
-  .print-header .ph-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .print-header .ph-title { font-size: 26px; font-weight: 800; color: #000; letter-spacing: 1px; }
+  .print-header .ph-sub { font-size: 16px; font-weight: 700; color: #111; margin-top: 5px; }
   .print-header .ph-meta { font-size: 11px; color: var(--text); margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 6px; }
 
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-scheme: exact !important; }

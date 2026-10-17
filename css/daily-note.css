@@ -704,15 +704,24 @@ tr.dn-total-row td {
   font-weight: 600;
 }
 
+.print-only {
+  display: none !important;
+}
+
 /* ═══════════════════════════════════════════
    PRINT STYLES
 ═══════════════════════════════════════════ */
 @media print {
   .no-print,
+  .col-party-name,
   .card-header-bar,
   .dn-filter-grid,
   .dn-col-filter-row {
     display: none !important;
+  }
+
+  .print-only {
+    display: table-cell !important;
   }
 
   body {
@@ -736,15 +745,17 @@ tr.dn-total-row td {
   }
 
   .print-header .ph-title {
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 800;
     color: #000000;
+    letter-spacing: 0.5px;
   }
 
   .print-header .ph-sub {
-    font-size: 13px;
-    color: #333333;
-    margin-top: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111111;
+    margin-top: 5px;
   }
 
   .print-header .ph-meta {

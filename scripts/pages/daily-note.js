@@ -250,7 +250,7 @@ function renderDailyNoteReport() {
             return `<tr class="dn-data-row" data-hujjaj="${hujjajCount}">
                 <td class="col-voucher"><code>${r.voucher || '—'}</code></td>
                 <td><strong>${r.party || '—'}</strong></td>
-                <td><strong>${r.newParty || '—'}</strong></td>
+                <td class="col-party-name no-print"><strong>${r.newParty || '—'}</strong></td>
                 <td>${r.name || '—'}</td>
                 <td class="col-date">${formattedDate}</td>
                 <td class="col-time">${formattedTime}</td>
@@ -272,7 +272,8 @@ function renderDailyNoteReport() {
         }).join('');
 
         const totalRow = `<tr class="dn-total-row">
-            <td colspan="8" class="dn-total-label">${L.totalHujjaj || 'کل حاجی'}:</td>
+            <td colspan="8" class="dn-total-label no-print">${L.totalHujjaj || 'کل حاجی'}:</td>
+            <td colspan="7" class="dn-total-label print-only">${L.totalHujjaj || 'کل حاجی'}:</td>
             <td class="dn-total-hujjaj">${groupTotalHujjaj}</td>
             <td colspan="6"></td>
             <td class="no-print"></td>
@@ -306,7 +307,7 @@ function renderDailyNoteReport() {
                         <tr>
                             <th style="min-width:110px;">${L.voucherCol || L.dnRef || 'Voucher #'}</th>
                             <th>${L.partyCol || L.dnParty || 'Transporter'}</th>
-                            <th>${L.dnNewParty || L.hajiParty || 'Party Name'}</th>
+                            <th class="col-party-name no-print">${L.dnNewParty || L.hajiParty || 'Party Name'}</th>
                             <th>${L.nameCol || 'NAME'}</th>
                             <th style="min-width:105px;">${dateHeader}</th>
                             <th style="min-width:95px;">${timeHeader}</th>
@@ -324,7 +325,7 @@ function renderDailyNoteReport() {
                         <tr class="dn-col-filter-row no-print">
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
-                            <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
+                            <td class="col-party-name no-print"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
