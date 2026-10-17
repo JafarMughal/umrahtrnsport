@@ -16,17 +16,16 @@ function renderAdminDashboard() {
     const el = document.getElementById('admin-dashboard');
     if (!el) return;
     const roleDefs = [
-        { role: 'superadmin', label: 'سوپر ایڈمن', icon: '👑', cls: 'dash-superadmin' },
-        { role: 'admin',      label: 'ایڈمن',       icon: '🔑', cls: 'dash-admin' },
-        { role: 'operator',   label: 'آپریٹر',     icon: '✍️',  cls: 'dash-operator' },
-        { role: 'viewer',     label: 'ویور',       icon: '👁️', cls: 'dash-viewer' }
+        { role: 'superadmin', label: 'سوپر ایڈمن', cls: 'dash-superadmin' },
+        { role: 'admin',      label: 'ایڈمن',       cls: 'dash-admin' },
+        { role: 'operator',   label: 'آپریٹر',     cls: 'dash-operator' },
+        { role: 'viewer',     label: 'ویور',       cls: 'dash-viewer' }
     ];
     el.innerHTML = roleDefs.map(rd => {
         const count = users.filter(u => u.role === rd.role).length;
         const active = users.filter(u => u.role === rd.role && !u.disabled).length;
         return `
         <div class="admin-dash-card ${rd.cls}">
-            <div class="adc-icon">${rd.icon}</div>
             <div class="adc-info">
                 <div class="adc-count">${count}</div>
                 <div class="adc-label">${rd.label}</div>
@@ -54,15 +53,15 @@ function renderAdminUserTable() {
     if (!el) return;
 
     if (!users.length) {
-        el.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">کوئی یوزر نہیں</td></tr>`;
+        el.innerHTML = `<tr><td colspan="6" class="admin-users-empty">کوئی یوزر نہیں</td></tr>`;
         return;
     }
 
     const roleOpts = [
-        { v: 'superadmin', l: 'سوپر ایڈمن 👑' },
-        { v: 'admin',      l: 'ایڈمن 🔑' },
-        { v: 'operator',   l: 'آپریٹر ✍️' },
-        { v: 'viewer',     l: 'ویور 👁️' }
+        { v: 'superadmin', l: 'سوپر ایڈمن' },
+        { v: 'admin',      l: 'ایڈمن' },
+        { v: 'operator',   l: 'آپریٹر' },
+        { v: 'viewer',     l: 'ویور' }
     ];
 
     el.innerHTML = users.map((u, i) => {
@@ -72,7 +71,7 @@ function renderAdminUserTable() {
         const disabledCls = u.disabled ? 'user-row-disabled' : '';
 
         const roleDropdown = `
-            <select class="role-select" onchange="changeUserRole(${i}, this.value)" ${isSA && !isSelf ? '' : ''} style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);">
+            <select class="role-select" onchange="changeUserRole(${i}, this.value)" ${isSA && !isSelf ? '' : ''}>
                 ${roleOpts.map(r => `<option value="${r.v}" ${u.role === r.v ? 'selected' : ''}>${r.l}</option>`).join('')}
             </select>`;
 
@@ -83,19 +82,19 @@ function renderAdminUserTable() {
             </label>`;
 
         const delBtn = (!isSelf && !isSA)
-            ? `<button class="btn btn-d btn-sm" onclick="deleteUser(${i})" title="حذف کریں">🗑️</button>`
-            : `<button class="btn btn-o btn-sm" disabled style="opacity:0.3;">🗑️</button>`;
+            ? `<button class="btn btn-d btn-sm" onclick="deleteUser(${i})" title="حذف کریں">حذف</button>`
+            : `<button class="btn btn-o btn-sm admin-protected-delete" disabled>حذف</button>`;
 
-        const badge = `<span class="role-badge badge-${u.role}" style="font-size:10px;padding:2px 6px;">${u.role}</span>`;
+        const badge = `<span class="role-badge badge-${u.role} admin-user-role-badge">${u.role}</span>`;
 
         return `
         <tr class="${disabledCls}">
-            <td style="font-weight:600;">${u.username} ${isSelf ? '<span style="font-size:10px;color:var(--gold);">(آپ)</span>' : ''}</td>
+            <td class="admin-username-cell">${u.username} ${isSelf ? '<span class="admin-current-user-tag">(آپ)</span>' : ''}</td>
             <td>${roleDropdown}</td>
-            <td style="text-align:center;">${statusToggle}</td>
-            <td style="font-size:11px;color:var(--muted);">${u.createdAt || '—'}</td>
-            <td style="font-size:11px;color:var(--muted);">${u.lastLogin || '—'}</td>
-            <td style="text-align:center;">${delBtn}</td>
+            <td class="admin-user-status-cell">${statusToggle}</td>
+            <td class="admin-user-date-cell">${u.createdAt || '—'}</td>
+            <td class="admin-user-date-cell">${u.lastLogin || '—'}</td>
+            <td class="admin-user-action-cell">${delBtn}</td>
         </tr>`;
     }).join('');
 
@@ -107,26 +106,26 @@ function saveAdminUsers() {
     if (!canDo('adminPanel')) { alert('اجازت نہیں'); return; }
     svU();
     renderAdminUserTable();
-    al('adm-al-su', '✅ صارفین کی فہرست اور تبدیلیاں کامیابی سے محفوظ ہوگئیں', 'ok');
+    al('adm-al-su', 'صارفین کی فہرست اور تبدیلیاں کامیابی سے محفوظ ہوگئیں', 'ok');
 }
 
 // ───────────────────────────────────────────
 // GRANULAR PERMISSIONS PANEL
 // ───────────────────────────────────────────
 const PERM_DEFS = [
-    { key: 'showAmounts',   label: '💰 رقم دکھائیں',          desc: 'کل رقم، فی کس کرایہ وغیرہ دیکھائیں' },
-    { key: 'showPayments',  label: '💳 ادائیگی تفصیل',        desc: 'لیجر میں موصول/باقی رقم دیکھیں' },
-    { key: 'showReport',    label: '📊 رپورٹ صفحہ',           desc: 'رپورٹ صفحہ تک رسائی' },
-    { key: 'showDailyNote', label: '📋 ڈیلی نوٹ',              desc: 'ڈیلی نوٹ صفحہ تک رسائی' },
-    { key: 'canExport',     label: '📥 Excel Export',           desc: 'Excel فائل بنانے کی اجازت' },
-    { key: 'canPrint',      label: '🖨️ Print کی اجازت',     desc: 'Print بٹن دکھائیں' },
-    { key: 'showVoucher',   label: '🎫 واوچر نمبر',           desc: 'واوچر نمبر کالم دکھائیں' }
+    { key: 'showAmounts',   label: 'رقم دکھائیں (Amounts)',          desc: 'کل رقم، فی کس کرایہ وغیرہ دیکھائیں' },
+    { key: 'showPayments',  label: 'ادائیگی تفصیل (Payments)',        desc: 'لیجر میں موصول/باقی رقم دیکھیں' },
+    { key: 'showReport',    label: 'رپورٹ صفحہ (Report)',           desc: 'رپورٹ صفحہ تک رسائی' },
+    { key: 'showDailyNote', label: 'ڈیلی نوٹ (Daily Note)',         desc: 'ڈیلی نوٹ صفحہ تک رسائی' },
+    { key: 'canExport',     label: 'Excel Export',                  desc: 'Excel فائل بنانے کی اجازت' },
+    { key: 'canPrint',      label: 'Print کی اجازت',                desc: 'Print بٹن دکھائیں' },
+    { key: 'showVoucher',   label: 'واوچر نمبر (Voucher)',          desc: 'واوچر نمبر کالم دکھائیں' }
 ];
 
 const PERM_ROLES = [
-    { role: 'admin',    label: 'ایڈمن 🔑' },
-    { role: 'operator', label: 'آپریٹر ✍️' },
-    { role: 'viewer',   label: 'ویور 👁️' }
+    { role: 'admin',    label: 'ایڈمن' },
+    { role: 'operator', label: 'آپریٹر' },
+    { role: 'viewer',   label: 'ویور' }
 ];
 
 function renderPermissionsPanel() {
@@ -137,7 +136,7 @@ function renderPermissionsPanel() {
         const cols = PERM_ROLES.map(pr => {
             const val = rolePermissions[pr.role] ? rolePermissions[pr.role][pd.key] : true;
             return `
-            <td style="text-align:center;">
+            <td class="admin-perm-toggle-cell">
                 <label class="toggle-switch">
                     <input type="checkbox" id="perm-${pr.role}-${pd.key}" ${val ? 'checked' : ''}
                         onchange="onPermToggle('${pr.role}','${pd.key}',this.checked)">
@@ -149,8 +148,8 @@ function renderPermissionsPanel() {
         return `
         <tr>
             <td>
-                <div style="font-weight:600;font-size:13px;">${pd.label}</div>
-                <div style="font-size:11px;color:var(--muted);">${pd.desc}</div>
+                <div class="admin-perm-label">${pd.label}</div>
+                <div class="admin-perm-detail">${pd.desc}</div>
             </td>
             ${cols}
         </tr>`;
@@ -165,14 +164,14 @@ function onPermToggle(role, key, val) {
     window._permSaveTimer = setTimeout(() => {
         svRP();
         enforcePermissions();
-        al('al-admin', '✅ اجازتیں محفوظ ہوگئیں', 'ok');
+        al('al-admin', 'اجازتیں محفوظ ہوگئیں', 'ok');
     }, 800);
 }
 
 function savePermissions() {
     svRP();
     enforcePermissions();
-    al('al-admin', '✅ اجازتیں محفوظ ہوگئیں', 'ok');
+    al('al-admin', 'اجازتیں محفوظ ہوگئیں', 'ok');
 }
 
 function switchAdminTab(tabId) {

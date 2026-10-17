@@ -1,0 +1,262 @@
+<!-- ===== ENTRY FORM & TODAY'S SUMMARY (MODERN TMS) ===== -->
+
+<!-- 1. MAIN ENTRY FORM CARD -->
+<div class="card entry-form-card">
+    <!-- Card Header with Icon (UPDATED) -->
+    <div class="card-header-bar">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title" id="lbl-entry">نئی ٹرانسپورٹ انٹری</h2>
+                <div class="card-subtitle">عمرہ ٹرانسپورٹ بکنگ و واؤچر تفصیلات درج کریں</div>
+            </div>
+        </div>
+
+        <!-- Status Badge (نئی انٹری / اپ ڈیٹ) -->
+        <div class="card-header-actions">
+            <span class="card-status-badge" id="entry-mode-badge">
+                <span class="dot"></span>
+                <span id="entry-mode-text">نئی انٹری</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Alert Message Container -->
+    <div id="al-entry"></div>
+    <input type="hidden" id="e-id" />
+
+    <!-- Form Row 1: Date, Voucher, Transporter, Haji Party, Sector, Transport -->
+    <div class="grid">
+        <div class="fg">
+            <label id="lbl-date">تاریخ</label>
+            <input type="date" id="e-date" />
+        </div>
+        <div class="fg">
+            <label id="lbl-voucher">واوچر نمبر</label>
+            <input type="text" id="e-voucher" class="voucher-input" />
+        </div>
+        <div class="fg">
+            <label><span id="lbl-transporter-dropdown">ٹرانسپورٹر</span></label>
+            <div class="ddr">
+                <select id="e-party" style="flex:1;">
+                    <option value="">-- منتخب کریں --</option>
+                </select>
+            </div>
+        </div>
+        <div class="fg">
+            <label id="lbl-party">پارٹی</label>
+            <div class="custom-multi-select" id="hp-multi-select">
+                <div class="cms-header" onclick="toggleMultiSelect(event)">
+                    <span id="hp-selected-text">منتخب کریں...</span>
+                    <span class="cms-arrow">▼</span>
+                </div>
+                <div class="cms-dropdown" id="hp-dropdown-container" style="display:none;">
+                    <div class="cms-search">
+                        <input type="text" id="hp-search-input" placeholder="تلاش کریں..."
+                            oninput="filterHajiPartyDropdown()" onclick="event.stopPropagation()" />
+                    </div>
+                    <div id="hp-dropdown-list"></div>
+                </div>
+            </div>
+            <input type="hidden" id="e-new-party" />
+        </div>
+        <div class="fg">
+            <label><span id="lbl-sector">سیکٹر</span></label>
+            <div class="ddr">
+                <select id="e-sector" style="flex:1;" onchange="onTransportChange('e')"></select>
+            </div>
+        </div>
+        <div class="fg">
+            <label><span id="lbl-transport">ٹرانسپورٹ</span></label>
+            <div class="ddr">
+                <select id="e-transport" onchange="onTransportChange('e')">
+                    <option value="">-- منتخب کریں --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Row 2: Pilgrims Count, Fare, Total Amount, Vehicle Total -->
+    <div class="grid">
+        <div class="fg" id="e-count-wrap">
+            <label id="lbl-count">حاجیوں کی تعداد</label>
+            <input type="number" id="e-count" min="1" placeholder="0" oninput="calcE()" />
+        </div>
+        <div class="fg" id="e-fare-wrap">
+            <label id="lbl-fare">فی حاجی کرایہ (SAR)</label>
+            <input type="number" id="e-fare" min="0" placeholder="0" oninput="calcE()" />
+        </div>
+        <div class="fg">
+            <label id="lbl-total">کل رقم (SAR)</label>
+            <input type="number" id="e-total" readonly class="total-input" />
+        </div>
+        <div class="fg" id="e-vehicle-wrap" style="display:none;">
+            <label id="lbl-vehicletotal">پوری گاڑی کی رقم (SAR)</label>
+            <input type="number" id="e-vehicle-total" min="0" placeholder="0" oninput="calcE()" />
+        </div>
+    </div>
+
+    <!-- Flight & Airport Details Card (Lightweight Blue Box) -->
+    <div class="flight-toggle-box">
+        <label class="flight-toggle-label">
+            <input type="checkbox" id="e-show-flight"
+                onchange="document.getElementById('e-flight-details').style.display = this.checked ? 'grid' : 'none';" />
+            <span>فلائیٹ اور ائیرپورٹ تفصیلات شامل کریں</span>
+            <span class="flight-toggle-badge">اختیاری</span>
+        </label>
+        <div id="e-flight-details" class="grid" style="display:none; margin-top:16px; margin-bottom:0;">
+            <div class="fg"><label id="lbl-eName">نام (NAME)</label><input type="text" id="e-name" /></div>
+            <div class="fg"><label id="lbl-eFlightTime">وقت آمد (Arrival Time)</label><input type="time"
+                    id="e-flight-time" /></div>
+            <div class="fg"><label id="lbl-eFlightNo">فلائیٹ نمبر (Flight No)</label><input type="text"
+                    id="e-flight-no" /></div>
+            <div class="fg"><label id="lbl-eAirport">ائیرپورٹ (Airport)</label>
+                <input type="text" id="e-airport" list="airport-list" />
+                <datalist id="airport-list">
+                    <option value="Jeddah Airport (KAIA)"></option>
+                    <option value="Madinah Airport (AMAA)"></option>
+                </datalist>
+            </div>
+            <div class="fg"><label id="lbl-eTransportNature">ٹرانسپورٹ کی نوعیت (TRANSPORT By)</label>
+                <div class="ddr">
+                    <select id="e-transport-nature-sel" style="flex:1;">
+                        <option value="">-- منتخب کریں --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="fg"><label id="lbl-eShirka">شرکہ (Shirka)</label><input type="text" id="e-shirka"
+                    list="shirka-list" /><datalist id="shirka-list"></datalist></div>
+            <div class="fg"><label id="lbl-eGroup">گروپ نمبر (Group No)</label><input type="text" id="e-group" /></div>
+            <div class="fg"><label id="lbl-eMobile">موبائل نمبر (Contact)</label><input type="text" id="e-mobile"
+                    class="ltr-input" /></div>
+        </div>
+    </div>
+
+    <!-- Transport Hint Alert -->
+    <div id="e-transport-hint"
+        style="display:none;margin-bottom:14px;padding:10px 16px;border-radius:8px;font-size:12.5px;"></div>
+
+    <!-- Notes Field -->
+    <div class="fg" style="margin-bottom:18px;">
+        <label id="lbl-notes">نوٹس</label>
+        <textarea id="e-notes" rows="2" placeholder="اضافی معلومات یا ہدایات یہاں لکھیں..."></textarea>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-row">
+        <button class="btn btn-p" id="btn-save" onclick="addEntry()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+            </svg>
+            <span>انٹری محفوظ کریں</span>
+        </button>
+        <button class="btn btn-o" id="btn-clear" onclick="clearEntryForm()">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+            </svg>
+            <span>صاف کریں</span>
+        </button>
+    </div>
+</div>
+
+<!-- 2. TODAY'S SUMMARY KPI CARDS (MODERN METRICS SECTION) -->
+<div class="card summary-card">
+    <div class="card-header-bar" style="margin-bottom:18px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h3 class="card-title" id="lbl-todaysum">آج کا خلاصہ</h3>
+                <div class="card-subtitle">آج کے تمام آپریشنز اور گاڑیوں کے اعداد و شمار</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Modern Metric Cards -->
+    <div class="sg">
+        <!-- 1. Transporters Today -->
+        <div class="sc">
+            <div class="sc-icon-wrap sc-icon-p">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </div>
+            <div class="sc-content">
+                <div class="lbl" id="lbl-ts-p">ٹرانسپورٹرز آج</div>
+                <div class="num" id="ts-p">0</div>
+            </div>
+        </div>
+
+        <!-- 2. Total Pilgrims Today -->
+        <div class="sc">
+            <div class="sc-icon-wrap sc-icon-h">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <div class="sc-content">
+                <div class="lbl" id="lbl-ts-h">کل حاجی آج</div>
+                <div class="num" id="ts-h">0</div>
+            </div>
+        </div>
+
+        <!-- 3. Total Amount SAR -->
+        <div class="sc">
+            <div class="sc-icon-wrap sc-icon-a">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                    <circle cx="8" cy="15" r="1" />
+                    <circle cx="16" cy="15" r="1" />
+                </svg>
+            </div>
+            <div class="sc-content">
+                <div class="lbl" id="lbl-ts-a">کل رقم (SAR)</div>
+                <div class="num" id="ts-a">0</div>
+            </div>
+        </div>
+
+        <!-- 4. Total Trips Today -->
+        <div class="sc">
+            <div class="sc-icon-wrap sc-icon-t">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                </svg>
+            </div>
+            <div class="sc-content">
+                <div class="lbl" id="lbl-ts-t">کل سفر آج</div>
+                <div class="num" id="ts-t">0</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>

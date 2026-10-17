@@ -8,13 +8,19 @@ function today() { return new Date().toISOString().split('T')[0]; }
 function t(k) { return T[lang][k] || k; }
 
 function genCode() {
-    const existing = Object.values(partyCodes).map(c => parseInt(c.replace('UTS-', '')) || 0);
+    if (!partyCodes || typeof partyCodes !== 'object') partyCodes = {};
+    const existing = Object.values(partyCodes).map(c => {
+        if (typeof c === 'string') return parseInt(c.replace('UTS-', ''), 10) || 0;
+        return 0;
+    });
     const next = existing.length ? Math.max(...existing) + 1 : 1;
     return 'UTS-' + String(next).padStart(3, '0');
 }
 
 function getCode(party) {
-    if (!partyCodes[party]) { partyCodes[party] = genCode(); svC(); }
+    if (!party) return '';
+    if (!partyCodes || typeof partyCodes !== 'object') partyCodes = {};
+    if (!partyCodes[party]) { partyCodes[party] = genCode(); if (typeof svC === 'function') svC(); }
     return partyCodes[party];
 }
 
@@ -30,7 +36,14 @@ function genDNRef() {
     return 'DN-' + String(next).padStart(4, '0');
 }
 
-function isSharing(val) { return /شیئرنگ|sharing|مشترك/i.test(val || ''); }
+function isEconomyBus(transport, sector) {
+    const str = ((transport || '') + ' ' + (sector || '')).trim();
+    return /economy.*bus|bus.*economy|شیئرنگ|sharing|مشترك|بس|bus/i.test(str);
+}
+
+function isSharing(val, sector) { return isEconomyBus(val, sector); }
+window.isEconomyBus = isEconomyBus;
+window.isSharing = isSharing;
 
 function getTransportLabel(val) { return val || '—'; }
 
@@ -60,3 +73,39 @@ function L_arrow() { return document.documentElement.dir === 'rtl' ? '←' : '�
 function setText(id, txt) { const e = document.getElementById(id); if (e) e.textContent = txt; }
 
 function setOpt(id, txt, val) { const e = document.getElementById(id); if (e) { e.textContent = txt; e.value = val; } }
+
+// ── GLOBAL THEME ENGINE (LIGHT & DARK MODE) ──
+function toggleAppTheme(forcedTheme) {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const target = forcedTheme || (current === 'dark' ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', target);
+    localStorage.setItem('uts_theme', target);
+    updateThemeToggleUI(target);
+}
+
+function initAppTheme() {
+    const saved = localStorage.getItem('uts_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    updateThemeToggleUI(saved);
+}
+
+function updateThemeToggleUI(theme) {
+    const isDark = theme === 'dark';
+    const isUrdu = typeof lang === 'undefined' || lang === 'ur';
+    const isArabic = typeof lang !== 'undefined' && lang === 'ar';
+    const iconEl = document.getElementById('theme-toggle-icon');
+    const textEl = document.getElementById('theme-btn-text');
+    if (iconEl && textEl) {
+        iconEl.textContent = isDark ? '☀️' : '🌙';
+        textEl.textContent = isDark ? (isUrdu ? 'لائٹ' : isArabic ? 'فاتح' : 'Light') : (isUrdu ? 'ڈارک' : isArabic ? 'داكن' : 'Dark');
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAppTheme);
+} else {
+    initAppTheme();
+}
+
+window.toggleAppTheme = toggleAppTheme;
+window.initAppTheme = initAppTheme;

@@ -1,0 +1,104 @@
+<!-- ===== ADMIN PANEL HEADER & TABS ===== -->
+<div class="admin-panel-header">
+    <div class="admin-panel-title">
+        <div>
+            <h2 class="admin-panel-heading">ایڈمنسٹریشن پینل</h2>
+            <p class="admin-panel-subtitle">یوزر مینجمنٹ اور سسٹم کنٹرول</p>
+        </div>
+    </div>
+</div>
+
+<div class="admin-panel-body">
+    <!-- Admin Tabs -->
+    <div class="admin-tabs">
+        <button class="admin-tab-btn active" id="atb-admin-tab-dashboard" onclick="switchAdminTab('admin-tab-dashboard')">ڈیش بورڈ</button>
+        <button class="admin-tab-btn" id="atb-admin-tab-users" onclick="switchAdminTab('admin-tab-users')">صارفین (Users)</button>
+        <button class="admin-tab-btn" id="atb-admin-tab-perms" onclick="switchAdminTab('admin-tab-perms')">اجازتیں (Permissions)</button>
+    </div>
+
+    <div id="al-admin"></div>
+
+    <!-- Tab: Dashboard -->
+    <div id="admin-tab-dashboard" class="admin-tab-content active">
+        <div id="admin-dashboard" class="admin-dash-grid"></div>
+        <div id="admin-total-stats" class="admin-total-stats"></div>
+    </div>
+
+    <!-- Tab: Users -->
+    <div id="admin-tab-users" class="admin-tab-content">
+        <!-- Add New User -->
+        <div class="card admin-user-form-card">
+            <div class="card-title admin-section-title">نیا صارف شامل کریں</div>
+            <div id="adm-al-su"></div>
+            <div class="grid admin-user-form-grid">
+                <div class="fg">
+                    <label>صارف نام</label>
+                    <input type="text" id="adm-su-username" placeholder="مثلاً: ahmed" autocomplete="off" />
+                </div>
+                <div class="fg">
+                    <label>پاس ورڈ</label>
+                    <input type="password" id="adm-su-password" placeholder="کم از کم 6 حروف" autocomplete="new-password" />
+                </div>
+                <div class="fg">
+                    <label>رول منتخب کریں</label>
+                    <select id="adm-su-role" class="admin-role-create-select">
+                        <option value="admin">ایڈمن</option>
+                        <option value="operator" selected>آپریٹر</option>
+                        <option value="viewer">ویور</option>
+                    </select>
+                </div>
+                <button class="btn btn-p" id="adm-btn-add-user" onclick="addUser()">شامل کریں</button>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card">
+            <div class="card-title admin-section-title">صارفین کی فہرست</div>
+            <div class="tbl-wrap">
+                <table class="settings-table admin-user-table">
+                    <thead>
+                        <tr>
+                            <th>صارف نام</th>
+                            <th class="admin-user-role-header">رول</th>
+                            <th class="admin-user-active-header">فعال</th>
+                            <th class="admin-user-date-header">تاریخ</th>
+                            <th class="admin-user-login-header">آخری لاگ ان</th>
+                            <th class="admin-user-delete-header">حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-tbody"></tbody>
+                </table>
+            </div>
+            <div class="admin-save-actions">
+                <button class="btn btn-p admin-save-users-btn" onclick="saveAdminUsers()">
+                    تبدیلیاں محفوظ کریں
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Permissions -->
+    <div id="admin-tab-perms" class="admin-tab-content">
+        <div class="card">
+            <div class="card-title admin-section-title">رول وائز اجازتیں</div>
+            <p class="admin-perms-description">ہر رول کے لیے نیچے Toggle کریں — تبدیلیاں فوری محفوظ ہوں گی</p>
+            <div class="tbl-wrap">
+                <table class="settings-table perms-table">
+                    <thead>
+                        <tr>
+                            <th class="admin-permission-header">اجازت</th>
+                            <th class="admin-permission-role-header">ایڈمن</th>
+                            <th class="admin-permission-role-header">آپریٹر</th>
+                            <th class="admin-permission-role-header">ویور</th>
+                        </tr>
+                    </thead>
+                    <tbody id="perms-table-body"></tbody>
+                </table>
+            </div>
+            <div class="admin-perm-action">
+                <button class="btn btn-p" onclick="savePermissions()">محفوظ کریں</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>

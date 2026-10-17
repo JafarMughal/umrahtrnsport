@@ -1,0 +1,439 @@
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PAYMENT SECTION — NORDIC SLATE-TEAL THEME
+   Handcrafted, Non-AI, Fully Mobile Responsive
+   Light + Dark Mode Ready
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* ═══════════════════════════════════════════
+   HEADER INLINE SEARCH (in Card Header)
+═══════════════════════════════════════════ */
+.pay-search-wrap {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.hdr-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 260px;
+  max-width: 100%;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.hdr-search:hover {
+  border-color: var(--border-strong);
+}
+
+.hdr-search:focus-within {
+  border-color: var(--deep-teal);
+  box-shadow: var(--focus-ring);
+}
+
+[data-theme="dark"] .hdr-search:focus-within {
+  border-color: var(--muted-teal);
+}
+
+.hdr-search-icon {
+  position: absolute;
+  inset-inline-start: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.hdr-search input {
+  width: 100%;
+  height: 100%;
+  padding-inline-start: 34px;
+  padding-inline-end: 12px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: normal;
+  box-sizing: border-box;
+}
+
+.hdr-search input::placeholder {
+  color: var(--text-faint);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+}
+
+/* Fallback search style (اگر ID سے استعمال ہو) */
+#pay-search {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ═══════════════════════════════════════════
+   TABLE WRAPPER — موبائل پر horizontal scroll
+═══════════════════════════════════════════ */
+.tbl-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+}
+
+.tbl-wrap table {
+  width: 100%;
+  min-width: 720px;
+  /* موبائل پر horizontal scroll کے لیے */
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+
+/* Table Head */
+.tbl-wrap thead {
+  background: var(--surface-alt);
+}
+
+.tbl-wrap th {
+  text-align: start;
+  padding: 11px 14px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  letter-spacing: 0.15px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .tbl-wrap th {
+  color: var(--ash-grey);
+  background: var(--surface-alt);
+}
+
+/* Table Body */
+.tbl-wrap td {
+  padding: 11px 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
+  line-height: 1.45;
+}
+
+.tbl-wrap tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tbl-wrap tbody tr {
+  transition: background-color .15s ease;
+}
+
+@media (hover: hover) {
+  .tbl-wrap tbody tr:hover {
+    background: var(--surface-hover);
+  }
+}
+
+/* Party Code Chip */
+.party-code {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-family: 'Inter', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+  border: 1px solid var(--border-soft);
+}
+
+[data-theme="dark"] .party-code {
+  color: var(--ash-grey);
+  background: rgba(132, 169, 140, 0.18);
+  border-color: var(--border);
+}
+
+/* Credit / Amount color */
+.led-cr {
+  color: var(--deep-teal);
+  font-family: var(--font-num);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+[data-theme="dark"] .led-cr {
+  color: var(--muted-teal);
+}
+
+/* Payment Method Badge */
+.badge,
+.payment-method-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--deep-teal);
+  border: 1px solid var(--border-soft);
+  line-height: 1.5;
+  white-space: nowrap;
+  letter-spacing: 0.15px;
+}
+
+[data-theme="dark"] .badge,
+[data-theme="dark"] .payment-method-badge {
+  color: var(--ash-grey);
+  background: rgba(132, 169, 140, 0.15);
+  border-color: var(--border);
+}
+
+/* Small delete button in table */
+.btn-sm {
+  height: 30px !important;
+  min-height: 30px;
+  max-height: 30px;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.btn-d {
+  background: var(--surface);
+  color: var(--er-fg);
+  border: 1px solid var(--er-border);
+}
+
+.btn-d:hover {
+  background: var(--er-bg);
+  color: var(--er-fg);
+  border-color: var(--er-fg);
+}
+
+[data-theme="dark"] .btn-d {
+  color: var(--er-fg);
+  border-color: var(--er-border);
+}
+
+[data-theme="dark"] .btn-d:hover {
+  background: var(--er-bg);
+}
+
+/* Empty State */
+.tbl-wrap .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 20px;
+  gap: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.tbl-wrap .empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-alt);
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+}
+
+/* Notes cell — compact */
+.tbl-wrap td .notes-cell {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Amount input special styling (reuse total-input look) */
+#p-amount {
+  font-family: var(--font-num);
+  letter-spacing: 0.3px;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR (جدول کے لیے — باریک)
+═══════════════════════════════════════════ */
+.tbl-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tbl-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tbl-wrap::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.tbl-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — TABLET (768px)
+═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .hdr-search {
+    width: 200px;
+    height: 36px;
+  }
+
+  .hdr-search input {
+    font-size: 16px;
+    /* iOS zoom روکنے کے لیے */
+    padding-inline-start: 32px;
+  }
+
+  .hdr-search-icon {
+    inset-inline-start: 10px;
+  }
+
+  .tbl-wrap th {
+    padding: 10px 12px;
+    font-size: 11.5px;
+  }
+
+  .tbl-wrap td {
+    padding: 10px 12px;
+    font-size: 12.5px;
+  }
+
+  .tbl-wrap table {
+    min-width: 680px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — MOBILE (640px)
+═══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .card-header-bar {
+    flex-wrap: wrap;
+  }
+
+  .pay-search-wrap {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .hdr-search {
+    width: 100%;
+    height: 38px;
+  }
+
+  .hdr-search input {
+    font-size: 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (480px)
+═══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .btn-row {
+    flex-direction: column;
+  }
+
+  .btn-row .btn {
+    width: 100%;
+  }
+
+  .tbl-wrap table {
+    min-width: 620px;
+  }
+
+  .tbl-wrap th {
+    padding: 9px 10px;
+    font-size: 11px;
+  }
+
+  .tbl-wrap td {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  .party-code {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .badge,
+  .payment-method-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .btn-sm {
+    height: 28px !important;
+    min-height: 28px;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+
+  .tbl-wrap .empty {
+    padding: 28px 14px;
+    font-size: 12px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — VERY SMALL MOBILE (360px)
+═══════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .hdr-search {
+    height: 36px;
+  }
+
+  .hdr-search input {
+    font-size: 16px;
+  }
+
+  .tbl-wrap th,
+  .tbl-wrap td {
+    padding: 8px 8px;
+    font-size: 11.5px;
+  }
+
+  .tbl-wrap table {
+    min-width: 580px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LEGACY PAGE-SCOPED TABLE (اگر استعمال ہو)
+═══════════════════════════════════════════ */
+#page-payment table th,
+#page-payment table td {
+  padding: 10px 14px;
+}

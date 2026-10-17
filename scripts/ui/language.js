@@ -6,7 +6,9 @@ function setLang(l) {
     localStorage.setItem('uts_lang', l);
     const L = T[l] || T.ur;
     document.documentElement.lang = l;
-    document.body.className = 'lang-' + l;
+    document.documentElement.dir = L.dir || (l === 'en' ? 'ltr' : 'rtl');
+    const isSidebarOpen = document.body.classList.contains('sidebar-open');
+    document.body.className = 'lang-' + l + (isSidebarOpen ? ' sidebar-open' : '');
     document.getElementById('modal').style.direction = L.dir;
     ['ur', 'en', 'ar'].forEach(x => document.getElementById('lb-' + x).classList.toggle('active', x === l));
 
@@ -15,7 +17,31 @@ function setLang(l) {
     document.getElementById('app-sub-login').textContent = L.appSub;
 
     const navBtns = document.querySelectorAll('#main-nav button');
-    L.nav.forEach((txt, i) => { if (navBtns[i]) navBtns[i].textContent = txt; });
+    L.nav.forEach((txt, i) => {
+        if (navBtns[i]) {
+            const span = navBtns[i].querySelector('.nav-text');
+            if (span) span.textContent = txt;
+            else navBtns[i].textContent = txt;
+        }
+    });
+
+    const adminNav = document.getElementById('nav-admin-panel');
+    if (adminNav) {
+        const adminSpan = adminNav.querySelector('.nav-text');
+        const adminText = l === 'en' ? 'Admin Panel' : l === 'ar' ? 'لوحة التحكم' : 'ایڈمن پینل';
+        if (adminSpan) adminSpan.textContent = adminText;
+        else adminNav.textContent = adminText;
+    }
+
+    const sidebarNavLbl = document.getElementById('lbl-sidebar-nav');
+    if (sidebarNavLbl) {
+        sidebarNavLbl.textContent = l === 'en' ? 'NAVIGATION' : l === 'ar' ? 'التنقل' : 'نیویگیشن';
+    }
+
+    if (typeof updateThemeToggleUI === 'function') {
+        const curTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        updateThemeToggleUI(curTheme);
+    }
 
     // Entry
     setText('lbl-entry', L.entry); setText('lbl-date', L.date); setText('lbl-transporter-dropdown', L.transporterLbl); setText('lbl-party', L.hajiParty || L.party);
@@ -38,7 +64,14 @@ function setLang(l) {
     // Ledger
     setText('lbl-ledgerTitle', L.ledgerTitle); setText('lbl-ledparty', L.party);
     setText('lbl-ledfrom', L.fromDate); setText('lbl-ledto', L.toDate);
-    setText('btn-print', L.print); setText('btn-resetled', L.resetFilter);
+    const spanPrint = document.getElementById('lbl-btn-print') || document.querySelector('#btn-print span');
+    if (spanPrint) spanPrint.textContent = L.print;
+    else setText('btn-print', L.print);
+    const spanReset = document.getElementById('lbl-btn-reset') || document.querySelector('#btn-resetled span');
+    if (spanReset) spanReset.textContent = L.resetFilter;
+    else setText('btn-resetled', L.resetFilter);
+    const spanExcel = document.getElementById('lbl-btn-excel') || document.querySelector('#btn-exportledger span');
+    if (spanExcel) spanExcel.textContent = L.exportExcel || 'Excel';
 
     // Records
     setText('lbl-recTitle', L.recTitle); setText('lbl-recfrom', L.fromDate); setText('lbl-recto', L.toDate);
@@ -46,7 +79,12 @@ function setLang(l) {
     setText('lbl-recsearch', L.searchRec || 'سرچ (واوچر / پارٹی / فلائیٹ)');
     const fSearch = document.getElementById('f-search');
     if (fSearch) fSearch.placeholder = L.searchHint || 'تلاش کریں...';
-    setText('btn-filter', L.filter); setText('btn-clearfilter', L.resetFilter);
+    const spanFilter = document.getElementById('lbl-btn-filter') || document.querySelector('#btn-filter span');
+    if (spanFilter) spanFilter.textContent = L.filter;
+    else setText('btn-filter', L.filter);
+    const spanClear = document.getElementById('lbl-btn-clear') || document.querySelector('#btn-clearfilter span');
+    if (spanClear) spanClear.textContent = L.resetFilter;
+    else setText('btn-clearfilter', L.resetFilter);
     setText('lbl-totalrec', L.totalRec); setText('lbl-totalhj', L.totalHujjaj); setText('lbl-totalamt', L.totalAmt);
 
     // Report
@@ -55,32 +93,37 @@ function setLang(l) {
     setOpt('opt-bydate', L.byDate, 'date'); setOpt('opt-byparty', L.byTransporter, 'party');
     setOpt('opt-bynewparty', L.byParty, 'newparty');
     setOpt('opt-bysector', L.bySector, 'sector');
-    const excelBtn = document.querySelector('#btn-genrep + .btn-g + .btn-g');
-    if (excelBtn) {
-        excelBtn.textContent = L.exportExcel || '📥 Excel';
+    const repGenBtn = document.getElementById('btn-genrep');
+    if (repGenBtn) {
+        const span = repGenBtn.querySelector('span');
+        if (span) span.textContent = L.genReport || 'رپورٹ بنائیں';
+        else repGenBtn.textContent = L.genReport || 'رپورٹ بنائیں';
     }
-
-    // Update page was removed, so no translations needed here.
+    const repExcelBtn = document.getElementById('btn-exportreport');
+    if (repExcelBtn) {
+        const span = repExcelBtn.querySelector('span');
+        if (span) span.textContent = L.exportExcel || 'Excel';
+    }
 
     // Settings
     setText('tab-btn-app', L.setApp); setText('tab-btn-transporters', L.setParties);
     setText('tab-btn-sectors', L.setSectors); setText('tab-btn-transports', L.setTransports);
     setText('tab-btn-users', L.userManagement); setText('tab-btn-hajiparties', L.setHajiParties);
-    
+
     setText('lbl-newpartylbl', L.newPartyLbl); setText('lbl-newsectorlbl', L.newSectorLbl);
     setText('lbl-newhajipartylbl', L.newHajiPartyLbl);
-    document.getElementById('sp-in').placeholder = L.partyPlaceholder;
-    document.getElementById('ss-in').placeholder = L.sectorPlaceholder;
-    document.getElementById('shp-in').placeholder = L.hajiPartyPlaceholder;
+    const spIn = document.getElementById('sp-in'); if (spIn) spIn.placeholder = L.partyPlaceholder;
+    const ssIn = document.getElementById('ss-in'); if (ssIn) ssIn.placeholder = L.sectorPlaceholder;
+    const shpIn = document.getElementById('shp-in'); if (shpIn) shpIn.placeholder = L.hajiPartyPlaceholder;
     setText('btn-addparty', L.add); setText('btn-addsector', L.add); setText('btn-addhajiparty', L.add);
 
     setText('lbl-newtransportlbl', L.newTransportLbl);
-    document.getElementById('st-in').placeholder = L.transportPlaceholder;
+    const stIn = document.getElementById('st-in'); if (stIn) stIn.placeholder = L.transportPlaceholder;
     setText('btn-addtransport', L.add);
 
     setText('lbl-appNameLbl', L.appNameLbl); setText('lbl-appSubLbl', L.appSubLbl);
     setText('lbl-logoLbl', L.logoLbl); setText('lbl-logoHint', L.logoHint); setText('btn-saveApp', L.saveApp);
-    
+
     setText('lbl-tbl-transporter', L.partyCol); setText('lbl-tbl-sector', L.sectorCol);
     setText('lbl-tbl-transport', L.transportCol); setText('lbl-tbl-hajiparty', L.hajiPartyCol || L.hajiParty);
     document.querySelectorAll('.lbl-tbl-action').forEach(el => el.textContent = L.actionCol);
@@ -98,7 +141,16 @@ function setLang(l) {
     setText('lbl-dnNature', L.dnNature); setText('opt-dn-nature-sel', L.selectParty || '-- Select --'); setText('opt-dn-nature-arr', L.dnNatureArrival); setText('opt-dn-nature-oth', L.dnNatureOther);
     setText('btn-dn-save', L.dnSave); setText('btn-dn-clear', L.dnClear);
     setText('lbl-dnRepTitle', L.dnRepTitle); setText('lbl-dnRepFrom', L.dnRepFrom); setText('lbl-dnRepTo', L.dnRepTo);
-    setText('btn-dn-resetrep', L.dnReset); document.getElementById('nav-dailynote').textContent = L.dnNav;
+    setText('btn-dn-resetrep', L.dnReset);
+    setText('lbl-btn-print-dn', L.print);
+    setText('lbl-btn-excel-dn', L.exportExcel || 'Excel');
+    setText('lbl-btn-reset-dn', L.dnReset);
+    const dnNav = document.getElementById('nav-dailynote');
+    if (dnNav) {
+        const dnSpan = dnNav.querySelector('.nav-text');
+        if (dnSpan) dnSpan.textContent = L.dnNav;
+        else dnNav.textContent = L.dnNav;
+    }
 
     // Modal
     setText('btn-msave', L.modalSave); setText('btn-mcancel', L.modalCancel);
@@ -111,7 +163,17 @@ function setLang(l) {
 
     if (loggedInUser) {
         document.getElementById('lbl-logged-in-user').textContent = L.loggedUser + loggedInUser;
-        document.getElementById('btn-logout').textContent = L.logout;
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) {
+            const span = btnLogout.querySelector('.logout-text');
+            if (span) span.textContent = L.logout;
+            else btnLogout.textContent = L.logout;
+        }
+        const initialEl = document.getElementById('sidebar-user-initial');
+        if (initialEl && loggedInUser) {
+            initialEl.textContent = loggedInUser.charAt(0).toUpperCase();
+        }
+        if (typeof applyPerms === 'function' && typeof currentUserRole !== 'undefined') applyPerms(currentUserRole);
     }
 
     loadAppName(l);
@@ -121,12 +183,14 @@ function setLang(l) {
     const ap = document.querySelector('.page.active');
     if (ap) {
         const id = ap.id.replace('page-', '');
-        if (id === 'entry') todayStats();
-        if (id === 'payment') { renderPayments(); renderPayHead(); }
-        if (id === 'ledger') renderLedger();
-        if (id === 'records') renderRecords(records);
-        if (id === 'dailynote') renderDailyNoteReport();
-        if (id === 'settings') { renderPartyList(); renderSectorList(); renderTransportList(); renderUsers(); }
+        if (id === 'entry' && typeof todayStats === 'function') todayStats();
+        if (id === 'payment') { if (typeof renderPayments === 'function') renderPayments(); if (typeof renderPayHead === 'function') renderPayHead(); }
+        if (id === 'ledger' && typeof renderLedger === 'function') renderLedger();
+        if (id === 'records' && typeof initRecordsPage === 'function') initRecordsPage();
+        if (id === 'dailynote' && typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
+        if (id === 'settings') { if (typeof renderPartyList === 'function') renderPartyList(); if (typeof renderSectorList === 'function') renderSectorList(); if (typeof renderTransportList === 'function') renderTransportList(); if (typeof renderUsers === 'function') renderUsers(); }
     }
-    renderPayHead(); renderRecHead();
+    if (typeof renderPayHead === 'function') renderPayHead();
+    if (typeof renderRecHead === 'function') renderRecHead();
+    if (typeof updateTopbarTitle === 'function' && typeof currentActiveTab !== 'undefined') updateTopbarTitle(currentActiveTab);
 }

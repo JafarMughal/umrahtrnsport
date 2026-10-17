@@ -24,7 +24,16 @@ function checkAuth() {
         mainAppContainer.style.display = 'block';
         loginPage.style.display = 'none';
         document.getElementById('lbl-logged-in-user').textContent = (L.loggedUser || 'User: ') + loggedInUser;
-        document.getElementById('btn-logout').textContent = L.logout || 'Log Out 🚪';
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) {
+            const span = btnLogout.querySelector('.logout-text');
+            if (span) span.textContent = L.logout || 'Log Out';
+            else btnLogout.textContent = L.logout || 'Log Out';
+        }
+        const initialEl = document.getElementById('sidebar-user-initial');
+        if (initialEl && loggedInUser) {
+            initialEl.textContent = loggedInUser.charAt(0).toUpperCase();
+        }
         enforcePermissions();
     } else {
         mainAppContainer.style.display = 'none';
@@ -59,7 +68,7 @@ async function login() {
         const found = users.find(x => x.username.toLowerCase() === uname.toLowerCase());
         if (found && found.disabled) {
             await auth.signOut();
-            al('al-login', '⛔ یہ اکاؤنٹ غیر فعال ہے۔ ایڈمن سے رابطہ کریں', 'er');
+            al('al-login', 'یہ اکاؤنٹ غیر فعال ہے۔ ایڈمن سے رابطہ کریں', 'er');
             return;
         }
 
@@ -90,7 +99,7 @@ async function login() {
             svU();
         }
 
-        al('al-login', L.loginSuccess || '✅ لاگ ان کامیاب', 'ok');
+        al('al-login', L.loginSuccess || 'لاگ ان کامیاب', 'ok');
         checkAuth();
 
         setTimeout(() => {
@@ -116,8 +125,11 @@ async function login() {
                 svU();
             }
             setCurrentUserRole(loggedInUser);
-            al('al-login', '✅ لاگ ان کامیاب (لوکل موڈ)', 'ok');
+            al('al-login', 'لاگ ان کامیاب (لوکل موڈ)', 'ok');
             checkAuth();
+            if (typeof window.loadData === 'function') {
+                window.loadData();
+            }
             setTimeout(() => {
                 const defTab = canDo('entry') ? 'entry' : 'records';
                 const defBtn = document.getElementById('nav-' + defTab) || document.querySelector(`#main-nav button[onclick*="${defTab}"]`);
@@ -192,10 +204,10 @@ async function addUser() {
     const roleEl = document.getElementById('adm-su-role');
     const role = roleEl ? roleEl.value : 'operator';
 
-    if (!u || !p) { al('adm-al-su', L.entryRequired || '⚠️ صارف نام اور پاس ورڈ ضروری ہے', 'er'); return; }
-    if (p.length < 6) { al('adm-al-su', '⚠️ پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے', 'er'); return; }
+    if (!u || !p) { al('adm-al-su', L.entryRequired || 'صارف نام اور پاس ورڈ ضروری ہے', 'er'); return; }
+    if (p.length < 6) { al('adm-al-su', 'پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے', 'er'); return; }
     if (users.some(x => x.username.toLowerCase() === u.toLowerCase())) {
-        al('adm-al-su', L.userExists || '⚠️ یہ صارف نام پہلے سے موجود ہے', 'er');
+        al('adm-al-su', L.userExists || 'یہ صارف نام پہلے سے موجود ہے', 'er');
         return;
     }
 
@@ -212,12 +224,12 @@ async function addUser() {
         renderAdminUserTable();
         document.getElementById('adm-su-username').value = '';
         document.getElementById('adm-su-password').value = '';
-        al('adm-al-su', '✅ یوزر کامیابی سے شامل ہوگیا', 'ok');
+        al('adm-al-su', 'یوزر کامیابی سے شامل ہوگیا', 'ok');
     } catch (e) {
         console.error('Add user error:', e);
         let msg = e.message;
         if (e.code === 'auth/email-already-in-use') {
-            msg = '⚠️ یہ یوزر پہلے سے Firebase میں موجود ہے';
+            msg = 'یہ یوزر پہلے سے Firebase میں موجود ہے';
         } else if (e.code === 'auth/network-request-failed') {
             // Offline mode — add locally only
             users.push({
@@ -231,7 +243,7 @@ async function addUser() {
             renderAdminUserTable();
             document.getElementById('adm-su-username').value = '';
             document.getElementById('adm-su-password').value = '';
-            al('adm-al-su', '✅ یوزر شامل ہوگیا (آف لائن موڈ — Firebase sync ہوگا)', 'ok');
+            al('adm-al-su', 'یوزر شامل ہوگیا (آف لائن موڈ — Firebase sync ہوگا)', 'ok');
             return;
         }
         al('adm-al-su', msg, 'er');

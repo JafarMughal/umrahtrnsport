@@ -1,20 +1,34 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  DATABASE HELPERS
+//  DATABASE HELPERS (SAFE + OFFLINE CACHE)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function svR() { db.ref('records').set(records).catch(e => console.warn('Save error:', e)); }
-function svDR() { db.ref('deletedRecords').set(deletedRecords).catch(e => console.warn('Save error:', e)); }
-function svPy() { db.ref('payments').set(payments).catch(e => console.warn('Save error:', e)); }
-function svP() { db.ref('parties').set(parties).catch(e => console.warn('Save error:', e)); }
-function svS() { db.ref('sectors').set(sectors).catch(e => console.warn('Save error:', e)); }
-function svSh() { db.ref('shirkas').set(shirkas).catch(e => console.warn('Save error:', e)); }
-function svTr() { db.ref('transports').set(transports).catch(e => console.warn('Save error:', e)); }
-function svC() { db.ref('partyCodes').set(partyCodes).catch(e => console.warn('Save error:', e)); }
-function svU() { db.ref('users').set(users).catch(e => console.warn('Save error:', e)); }
-function svHP() { db.ref('hajiParties').set(hajiParties).catch(e => console.warn('Save error:', e)); }
-function svDN() { db.ref('dailyNotes').set(dailyNotes).catch(e => console.warn('Save error:', e)); }
-function svRP() { db.ref('rolePermissions').set(rolePermissions).catch(e => console.warn('Save rolePermissions error:', e)); }
+function _safeFbSet(node, val) {
+    try {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('uts_' + node, JSON.stringify(val));
+        }
+    } catch (e) { }
+    try {
+        if (typeof db !== 'undefined' && db && typeof db.ref === 'function') {
+            db.ref(node).set(val).catch(e => console.warn(`Save ${node} error:`, e));
+        }
+    } catch (e) {
+        console.warn(`Save ${node} error:`, e);
+    }
+}
+
+function svR() { _safeFbSet('records', records); }
+function svDR() { _safeFbSet('deletedRecords', deletedRecords); }
+function svPy() { _safeFbSet('payments', payments); }
+function svP() { _safeFbSet('parties', parties); }
+function svS() { _safeFbSet('sectors', sectors); }
+function svSh() { _safeFbSet('shirkas', shirkas); }
+function svTr() { _safeFbSet('transports', transports); }
+function svC() { _safeFbSet('partyCodes', partyCodes); }
+function svU() { _safeFbSet('users', users); }
+function svHP() { _safeFbSet('hajiParties', hajiParties); }
+function svDN() { _safeFbSet('dailyNotes', dailyNotes); }
+function svRP() { _safeFbSet('rolePermissions', rolePermissions); }
 
 function saveAppSettingsToFb() {
-    db.ref('settings').set({ logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} })
-        .catch(e => console.warn('Save settings error:', e));
+    _safeFbSet('settings', { logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} });
 }

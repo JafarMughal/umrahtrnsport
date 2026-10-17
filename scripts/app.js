@@ -1,12 +1,15 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  FIREBASE INIT - FINAL
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof loadComponentPages === 'function') {
+        await loadComponentPages();
+    }
     if (!users || !users.length) {
         users = [{ username: 'admin', role: 'admin' }];
     }
 
-    const loadData = () => {
+    window.loadData = () => {
         db.ref('/').once('value').then(snapshot => {
             const data = snapshot.val() || {};
             const toArray = (v) => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
@@ -46,49 +49,60 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             initUsers().then(() => {
-                if (!isFirebaseReady) {
-                    isFirebaseReady = true;
-                    document.getElementById('firebase-loader').style.display = 'none';
-                    applyLogo(fbLogo);
-                    setLang(lang);
-                    checkAuth();
-                    document.getElementById('e-date').value = today();
-                    document.getElementById('p-date').value = today();
-                    setNextVoucher();
-                    renderDailyNoteReport();
-                }
+                isFirebaseReady = true;
+                const fbLoader = document.getElementById('firebase-loader');
+                if (fbLoader) fbLoader.style.display = 'none';
+                applyLogo(fbLogo);
+                setLang(lang);
+                checkAuth();
+                refreshAllDrops();
+                if (loggedInUser && typeof showPage === 'function') showPage(currentActiveTab);
+                const eDate = document.getElementById('e-date'); if (eDate) eDate.value = today();
+                const pDate = document.getElementById('p-date'); if (pDate) pDate.value = today();
+                if (typeof setNextVoucher === 'function') setNextVoucher();
+                if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
             });
         }).catch(error => {
             console.error("Firebase Read Error:", error);
 
-            if (!isFirebaseReady) {
-                parties = (T[lang] || T.ur).defaultParties.slice();
-                sectors = (T[lang] || T.ur).defaultSectors.slice();
-                shirkas = [];
-                transports = ['بس', 'وین', 'کار', 'کوچ'];
-                users = [{ username: 'admin', role: 'admin' }];
-                records = [];
-                payments = [];
-                partyCodes = {};
-                dailyNotes = [];
-                parties.forEach(p => getCode(p));
+            const getLocal = (k) => {
+                try {
+                    const val = localStorage.getItem('uts_' + k);
+                    return val ? JSON.parse(val) : null;
+                } catch (e) { return null; }
+            };
+            parties = getLocal('parties') || (T[lang] || T.ur).defaultParties.slice();
+            sectors = getLocal('sectors') || (T[lang] || T.ur).defaultSectors.slice();
+            shirkas = getLocal('shirkas') || [];
+            transports = getLocal('transports') || ['بس', 'وین', 'کار', 'کوچ'];
+            users = getLocal('users') || [{ username: 'admin', role: 'admin' }];
+            records = getLocal('records') || [];
+            deletedRecords = getLocal('deletedRecords') || [];
+            payments = getLocal('payments') || [];
+            partyCodes = getLocal('partyCodes') || {};
+            dailyNotes = getLocal('dailyNotes') || [];
+            hajiParties = getLocal('hajiParties') || [];
+            parties.forEach(p => {
+                if (typeof getCode === 'function') getCode(p);
+            });
 
-                isFirebaseReady = true;
-                document.getElementById('firebase-loader').style.display = 'none';
-                applyLogo(null);
-                setLang(lang);
-                checkAuth();
-                document.getElementById('e-date').value = today();
-                document.getElementById('p-date').value = today();
-                setNextVoucher();
-                renderDailyNoteReport();
+            isFirebaseReady = true;
+            const fbLoader = document.getElementById('firebase-loader');
+            if (fbLoader) fbLoader.style.display = 'none';
+            applyLogo(null);
+            setLang(lang);
+            checkAuth();
+            refreshAllDrops();
+            if (loggedInUser && typeof showPage === 'function') showPage(currentActiveTab);
+            const eDate = document.getElementById('e-date'); if (eDate) eDate.value = today();
+            const pDate = document.getElementById('p-date'); if (pDate) pDate.value = today();
+            if (typeof setNextVoucher === 'function') setNextVoucher();
+            if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
 
-                const loaderText = document.querySelector('.loader-text');
-                if (loaderText) {
-                    loaderText.textContent = '⚠️ ڈیٹا بیس سے کنکشن نہیں - لوکل ڈیٹا استعمال ہو رہا ہے';
-                }
-            }
+            showFirebaseStatusNotice(error);
         });
+    };
+    const loadData = window.loadData;
 
         // Attach listener only after auth
         db.ref('/').on('value', snapshot => {
@@ -123,7 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activePage.id === 'page-entry') { todayStats(); fillTransportNatureDropdown(); }
                     if (activePage.id === 'page-payment') renderPayments();
                     if (activePage.id === 'page-ledger') renderLedger();
-                    if (activePage.id === 'page-records') filterRecords();
+
+                    // ← یہاں تبدیلی کی گئی ہے: initRecordsPage() استعمال کریں
+                    if (activePage.id === 'page-records') {
+                        if (typeof initRecordsPage === 'function') {
+                            initRecordsPage();
+                        } else {
+                            filterRecords();
+                        }
+                    }
+
                     if (activePage.id === 'page-dailynote') { fillTransportNatureDropdown(); renderDailyNoteReport(); }
                     if (activePage.id === 'page-report') genReport();
                     if (activePage.id === 'page-admin') renderAdminPanel();
@@ -142,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, (error) => {
             console.warn("Firebase listener error:", error);
         });
-    };
 
     auth.onAuthStateChanged(user => {
         if (user) {
@@ -257,7 +279,59 @@ window.exportLedgerExcel = exportLedgerExcel;
 window.copyVoucher = copyVoucher;
 window.closeCopyModal = closeCopyModal;
 window.confirmCopyVoucher = confirmCopyVoucher;
+window.openEditRecordModal = typeof openEditRecordModal !== 'undefined' ? openEditRecordModal : null;
+window.closeEditRecordModal = typeof closeEditRecordModal !== 'undefined' ? closeEditRecordModal : null;
+window.saveRecordEditModal = typeof saveRecordEditModal !== 'undefined' ? saveRecordEditModal : null;
+window.calcEditRecordTotal = typeof calcEditRecordTotal !== 'undefined' ? calcEditRecordTotal : null;
+window.toggleEditFlightDetails = typeof toggleEditFlightDetails !== 'undefined' ? toggleEditFlightDetails : null;
 window.filterTableColumns = filterTableColumns;
 window.switchRecordsTab = switchRecordsTab;
 window.toggleRecordCheck = toggleRecordCheck;
 window.filterPayments = filterPayments;
+
+// ← یہ فنکشن بھی گلوبل کر دیں تاکہ app.js کال کر سکے
+window.initRecordsPage = initRecordsPage;
+window.exportAllDataBackup = typeof exportAllDataBackup !== 'undefined' ? exportAllDataBackup : null;
+window.copyBackupToClipboard = typeof copyBackupToClipboard !== 'undefined' ? copyBackupToClipboard : null;
+window.importAllDataBackup = typeof importAllDataBackup !== 'undefined' ? importAllDataBackup : null;
+window.pasteBackupFromPrompt = typeof pasteBackupFromPrompt !== 'undefined' ? pasteBackupFromPrompt : null;
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  FIREBASE STATUS NOTICE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showFirebaseStatusNotice(error) {
+    let isPerm = error && (error.code === 'PERMISSION_DENIED' || (error.message && error.message.toLowerCase().includes('permission_denied')));
+    let msg = isPerm 
+        ? '⚠️ فائر بیس ڈیٹا بیس میں رولز بلاک ہیں (Permission Denied)۔ براہ کرم Firebase Console میں Realtime Database Rules کو درست کریں۔ فی الحال لوکل ڈیٹا استعمال ہو رہا ہے۔'
+        : '⚠️ فائر بیس سے رابطہ نہیں ہو سکا — لوکل ڈیٹا استعمال ہو رہا ہے۔';
+    let el = document.getElementById('fb-status-banner');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'fb-status-banner';
+        el.className = 'no-print';
+        el.style.cssText = `
+            background: ${isPerm ? '#FEF2F2' : '#FFFBEB'};
+            color: ${isPerm ? '#991B1B' : '#92400E'};
+            border-bottom: 1px solid ${isPerm ? '#F87171' : '#FCD34D'};
+            padding: 10px 18px;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            direction: rtl;
+        `;
+        const wrap = document.querySelector('.app-main') || document.body;
+        wrap.prepend(el);
+    }
+    el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:16px;">${isPerm ? '🔒' : '📡'}</span>
+            <span>${msg}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;color:inherit;">✕</button>
+    `;
+}
+window.showFirebaseStatusNotice = showFirebaseStatusNotice;
