@@ -139,6 +139,8 @@ const T = {
     vehicleTotalLbl:'Full Vehicle Amount (SAR)', vehicleTotalCol:'Vehicle Amt (SAR)',
     typeSharing:'Sharing', typeWhole:'Full Vehicle',
     sharingNote:'⚠️ Enter pilgrim count and fare per pilgrim', wholeNote:'⚠️ Full vehicle amount is required',
+  },
+  ar:{
     dir:'rtl', lang:'ar',
     appTitle:'نظام إدارة نقل الحجاج',
     appSub:'سجل كامل لتنقلات الحجاج — جدة، مكة، المدينة',
@@ -202,6 +204,7 @@ const T = {
     vehicleTotalLbl:'إجمالي المركبة الكاملة (ريال)', vehicleTotalCol:'مبلغ المركبة (ريال)',
     typeSharing:'مشترك', typeWhole:'مركبة كاملة',
     sharingNote:'⚠️ أدخل عدد الحجاج وأجرة كل حاج', wholeNote:'⚠️ مبلغ المركبة الكاملة مطلوب',
+  }
 };
 let lang = localStorage.getItem('uts_lang') || 'ur';
 
@@ -418,8 +421,9 @@ function setLang(l){
   lang=l;
   localStorage.setItem('uts_lang',l);
   const L=T[l];
-  if(!parties){ parties=L.defaultParties.slice(); svP(); }
-  if(!sectors){ sectors=L.defaultSectors.slice(); svS(); }
+  if(!parties || !parties.length){ parties=L.defaultParties.slice(); svP(); }
+  if(!sectors || !sectors.length){ sectors=L.defaultSectors.slice(); svS(); }
+  if(!transports || !transports.length){ transports=['بس','وین','کار','کوچ']; svTr(); }
   document.documentElement.lang=l;
   document.body.className='lang-'+l;
   document.getElementById('modal').style.direction=L.dir;
@@ -629,7 +633,12 @@ function confirmModal(){
   } else if(_mt==='transport'){
     if(transports.includes(val)){alert(L.alreadyExists);return;}
     transports.push(val); svTr(); refreshAllDrops();
-    document.getElementById(_mc==='entry'?'e-transport':'u-transport').value=val;
+    const prefix = _mc==='entry'?'e':'u';
+    const sel = document.getElementById(prefix+'-transport');
+    if(sel){
+      sel.value = val;
+      onTransportChange(prefix);
+    }
   }
   closeModal();
   if(document.getElementById('page-settings').classList.contains('active')){
@@ -703,8 +712,10 @@ function renderTransportList(){
 const SHARING_KEY = 'شیئرنگ بس'; // exact name that triggers sharing mode
 
 function isSharing(val){
-  // sharing mode if transport name contains "شیئرنگ" or "sharing" (case-insensitive)
-  return /شیئرنگ|sharing/i.test(val||'');
+  // default to sharing mode (enable pilgrim count & fare) for all transports/transporters, unless explicitly whole vehicle
+  if(!val) return false;
+  if(/پوری گاڑی|whole|full vehicle/i.test(val)) return false;
+  return true;
 }
 
 function onTransportChange(prefix){
@@ -1151,9 +1162,9 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 
 /* ─── INIT ─── */
 document.addEventListener('DOMContentLoaded',()=>{
-  if(!parties){ parties=T[lang].defaultParties.slice(); svP(); }
-  if(!sectors){ sectors=T[lang].defaultSectors.slice(); svS(); }
-  if(!transports){ transports=['بس','وین','کار','کوچ']; svTr(); }
+  if(!parties || !parties.length){ parties=T[lang].defaultParties.slice(); svP(); }
+  if(!sectors || !sectors.length){ sectors=T[lang].defaultSectors.slice(); svS(); }
+  if(!transports || !transports.length){ transports=['بس','وین','کار','کوچ']; svTr(); }
   parties.forEach(p=>getCode(p));
   loadLogo();
   setLang(lang);
