@@ -14,7 +14,8 @@ const tabNames = {
     'dailynote': 'ڈیلی رپورٹ',
     'settings': 'سیٹنگز',
     'update': 'اپڈیٹ',
-    'admin': 'ایڈمن پینل'
+    'admin': 'ایڈمن پینل',
+    'ksa-detail': 'KSA موومنٹ رپورٹ'
 };
 
 function renderMdiTabs() {
@@ -88,6 +89,10 @@ function updateTopbarTitle(p) {
         };
         if (p === 'admin') {
             el.textContent = currentLang === 'en' ? 'Admin Panel' : currentLang === 'ar' ? 'لوحة التحكم' : 'ایڈمن پینل';
+            return;
+        }
+        if (p === 'ksa-detail') {
+            el.textContent = currentLang === 'en' ? 'KSA Movement Report' : currentLang === 'ar' ? 'تقرير حركة المملكة' : 'KSA موومنٹ رپورٹ';
             return;
         }
         if (p === 'update') {
@@ -203,6 +208,9 @@ function _executeShowPageLogic(p) {
         renderPartyList(); renderHajiPartyList(); renderSectorList(); renderTransportList(); renderShirkaList(); loadAppName(lang);
         const an = document.getElementById('set-appname'); if (an) an.value = fbAppName[lang] || T[lang].appTitle;
         const as = document.getElementById('set-appsub'); if (as) as.value = fbAppSub[lang] || T[lang].appSub;
+    }
+    if (p === 'ksa-detail') {
+        if (typeof onKsaDetailPageShow === 'function') onKsaDetailPageShow();
     }
 }
 

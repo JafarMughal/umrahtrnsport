@@ -2716,6 +2716,26 @@ body.lang-en .sd-dropdown { right: auto; }
   align-items: center;
   gap: 8px;
   flex: 1;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.ksa-stat-item:hover {
+  background: rgba(20, 125, 100, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.ksa-stat-item:active {
+  transform: scale(0.98);
+}
+
+.ksa-stat-item.ksa-stat-departure:hover,
+.ksa-stat-item.ksa-stat-checkout:hover {
+  background: rgba(217, 119, 6, 0.08);
 }
 
 .ksa-stat-item.ksa-stat-departure,

@@ -158,6 +158,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         renderShirkaList();
                         renderHajiPartyList();
                     }
+                    if (activePage.id === 'page-ksa-detail') {
+                        if (typeof onKsaDetailPageShow === 'function') onKsaDetailPageShow();
+                    }
                 }
                 // Always re-apply permissions when Firebase data updates
                 if (data.rolePermissions) applyGranularPerms(data.rolePermissions);
@@ -296,6 +299,11 @@ window.exportAllDataBackup = typeof exportAllDataBackup !== 'undefined' ? export
 window.copyBackupToClipboard = typeof copyBackupToClipboard !== 'undefined' ? copyBackupToClipboard : null;
 window.importAllDataBackup = typeof importAllDataBackup !== 'undefined' ? importAllDataBackup : null;
 window.pasteBackupFromPrompt = typeof pasteBackupFromPrompt !== 'undefined' ? pasteBackupFromPrompt : null;
+window.openKsaDetail = typeof openKsaDetail !== 'undefined' ? openKsaDetail : null;
+window.ksaDetailGoBack = typeof ksaDetailGoBack !== 'undefined' ? ksaDetailGoBack : null;
+window.ksaDetailChangeDate = typeof ksaDetailChangeDate !== 'undefined' ? ksaDetailChangeDate : null;
+window.renderKsaDetailTable = typeof renderKsaDetailTable !== 'undefined' ? renderKsaDetailTable : null;
+window.onKsaDetailPageShow = typeof onKsaDetailPageShow !== 'undefined' ? onKsaDetailPageShow : null;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  FIREBASE STATUS NOTICE

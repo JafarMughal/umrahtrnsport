@@ -171,7 +171,7 @@
         <div class="ksa-status-body">
             <!-- Row 1: Jeddah Airport -->
             <div class="ksa-row ksa-row-jeddah">
-                <div class="ksa-stat-item ksa-stat-arrival">
+                <div class="ksa-stat-item ksa-stat-arrival" onclick="openKsaDetail('jed-arrival', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: جدہ آمد کی مکمل تفصیلی رپورٹ">
                     <span class="ksa-plane-icon">✈</span>
                     <span class="ksa-label" id="lbl-ksa-jed-arr">آمد (Jeddah)</span>
                     <span class="ksa-count" id="ksa-jed-arrival">0</span>
@@ -180,7 +180,7 @@
                     <div class="ksa-city-icon ksa-jeddah-icon">🌊</div>
                     <div class="ksa-city-name">Jeddah</div>
                 </div>
-                <div class="ksa-stat-item ksa-stat-departure">
+                <div class="ksa-stat-item ksa-stat-departure" onclick="openKsaDetail('jed-departure', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: جدہ روانگی کی مکمل تفصیلی رپورٹ">
                     <span class="ksa-label" id="lbl-ksa-jed-dep">روانگی (Jeddah)</span>
                     <span class="ksa-count ksa-dep-count" id="ksa-jed-departure">0</span>
                     <span class="ksa-plane-icon ksa-plane-depart">✈</span>
@@ -191,7 +191,7 @@
 
             <!-- Row 2: Madina Airport -->
             <div class="ksa-row ksa-row-madina">
-                <div class="ksa-stat-item ksa-stat-arrival">
+                <div class="ksa-stat-item ksa-stat-arrival" onclick="openKsaDetail('med-arrival', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: مدینہ آمد کی مکمل تفصیلی رپورٹ">
                     <span class="ksa-plane-icon">✈</span>
                     <span class="ksa-label" id="lbl-ksa-med-arr">آمد (مدینہ)</span>
                     <span class="ksa-count" id="ksa-med-arrival">0</span>
@@ -200,7 +200,7 @@
                     <div class="ksa-city-icon ksa-madina-icon">🕌</div>
                     <div class="ksa-city-name">Madina</div>
                 </div>
-                <div class="ksa-stat-item ksa-stat-departure">
+                <div class="ksa-stat-item ksa-stat-departure" onclick="openKsaDetail('med-departure', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: مدینہ روانگی کی مکمل تفصیلی رپورٹ">
                     <span class="ksa-label" id="lbl-ksa-med-dep">روانگی (مدینہ)</span>
                     <span class="ksa-count ksa-dep-count" id="ksa-med-departure">0</span>
                     <span class="ksa-plane-icon ksa-plane-depart">✈</span>
@@ -211,7 +211,7 @@
 
             <!-- Row 3: Makkah Check In / Out -->
             <div class="ksa-row ksa-row-makkah">
-                <div class="ksa-stat-item ksa-stat-checkin">
+                <div class="ksa-stat-item ksa-stat-checkin" onclick="openKsaDetail('mak-checkin', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: مکہ چیک ان کی تفصیلی رپورٹ">
                     <span class="ksa-arrow-icon">→</span>
                     <span class="ksa-label" id="lbl-ksa-mkk-in">چیک ان (مکہ)</span>
                     <span class="ksa-count ksa-checkin-count" id="ksa-mkk-checkin">0</span>
@@ -220,7 +220,7 @@
                     <div class="ksa-city-icon ksa-makkah-icon">🕋</div>
                     <div class="ksa-city-name">Makkah</div>
                 </div>
-                <div class="ksa-stat-item ksa-stat-checkout">
+                <div class="ksa-stat-item ksa-stat-checkout" onclick="openKsaDetail('mak-checkout', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: مکہ چیک آؤٹ کی تفصیلی رپورٹ">
                     <span class="ksa-label" id="lbl-ksa-mkk-out">چیک آؤٹ (مکہ)</span>
                     <span class="ksa-count ksa-checkout-count" id="ksa-mkk-checkout">0</span>
                     <span class="ksa-arrow-icon">→</span>
@@ -231,7 +231,7 @@
 
             <!-- Row 4: Madina Check In / Out -->
             <div class="ksa-row ksa-row-madina2">
-                <div class="ksa-stat-item ksa-stat-checkin">
+                <div class="ksa-stat-item ksa-stat-checkin" onclick="openKsaDetail('med-checkin', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: مدینہ چیک ان کی تفصیلی رپورٹ">
                     <span class="ksa-arrow-icon">→</span>
                     <span class="ksa-label" id="lbl-ksa-med-in">چیک ان (مدینہ)</span>
                     <span class="ksa-count ksa-checkin-count" id="ksa-med-checkin">0</span>
@@ -240,7 +240,7 @@
                     <div class="ksa-city-icon ksa-madina-icon">🕌</div>
                     <div class="ksa-city-name">Madina</div>
                 </div>
-                <div class="ksa-stat-item ksa-stat-checkout">
+                <div class="ksa-stat-item ksa-stat-checkout" onclick="openKsaDetail('med-checkout', document.getElementById('ksa-date-display')?.textContent?.trim())" title="کلک کریں: مدینہ چیک آؤٹ کی تفصیلی رپورٹ">
                     <span class="ksa-label" id="lbl-ksa-med-out">چیک آؤٹ (مدینہ)</span>
                     <span class="ksa-count ksa-checkout-count" id="ksa-med-checkout">0</span>
                     <span class="ksa-arrow-icon">→</span>

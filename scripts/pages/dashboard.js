@@ -445,11 +445,13 @@ function openPartyLedgerFromDash(partyName) {
 // ───────────────────────────────────────────────────────────────
 
 let ksaStatusDate = (typeof today === 'function' ? today() : new Date().toISOString().split('T')[0]);
+window.ksaStatusDate = ksaStatusDate;
 
 function ksaChangeDate(delta) {
     const d = new Date(ksaStatusDate);
     d.setDate(d.getDate() + delta);
     ksaStatusDate = d.toISOString().split('T')[0];
+    window.ksaStatusDate = ksaStatusDate;
     renderKsaStatusPanel();
 }
 

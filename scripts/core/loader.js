@@ -12,7 +12,8 @@ async function loadComponentPages() {
         { id: 'page-report', file: 'pages/report.html' },
         { id: 'page-dailynote', file: 'pages/daily-note.html' },
         { id: 'page-settings', file: 'pages/settings.html' },
-        { id: 'page-admin', file: 'pages/admin.html' }
+        { id: 'page-admin', file: 'pages/admin.html' },
+        { id: 'page-ksa-detail', file: 'pages/ksa-detail.html' }
     ];
 
     let fileCorsBlocked = false;

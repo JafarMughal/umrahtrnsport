@@ -1,0 +1,156 @@
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     KSA MOVEMENT DETAIL REPORT PAGE
+     نقل و حرکت کی مکمل تفصیلی رپورٹ (جدہ آمد / روانگی وغیرہ)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="ksa-detail-wrap">
+
+    <!-- ── HEADER CARD ── -->
+    <div class="ksa-detail-header-card">
+        <div class="ksa-detail-header-left">
+            <button class="ksa-detail-back-btn" onclick="ksaDetailGoBack()" title="واپس ڈیش بورڈ">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                <span>ڈیش بورڈ</span>
+            </button>
+            <div class="ksa-detail-title-group">
+                <div class="ksa-detail-type-badge" id="ksa-detail-type-badge">✈</div>
+                <div>
+                    <h2 class="ksa-detail-title" id="ksa-detail-title">تفصیلی رپورٹ</h2>
+                    <p class="ksa-detail-subtitle" id="ksa-detail-subtitle">تاریخ کے مطابق مکمل ریکارڈ</p>
+                </div>
+            </div>
+        </div>
+        <div class="ksa-detail-header-right">
+            <div class="ksa-detail-date-nav no-print">
+                <button class="ksa-nav-btn" onclick="ksaDetailChangeDate(-1)" title="پچھلا دن">&#8249;&#8249;</button>
+                <input type="date" id="ksd-date-input" class="ksa-date-input" onchange="ksaDetailSetDate(this.value)" title="تاریخ منتخب کریں" />
+                <button class="ksa-nav-btn" onclick="ksaDetailChangeDate(1)" title="اگلا دن">&#8250;&#8250;</button>
+                <button class="btn btn-o btn-sm" onclick="ksaDetailSetToday()" title="آج کی تاریخ" style="padding:4px 10px;">آج</button>
+            </div>
+            <div class="ksa-detail-actions no-print">
+                <button class="btn btn-o btn-sm" onclick="exportKsaDetailExcel()" title="ایکسل فائل ڈاؤن لوڈ کریں">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                    </svg>
+                    <span>ایکسل</span>
+                </button>
+                <button class="btn btn-p btn-sm" onclick="printCurrentPage()" title="پرنٹ / پی ڈی ایف">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"/>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    <span>پرنٹ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STRIP ── -->
+    <div class="ksa-detail-summary-strip">
+        <div class="ksa-detail-sum-item">
+            <span class="ksa-detail-sum-label">کل ریکارڈز</span>
+            <span class="ksa-detail-sum-val" id="ksd-total-records">0</span>
+        </div>
+        <div class="ksa-detail-sum-item">
+            <span class="ksa-detail-sum-label">کل حجاج / افراد</span>
+            <span class="ksa-detail-sum-val text-accent" id="ksd-total-pilgrims">0</span>
+        </div>
+        <div class="ksa-detail-sum-item">
+            <span class="ksa-detail-sum-label">کل بلنگ (SAR)</span>
+            <span class="ksa-detail-sum-val text-gold" id="ksd-total-billing">SAR 0</span>
+        </div>
+        <div class="ksa-detail-sum-item">
+            <span class="ksa-detail-sum-label">ٹرانسپورٹرز</span>
+            <span class="ksa-detail-sum-val" id="ksd-total-parties">0</span>
+        </div>
+    </div>
+
+    <!-- ── FILTER BAR ── -->
+    <div class="ksa-detail-filter-bar no-print">
+        <div class="fg ksd-search-fg">
+            <input type="text" id="ksd-search" placeholder="واؤچر / ٹرانسپورٹر / حاجی پارٹی / سیکٹر تلاش کریں..." oninput="renderKsaDetailTable()" />
+        </div>
+        <div class="fg">
+            <select id="ksd-type-select" onchange="ksaDetailChangeType(this.value)" title="موومنٹ کی قسم تبدیل کریں">
+                <option value="jed-arrival">✈ جدہ آمد (Jeddah Arrival)</option>
+                <option value="jed-departure">✈ جدہ روانگی (Jeddah Departure)</option>
+                <option value="med-arrival">✈ مدینہ آمد (Madinah Arrival)</option>
+                <option value="med-departure">✈ مدینہ روانگی (Madinah Departure)</option>
+                <option value="mak-checkin">🕋 مکہ چیک ان (Makkah Check-In)</option>
+                <option value="mak-checkout">🕋 مکہ چیک آؤٹ (Makkah Check-Out)</option>
+                <option value="med-checkin">🕌 مدینہ چیک ان (Madinah Check-In)</option>
+                <option value="med-checkout">🕌 مدینہ چیک آؤٹ (Madinah Check-Out)</option>
+            </select>
+        </div>
+        <div class="fg">
+            <select id="ksd-party-filter" onchange="renderKsaDetailTable()">
+                <option value="">— تمام ٹرانسپورٹرز —</option>
+            </select>
+        </div>
+        <div class="fg" style="display:flex;align-items:center;">
+            <label class="ksd-all-dates-label" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text);cursor:pointer;background:var(--white);padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-md);user-select:none;white-space:nowrap;">
+                <input type="checkbox" id="ksd-all-dates-cb" onchange="ksaDetailToggleAllDates(this.checked)" style="cursor:pointer;" />
+                <span>تمام تاریخیں (All Dates)</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- ── PRINT HEADER ── -->
+    <div class="print-header">
+        <div class="ph-title">Umrah Transport Management System</div>
+        <div class="ph-sub" id="ksd-print-title">KSA Movement Detail Report</div>
+        <div class="ph-meta"><span id="ksd-print-date"></span></div>
+    </div>
+
+    <!-- ── RECORDS TABLE ── -->
+    <div class="ksa-detail-table-card">
+        <div class="tbl-wrap">
+            <table class="dash-table ksa-detail-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>واؤچر</th>
+                        <th>تاریخ</th>
+                        <th>ٹرانسپورٹر</th>
+                        <th>حاجی پارٹی</th>
+                        <th>سیکٹر</th>
+                        <th>ٹرانسپورٹ</th>
+                        <th>حجاج</th>
+                        <th>فلائیٹ</th>
+                        <th>وقت</th>
+                        <th>کل رقم (SAR)</th>
+                        <th>اسٹیٹس</th>
+                        <th class="no-print">کارروائی</th>
+                    </tr>
+                </thead>
+                <tbody id="ksd-table-body">
+                    <tr><td colspan="13" style="text-align:center;padding:32px;color:var(--muted);">لوڈ ہو رہا ہے...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── EMPTY STATE ── -->
+    <div class="ksd-empty-state" id="ksd-empty-state" style="display:none;">
+        <div class="ksd-empty-icon">📋</div>
+        <div class="ksd-empty-title" id="ksd-empty-title">اس تاریخ کا کوئی ریکارڈ نہیں</div>
+        <p class="ksd-empty-sub" id="ksd-empty-hint">اس تاریخ پر کوئی ریکارڈ موجود نہیں ہے۔</p>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-o btn-sm" id="btn-show-all-dates" onclick="ksaDetailShowAllDates()" style="display:none;">
+                🌐 تمام تاریخوں کے ریکارڈز دیکھیں
+            </button>
+            <button type="button" class="btn btn-p btn-sm" onclick="showPage('entry')">
+                + نئی انٹری درج کریں
+            </button>
+        </div>
+    </div>
+
+    <!-- ── PRINT FOOTER ── -->
+    <div class="print-footer">Umrah Transport Management System — KSA Detail Report</div>
+
+</div>
