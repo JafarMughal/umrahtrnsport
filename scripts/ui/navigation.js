@@ -1,10 +1,11 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  NAVIGATION
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let openedTabs = ['entry'];
-let currentActiveTab = 'entry';
+let openedTabs = ['home'];
+let currentActiveTab = 'home';
 
 const tabNames = {
+    'home': 'ڈیش بورڈ',
     'entry': 'نئی انٹری',
     'payment': 'ادائیگی',
     'ledger': 'لیجر',
@@ -25,9 +26,15 @@ function renderMdiTabs() {
         return;
     }
 
+    const curLang = typeof lang !== 'undefined' ? lang : 'ur';
+    const localizedTabName = (tab) => {
+        if (tab === 'home') return curLang === 'en' ? 'Dashboard' : curLang === 'ar' ? 'لوحة التحكم' : 'ڈیش بورڈ';
+        return tabNames[tab] || tab;
+    };
+
     let html = openedTabs.map(tab => `
         <div class="mdi-tab ${tab === currentActiveTab ? 'active' : ''}" onclick="switchToTab('${tab}')">
-            ${tabNames[tab] || tab}
+            ${localizedTabName(tab)}
             <div class="mdi-tab-close" onclick="closeMdiTab('${tab}', event)">×</div>
         </div>
     `).join('');
@@ -46,7 +53,7 @@ function renderMdiTabs() {
 }
 
 function closeAllMdiTabs() {
-    const def = (typeof canDo === 'function' && canDo('entry')) ? 'entry' : 'records';
+    const def = 'home';
     openedTabs = [def];
     switchToTab(def);
 }
@@ -62,15 +69,22 @@ function updateTopbarTitle(p) {
     if (!el) return;
     const currentLang = (typeof lang !== 'undefined') ? lang : 'ur';
     const L = (typeof T !== 'undefined' && T[currentLang]) ? T[currentLang] : null;
+
+    if (p === 'home') {
+        el.textContent = currentLang === 'en' ? 'Dashboard' : currentLang === 'ar' ? 'لوحة التحكم' : 'ڈیش بورڈ';
+        return;
+    }
+
     if (L && L.nav) {
         const pageIndexMap = {
-            'entry': 0,
-            'payment': 1,
-            'ledger': 2,
-            'records': 3,
-            'report': 4,
-            'dailynote': 5,
-            'settings': 6
+            'home': 0,
+            'entry': 1,
+            'payment': 2,
+            'ledger': 3,
+            'records': 4,
+            'report': 5,
+            'dailynote': 6,
+            'settings': 7
         };
         if (p === 'admin') {
             el.textContent = currentLang === 'en' ? 'Admin Panel' : currentLang === 'ar' ? 'لوحة التحكم' : 'ایڈمن پینل';
@@ -141,6 +155,9 @@ function _executeShowPageLogic(p) {
     const pageEl = document.getElementById('page-' + p);
     if (pageEl) pageEl.classList.add('active');
     
+    if (p === 'home') {
+        if (typeof renderDashboard === 'function') renderDashboard();
+    }
     if (p === 'entry') { 
         fillDrop('e-party', parties, false);
         fillDrop('e-sector', sectors); 

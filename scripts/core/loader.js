@@ -4,6 +4,7 @@
 
 async function loadComponentPages() {
     const pages = [
+        { id: 'page-home', file: 'pages/home.html' },
         { id: 'page-entry', file: 'pages/entry.html' },
         { id: 'page-payment', file: 'pages/payment.html' },
         { id: 'page-ledger', file: 'pages/ledger.html' },
@@ -28,11 +29,15 @@ async function loadComponentPages() {
                 el.innerHTML = html;
             } else {
                 console.error(`Failed to load ${p.file}: HTTP ${res.status}`);
-                el.innerHTML = '<div style="padding:20px;color:red;direction:rtl;">صفحہ لوڈ نہیں ہو سکا: ' + p.file + '</div>';
+                if (!el.innerHTML.trim()) {
+                    el.innerHTML = '<div style="padding:20px;color:red;direction:rtl;">صفحہ لوڈ نہیں ہو سکا: ' + p.file + '</div>';
+                }
             }
         } catch (err) {
             console.error(`Could not load ${p.file} via fetch:`, err);
-            el.innerHTML = '<div style="padding:20px;color:red;direction:rtl;">صفحہ لوڈ نہیں ہو سکا: ' + p.file + '</div>';
+            if (!el.innerHTML.trim()) {
+                el.innerHTML = '<div style="padding:20px;color:red;direction:rtl;">صفحہ لوڈ نہیں ہو سکا: ' + p.file + '</div>';
+            }
             if (window.location.protocol === 'file:') {
                 fileCorsBlocked = true;
             }

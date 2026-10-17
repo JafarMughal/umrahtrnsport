@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const activePage = document.querySelector('.page.active');
                 if (activePage) {
+                    if (activePage.id === 'page-home') { if (typeof renderDashboard === 'function') renderDashboard(); }
                     if (activePage.id === 'page-entry') { todayStats(); fillTransportNatureDropdown(); }
                     if (activePage.id === 'page-payment') renderPayments();
                     if (activePage.id === 'page-ledger') renderLedger();

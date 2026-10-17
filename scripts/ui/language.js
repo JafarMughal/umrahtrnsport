@@ -183,6 +183,7 @@ function setLang(l) {
     const ap = document.querySelector('.page.active');
     if (ap) {
         const id = ap.id.replace('page-', '');
+        if (id === 'home' && typeof renderDashboard === 'function') renderDashboard();
         if (id === 'entry' && typeof todayStats === 'function') todayStats();
         if (id === 'payment') { if (typeof renderPayments === 'function') renderPayments(); if (typeof renderPayHead === 'function') renderPayHead(); }
         if (id === 'ledger' && typeof renderLedger === 'function') renderLedger();
@@ -192,5 +193,6 @@ function setLang(l) {
     }
     if (typeof renderPayHead === 'function') renderPayHead();
     if (typeof renderRecHead === 'function') renderRecHead();
+    if (typeof renderMdiTabs === 'function') renderMdiTabs();
     if (typeof updateTopbarTitle === 'function' && typeof currentActiveTab !== 'undefined') updateTopbarTitle(currentActiveTab);
 }

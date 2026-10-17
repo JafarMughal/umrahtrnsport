@@ -1,0 +1,536 @@
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     HOME / DASHBOARD COMPONENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="dashboard-wrap">
+
+    <!-- 1. DASHBOARD TOP HEADER & CONTROLS -->
+    <div class="dash-header-card">
+        <div class="dash-welcome">
+            <div class="dash-welcome-avatar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+            </div>
+            <div>
+                <h2 class="dash-title" id="dash-greeting">خوش آمدید، ایڈمن</h2>
+                <p class="dash-subtitle" id="dash-welcome-sub">عمرہ ٹرانسپورٹ مینجمنٹ سسٹم — مرکزی ڈیش بورڈ و خلاصہ</p>
+            </div>
+        </div>
+
+        <div class="dash-controls">
+            <div class="dash-live-badge">
+                <span class="live-pulse"></span>
+                <span id="dash-live-text">لائیو ڈیٹا</span>
+            </div>
+            <div class="dash-date-badge" id="dash-current-date">
+                📅 آج: --
+            </div>
+            <div class="dash-timeframe-pills" id="dash-timeframe-group">
+                <button type="button" class="tf-btn active" data-tf="all" onclick="setDashTimeframe('all', this)">کل وقت</button>
+                <button type="button" class="tf-btn" data-tf="today" onclick="setDashTimeframe('today', this)">آج</button>
+                <button type="button" class="tf-btn" data-tf="week" onclick="setDashTimeframe('week', this)">اس ہفتے</button>
+                <button type="button" class="tf-btn" data-tf="month" onclick="setDashTimeframe('month', this)">اس ماہ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. HIGH-IMPACT KPI METRIC CARDS -->
+    <div class="dash-kpi-grid">
+        <!-- Card 1: Total Trips -->
+        <div class="dash-kpi-card kpi-trips">
+            <div class="kpi-top">
+                <span class="kpi-label" id="lbl-dash-trips">کل ٹرانسپورٹ سفر</span>
+                <div class="kpi-icon-wrap" style="background:rgba(20, 125, 100, 0.12); color:var(--accent);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="3" width="22" height="15" rx="2"></rect>
+                        <polyline points="1 9 23 9"></polyline>
+                        <circle cx="6" cy="18" r="2"></circle>
+                        <circle cx="18" cy="18" r="2"></circle>
+                    </svg>
+                </div>
+            </div>
+            <div class="kpi-val" id="dash-kpi-trips">0</div>
+            <div class="kpi-footer">
+                <span class="kpi-sub" id="dash-sub-trips">آج: 0 سفر</span>
+                <span class="kpi-pill kpi-pill-teal" id="dash-pill-trips">باکس</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Total Pilgrims -->
+        <div class="dash-kpi-card kpi-hujjaj">
+            <div class="kpi-top">
+                <span class="kpi-label" id="lbl-dash-hujjaj">کل حجاج / معتمرین</span>
+                <div class="kpi-icon-wrap" style="background:rgba(2, 132, 199, 0.12); color:var(--info);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="kpi-val" id="dash-kpi-hujjaj">0</div>
+            <div class="kpi-footer">
+                <span class="kpi-sub" id="dash-sub-hujjaj">آج: 0 حاجی</span>
+                <span class="kpi-pill kpi-pill-blue">افراد</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Total Billing Amount -->
+        <div class="dash-kpi-card kpi-billing">
+            <div class="kpi-top">
+                <span class="kpi-label" id="lbl-dash-billing">کل بلنگ حجم (SAR)</span>
+                <div class="kpi-icon-wrap" style="background:rgba(201, 168, 76, 0.15); color:var(--gold-dark);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="kpi-val" id="dash-kpi-billing">0</div>
+            <div class="kpi-footer">
+                <span class="kpi-sub" id="dash-sub-billing">آج: SAR 0</span>
+                <span class="kpi-pill kpi-pill-gold">ریال</span>
+            </div>
+        </div>
+
+        <!-- Card 4: Total Paid to Transporters -->
+        <div class="dash-kpi-card kpi-paid">
+            <div class="kpi-top">
+                <span class="kpi-label" id="lbl-dash-paid">کل ادا شدہ رقم (SAR)</span>
+                <div class="kpi-icon-wrap" style="background:rgba(20, 125, 100, 0.12); color:var(--accent);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                    </svg>
+                </div>
+            </div>
+            <div class="kpi-val" id="dash-kpi-paid">0</div>
+            <div class="kpi-footer">
+                <span class="kpi-sub" id="dash-sub-paid">0 ادائیگیاں</span>
+                <span class="kpi-pill kpi-pill-teal">وصول/ادا</span>
+            </div>
+        </div>
+
+        <!-- Card 5: Outstanding Balance -->
+        <div class="dash-kpi-card kpi-due">
+            <div class="kpi-top">
+                <span class="kpi-label" id="lbl-dash-balance">باقی واجب الادا بیلنس (SAR)</span>
+                <div class="kpi-icon-wrap" id="dash-kpi-due-icon" style="background:rgba(220, 38, 38, 0.12); color:var(--red);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+            </div>
+            <div class="kpi-val" id="dash-kpi-due">0</div>
+            <div class="kpi-footer">
+                <span class="kpi-sub" id="dash-sub-due">ٹرانسپورٹرز واجبات</span>
+                <span class="kpi-pill kpi-pill-red" id="dash-pill-due">باقی</span>
+            </div>
+        </div>
+
+        <!-- Card 6: Daily Operations Notes -->
+        <div class="dash-kpi-card kpi-notes">
+            <div class="kpi-top">
+                <span class="kpi-label" id="lbl-dash-notes">ڈیلی ٹرانسپورٹ نوٹس</span>
+                <div class="kpi-icon-wrap" style="background:rgba(79, 70, 229, 0.12); color:#4f46e5;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                </div>
+            </div>
+            <div class="kpi-val" id="dash-kpi-notes">0</div>
+            <div class="kpi-footer">
+                <span class="kpi-sub" id="dash-sub-notes">آج کے نوٹس: 0</span>
+                <span class="kpi-pill kpi-pill-purple">شیڈول</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. KSA STATUS PANEL (تاریخ کے مطابق حجاج کی حیثیت) -->
+    <div class="ksa-status-panel">
+        <div class="ksa-status-header">
+            <div class="ksa-status-title">
+                <span class="ksa-title-icon">🕋</span>
+                <span id="lbl-ksa-title">KSA اسٹیٹس — حجاج کی روزانہ حیثیت</span>
+            </div>
+            <div class="ksa-date-nav">
+                <button class="ksa-nav-btn" id="ksa-prev-btn" onclick="ksaChangeDate(-1)" title="پچھلا دن">&#8249;&#8249;</button>
+                <span class="ksa-date-display" id="ksa-date-display">2026-10-17</span>
+                <button class="ksa-nav-btn" id="ksa-next-btn" onclick="ksaChangeDate(1)" title="اگلا دن">&#8250;&#8250;</button>
+            </div>
+        </div>
+
+        <div class="ksa-status-body">
+            <!-- Row 1: Jeddah Airport -->
+            <div class="ksa-row ksa-row-jeddah">
+                <div class="ksa-stat-item ksa-stat-arrival">
+                    <span class="ksa-plane-icon">✈</span>
+                    <span class="ksa-label" id="lbl-ksa-jed-arr">آمد (Jeddah)</span>
+                    <span class="ksa-count" id="ksa-jed-arrival">0</span>
+                </div>
+                <div class="ksa-city-emblem">
+                    <div class="ksa-city-icon ksa-jeddah-icon">🌊</div>
+                    <div class="ksa-city-name">Jeddah</div>
+                </div>
+                <div class="ksa-stat-item ksa-stat-departure">
+                    <span class="ksa-label" id="lbl-ksa-jed-dep">روانگی (Jeddah)</span>
+                    <span class="ksa-count ksa-dep-count" id="ksa-jed-departure">0</span>
+                    <span class="ksa-plane-icon ksa-plane-depart">✈</span>
+                </div>
+            </div>
+
+            <div class="ksa-divider"></div>
+
+            <!-- Row 2: Madina Airport -->
+            <div class="ksa-row ksa-row-madina">
+                <div class="ksa-stat-item ksa-stat-arrival">
+                    <span class="ksa-plane-icon">✈</span>
+                    <span class="ksa-label" id="lbl-ksa-med-arr">آمد (مدینہ)</span>
+                    <span class="ksa-count" id="ksa-med-arrival">0</span>
+                </div>
+                <div class="ksa-city-emblem">
+                    <div class="ksa-city-icon ksa-madina-icon">🕌</div>
+                    <div class="ksa-city-name">Madina</div>
+                </div>
+                <div class="ksa-stat-item ksa-stat-departure">
+                    <span class="ksa-label" id="lbl-ksa-med-dep">روانگی (مدینہ)</span>
+                    <span class="ksa-count ksa-dep-count" id="ksa-med-departure">0</span>
+                    <span class="ksa-plane-icon ksa-plane-depart">✈</span>
+                </div>
+            </div>
+
+            <div class="ksa-divider"></div>
+
+            <!-- Row 3: Makkah Check In / Out -->
+            <div class="ksa-row ksa-row-makkah">
+                <div class="ksa-stat-item ksa-stat-checkin">
+                    <span class="ksa-arrow-icon">→</span>
+                    <span class="ksa-label" id="lbl-ksa-mkk-in">چیک ان (مکہ)</span>
+                    <span class="ksa-count ksa-checkin-count" id="ksa-mkk-checkin">0</span>
+                </div>
+                <div class="ksa-city-emblem">
+                    <div class="ksa-city-icon ksa-makkah-icon">🕋</div>
+                    <div class="ksa-city-name">Makkah</div>
+                </div>
+                <div class="ksa-stat-item ksa-stat-checkout">
+                    <span class="ksa-label" id="lbl-ksa-mkk-out">چیک آؤٹ (مکہ)</span>
+                    <span class="ksa-count ksa-checkout-count" id="ksa-mkk-checkout">0</span>
+                    <span class="ksa-arrow-icon">→</span>
+                </div>
+            </div>
+
+            <div class="ksa-divider"></div>
+
+            <!-- Row 4: Madina Check In / Out -->
+            <div class="ksa-row ksa-row-madina2">
+                <div class="ksa-stat-item ksa-stat-checkin">
+                    <span class="ksa-arrow-icon">→</span>
+                    <span class="ksa-label" id="lbl-ksa-med-in">چیک ان (مدینہ)</span>
+                    <span class="ksa-count ksa-checkin-count" id="ksa-med-checkin">0</span>
+                </div>
+                <div class="ksa-city-emblem">
+                    <div class="ksa-city-icon ksa-madina-icon">🕌</div>
+                    <div class="ksa-city-name">Madina</div>
+                </div>
+                <div class="ksa-stat-item ksa-stat-checkout">
+                    <span class="ksa-label" id="lbl-ksa-med-out">چیک آؤٹ (مدینہ)</span>
+                    <span class="ksa-count ksa-checkout-count" id="ksa-med-checkout">0</span>
+                    <span class="ksa-arrow-icon">→</span>
+                </div>
+            </div>
+
+            <div class="ksa-divider"></div>
+
+            <!-- Row 5: Currently Present -->
+            <div class="ksa-row ksa-row-present">
+                <div class="ksa-present-item">
+                    <div class="ksa-city-icon ksa-makkah-icon">🕋</div>
+                    <div class="ksa-present-info">
+                        <span class="ksa-present-label" id="lbl-ksa-in-makkah">مکہ میں موجود</span>
+                        <span class="ksa-present-count" id="ksa-in-makkah">0</span>
+                    </div>
+                </div>
+                <div class="ksa-present-divider"></div>
+                <div class="ksa-present-item">
+                    <div class="ksa-city-icon ksa-madina-icon">🕌</div>
+                    <div class="ksa-present-info">
+                        <span class="ksa-present-label" id="lbl-ksa-in-madina">مدینہ میں موجود</span>
+                        <span class="ksa-present-count" id="ksa-in-madina">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ksa-status-footer">
+            <span class="ksa-footer-note" id="ksa-footer-note">📊 ڈیٹا: transportNature فیلڈ پر مبنی</span>
+            <button type="button" class="btn btn-sm btn-o" onclick="showPage('dailynote')">ڈیلی رپورٹ ➜</button>
+        </div>
+    </div>
+
+    <!-- 4. QUICK ACTIONS SHORTCUT HUB -->
+    <div class="dash-quick-section">
+        <div class="dash-section-header">
+            <h3 class="dash-section-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span id="lbl-dash-quick">فوری ایکشنز اور شارٹ کٹس</span>
+            </h3>
+            <span class="dash-section-hint">ضروری کاموں کے لیے تیز ترین رسائی</span>
+        </div>
+
+        <div class="dash-action-grid">
+            <button type="button" class="dash-act-btn" onclick="showPage('entry')">
+                <div class="dash-act-icon" style="background:linear-gradient(135deg, #147D64, #0F6853); color:#fff;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </div>
+                <div class="dash-act-info">
+                    <span class="dash-act-title">نئی انٹری درج کریں</span>
+                    <span class="dash-act-desc">نیا ٹرانسپورٹ واؤچر اور ریکارڈ محفوظ کریں</span>
+                </div>
+            </button>
+
+            <button type="button" class="dash-act-btn" onclick="showPage('dailynote')">
+                <div class="dash-act-icon" style="background:linear-gradient(135deg, #4f46e5, #4338ca); color:#fff;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="dash-act-info">
+                    <span class="dash-act-title">ڈیلی رپورٹ و پروازیں</span>
+                    <span class="dash-act-desc">روزانہ کی پروازیں، آمد اور شیڈول نوٹس</span>
+                </div>
+            </button>
+
+            <button type="button" class="dash-act-btn" onclick="showPage('payment')">
+                <div class="dash-act-icon" style="background:linear-gradient(135deg, #0284C7, #0369A1); color:#fff;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                    </svg>
+                </div>
+                <div class="dash-act-info">
+                    <span class="dash-act-title">ادائیگی درج کریں</span>
+                    <span class="dash-act-desc">ٹرانسپورٹر کو نقد یا بینک کے ذریعے ادائیگی</span>
+                </div>
+            </button>
+
+            <button type="button" class="dash-act-btn" onclick="showPage('ledger')">
+                <div class="dash-act-icon" style="background:linear-gradient(135deg, #C9A84C, #A68632); color:#fff;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <div class="dash-act-info">
+                    <span class="dash-act-title">ٹرانسپورٹر کھاتہ (لیجر)</span>
+                    <span class="dash-act-desc">مکمل حساب کتاب، بقایا اور پرنٹ ایبل کھاتہ</span>
+                </div>
+            </button>
+
+            <button type="button" class="dash-act-btn" onclick="showPage('records')">
+                <div class="dash-act-icon" style="background:linear-gradient(135deg, #142B4A, #1D3A63); color:#fff;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                </div>
+                <div class="dash-act-info">
+                    <span class="dash-act-title">تمام ریکارڈز و فلٹر</span>
+                    <span class="dash-act-desc">تاریخ، پارٹی اور واؤچر سے ریکارڈز تلاش کریں</span>
+                </div>
+            </button>
+
+            <button type="button" class="dash-act-btn" onclick="showPage('report')">
+                <div class="dash-act-icon" style="background:linear-gradient(135deg, #D97706, #B45309); color:#fff;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </div>
+                <div class="dash-act-info">
+                    <span class="dash-act-title">رپورٹ سینٹر</span>
+                    <span class="dash-act-desc">جامع تجزیاتی رپورٹس، پرنٹ اور پی ڈی ایف</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- 4. ANALYTICS & INSIGHTS WIDGETS -->
+    <div class="dash-widgets-grid">
+        <!-- Widget A: Financial Balance Progress -->
+        <div class="dash-widget-card">
+            <div class="dash-widget-header">
+                <div class="dash-widget-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                        <line x1="12" y1="6" x2="12" y2="8"></line>
+                        <line x1="12" y1="16" x2="12" y2="18"></line>
+                    </svg>
+                    <span>مالیاتی پیش رفت اور ادائیگیاں</span>
+                </div>
+                <span class="dash-pct-badge" id="dash-paid-pct">0% ادا شدہ</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="dash-progress-track">
+                <div class="dash-progress-fill" id="dash-progress-bar" style="width: 0%;"></div>
+            </div>
+
+            <div class="dash-fin-metrics">
+                <div class="dash-fin-col">
+                    <span class="fin-label">کل واجب (بلنگ)</span>
+                    <span class="fin-value" id="dash-fin-total">SAR 0</span>
+                </div>
+                <div class="dash-fin-col">
+                    <span class="fin-label">کل ادا شدہ رقم</span>
+                    <span class="fin-value text-accent" id="dash-fin-paid">SAR 0</span>
+                </div>
+                <div class="dash-fin-col">
+                    <span class="fin-label">بقایا واجب الادا</span>
+                    <span class="fin-value text-danger" id="dash-fin-balance">SAR 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget B: Sector Volume Distribution -->
+        <div class="dash-widget-card">
+            <div class="dash-widget-header">
+                <div class="dash-widget-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--info);">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                    </svg>
+                    <span>مقبول ترین سیکٹرز (روٹس)</span>
+                </div>
+                <button type="button" class="dash-link-btn" onclick="showPage('report')">رپورٹ دیکھیں ➜</button>
+            </div>
+            <div class="dash-sectors-list" id="dash-sectors-list">
+                <div class="dash-empty-state">سیکٹرز کا کوئی ڈیٹا دستیاب نہیں</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. OPERATIONAL FEEDS (TWO COLUMNS: RECENT VOUCHERS + TODAY'S FLIGHTS) -->
+    <div class="dash-feeds-grid">
+        <!-- Feed 1: Recent Transport Records -->
+        <div class="dash-feed-card">
+            <div class="dash-feed-header">
+                <div class="dash-feed-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    <span>حالیہ ٹرانسپورٹ واؤچرز</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-o" onclick="showPage('records')">
+                    تمام ریکارڈز دیکھیں (${records.length})
+                </button>
+            </div>
+
+            <div class="tbl-wrap" style="max-height: 380px; overflow-y: auto;">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>واؤچر #</th>
+                            <th>تاریخ</th>
+                            <th>ٹرانسپورٹر</th>
+                            <th>سیکٹر</th>
+                            <th>حجاج</th>
+                            <th>کل رقم</th>
+                            <th>اسٹیٹس</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dash-recent-records-body">
+                        <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted);">لوڈ ہو رہا ہے...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Feed 2: Today's Flights & Operations -->
+        <div class="dash-feed-card">
+            <div class="dash-feed-header">
+                <div class="dash-feed-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);">
+                        <path d="M22 2L11 13"></path>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>آج کی پروازیں و آمدورفت</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-p" onclick="showPage('dailynote')">
+                    ➕ ڈیلی رپورٹ
+                </button>
+            </div>
+
+            <div class="dash-flights-list" id="dash-today-flights-list">
+                <div class="dash-empty-state">آج کوئی پرواز شیڈول نہیں ہے</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. TOP TRANSPORTERS LEADERBOARD -->
+    <div class="dash-leaderboard-card">
+        <div class="dash-feed-header">
+            <div class="dash-feed-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34"></path>
+                    <path d="M18 14.66V17c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-2.34"></path>
+                    <path d="M12 2v8"></path>
+                    <path d="M12 18v4"></path>
+                    <path d="M8 22v-4a4 4 0 0 1 8 0v4"></path>
+                </svg>
+                <span>اہم ٹرانسپورٹرز کا حجم و بقایا کھاتہ</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-o" onclick="showPage('ledger')">
+                مکمل لیجر کھولیں ➜
+            </button>
+        </div>
+
+        <div class="tbl-wrap" style="max-height:300px;overflow-y:auto;">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th>ٹرانسپورٹر نام</th>
+                        <th>کل سفر (ٹرپس)</th>
+                        <th>کل حجاج</th>
+                        <th>کل بلنگ (SAR)</th>
+                        <th>کل ادا شدہ (SAR)</th>
+                        <th>بقایا بیلنس (SAR)</th>
+                        <th>کارروائی</th>
+                    </tr>
+                </thead>
+                <tbody id="dash-transporters-leaderboard">
+                    <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">لوڈ ہو رہا ہے...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
