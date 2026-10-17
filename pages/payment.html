@@ -1,0 +1,130 @@
+<!-- ===== PAYMENT FORM & RECENT PAYMENTS ===== -->
+
+<!-- 1. PAYMENT ENTRY FORM CARD -->
+<div class="card entry-form-card">
+    <!-- Card Header with Icon + Status Badge -->
+    <div class="card-header-bar">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                    <circle cx="7" cy="15" r="1.2" fill="currentColor" stroke="none" />
+                    <circle cx="11" cy="15" r="1.2" fill="currentColor" stroke="none" />
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title" id="lbl-payTitle">پارٹی کی ادائیگی درج کریں</h2>
+                <div class="card-subtitle">موصول شدہ رقم، طریقہ اور تفصیلات محفوظ کریں</div>
+            </div>
+        </div>
+
+        <!-- Status Badge -->
+        <div class="card-header-actions">
+            <span class="card-status-badge" id="pay-mode-badge">
+                <span class="dot"></span>
+                <span id="pay-mode-text">نئی ادائیگی</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="al-pay"></div>
+
+    <!-- Form Row 1 -->
+    <div class="grid">
+        <div class="fg">
+            <label id="lbl-paydate">تاریخ</label>
+            <input type="date" id="p-date" />
+        </div>
+        <div class="fg">
+            <label id="lbl-payparty">پارٹی</label>
+            <div class="ddr">
+                <select id="p-party" style="flex:1;">
+                    <option value="">-- منتخب کریں --</option>
+                </select>
+            </div>
+        </div>
+        <div class="fg">
+            <label id="lbl-received">موصول رقم (SAR)</label>
+            <input type="number" id="p-amount" min="1" placeholder="0" class="total-input" />
+        </div>
+        <div class="fg">
+            <label id="lbl-method">ادائیگی کا طریقہ</label>
+            <div class="ddr">
+                <select id="p-method" style="flex:1;">
+                    <option value="cash" id="opt-cash">نقد</option>
+                    <option value="bank" id="opt-bank">بینک</option>
+                    <option value="cheque" id="opt-cheque">چیک</option>
+                    <option value="online" id="opt-online">آن لائن</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="fg" style="margin-bottom:18px;">
+        <label id="lbl-paynotes">نوٹس</label>
+        <textarea id="p-notes" rows="2" placeholder="اضافی معلومات یہاں لکھیں..."></textarea>
+    </div>
+
+    <!-- Action Button -->
+    <div class="btn-row">
+        <button class="btn btn-p" id="btn-savepay" onclick="addPayment()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+            </svg>
+            <span id="btn-savepay-text">ادائیگی محفوظ کریں</span>
+        </button>
+    </div>
+</div>
+
+<!-- 2. RECENT PAYMENTS CARD -->
+<div class="card payment-list-card">
+    <div class="card-header-bar">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6" />
+                    <line x1="8" y1="12" x2="21" y2="12" />
+                    <line x1="8" y1="18" x2="21" y2="18" />
+                    <line x1="3" y1="6" x2="3.01" y2="6" />
+                    <line x1="3" y1="12" x2="3.01" y2="12" />
+                    <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h3 class="card-title" id="lbl-recentpay">حالیہ ادائیگیاں</h3>
+                <div class="card-subtitle">تمام محفوظ شدہ ادائیگیوں کی فہرست</div>
+            </div>
+        </div>
+
+        <!-- Search inline in header -->
+        <div class="card-header-actions pay-search-wrap">
+            <div class="hdr-search">
+                <svg class="hdr-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" id="pay-search" placeholder="تلاش کریں..." oninput="filterPayments()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr id="pay-head"></tr>
+            </thead>
+            <tbody id="pay-tbody"></tbody>
+        </table>
+    </div>
+</div>
+</body>

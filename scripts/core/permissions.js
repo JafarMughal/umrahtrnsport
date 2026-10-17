@@ -72,16 +72,17 @@ function enforcePermissions() {
     // ── Role badge in header ──
     const badge = document.getElementById('role-badge');
     if (badge) {
+        const currentLang = typeof lang !== 'undefined' ? lang : 'ur';
         const roleLabels = {
-            superadmin: { label: 'سوپر ایڈمن', icon: '👑', cls: 'badge-superadmin' },
-            admin:      { label: 'ایڈمن', icon: '🔑', cls: 'badge-admin' },
-            operator:   { label: 'آپریٹر', icon: '✍️', cls: 'badge-operator' },
-            viewer:     { label: 'ویور', icon: '👁️', cls: 'badge-viewer' }
+            superadmin: { label: (currentLang === 'en' ? 'Super Admin' : (currentLang === 'ar' ? 'مسؤول رئيسي' : 'سپر ایڈمن')), cls: 'badge-superadmin' },
+            admin:      { label: (currentLang === 'en' ? 'Admin' : (currentLang === 'ar' ? 'مدير النظام' : 'ایڈمن')), cls: 'badge-admin' },
+            operator:   { label: (currentLang === 'en' ? 'Operator' : (currentLang === 'ar' ? 'مشغّل' : 'آپریٹر')), cls: 'badge-operator' },
+            viewer:     { label: (currentLang === 'en' ? 'Viewer' : (currentLang === 'ar' ? 'مشاهد' : 'ویور')), cls: 'badge-viewer' }
         };
         const rb = roleLabels[role] || roleLabels.viewer;
-        badge.textContent = rb.icon + ' ' + rb.label;
+        badge.textContent = rb.label;
         badge.className = 'role-badge ' + rb.cls;
-        badge.style.display = '';
+        badge.style.display = 'inline-flex';
     }
 
     // ── Export buttons ──

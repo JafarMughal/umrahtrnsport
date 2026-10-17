@@ -29,6 +29,7 @@ function printCurrentPage() {
 
         const tableHTML = reportOut.innerHTML;
 
+        // Note: Inline styles in the new window are necessary for printing and cannot be replaced with CSS variables.
         const win = window.open('', '_blank', 'width=1100,height=800');
         win.document.write(`<!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -127,14 +128,14 @@ function printCurrentPage() {
 <div class="print-wrap">
 
   <div class="rpt-header">
-    <div class="logo-area">🕋</div>
+    <div class="logo-area" style="font-weight:700;color:#054D28;letter-spacing:1px;">UT</div>
     <div class="title-area">
       <h1>${appTitle}</h1>
       <div class="sub">Daily Transport Note Report</div>
     </div>
     <div class="meta-area">
-      ${rangeText ? '<div>📅 ' + rangeText + '</div>' : ''}
-      <div>🖨️ ${dateStr}</div>
+      ${rangeText ? '<div>' + rangeText + '</div>' : ''}
+      <div>${dateStr}</div>
     </div>
   </div>
 
@@ -178,9 +179,9 @@ function printCurrentPage() {
     }
 
     const rangeText = (from || to) ? `${from ? fd(from) : '...'} ${L_arrow()} ${to ? fd(to) : '...'}` : '';
-    activePage.querySelectorAll('.ph-range').forEach(el => el.textContent = rangeText ? `📅 ${rangeText}` : '');
+    activePage.querySelectorAll('.ph-range').forEach(el => el.textContent = rangeText ? rangeText : '');
 
-    const dateStr = `🖨️ ${new Date().toLocaleDateString('ur-PK')} ${new Date().toLocaleTimeString('ur-PK', { hour: '2-digit', minute: '2-digit' })}`;
+    const dateStr = `${new Date().toLocaleDateString('ur-PK')} ${new Date().toLocaleTimeString('ur-PK', { hour: '2-digit', minute: '2-digit' })}`;
     activePage.querySelectorAll('.ph-printed-on').forEach(el => el.textContent = dateStr);
 
     activePage.querySelectorAll('.ph-title').forEach(el => el.textContent = L.appTitle || 'Umrah Transport Management System');
@@ -210,6 +211,7 @@ function exportReportExcel() {
     if (from) rows = rows.filter(r => r.date >= from);
     if (to) rows = rows.filter(r => r.date <= to);
     if (type === 'party' && rParty) rows = rows.filter(r => r.party === rParty);
+    if (type === 'newparty' && rParty) rows = rows.filter(r => (r.newParty || '').trim().toLowerCase() === rParty.trim().toLowerCase());
 
     if (!rows.length) { al('al-login', L.noData, 'er'); return; }
 
@@ -262,7 +264,7 @@ function exportReportExcel() {
     addRow([cell('')]);
 
     Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).forEach(([k, items]) => {
-        addRow([cell(`📌 ${k}`, 'groupHead')]);
+        addRow([cell(`${k}`, 'groupHead')]);
         merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 8 } });
 
         addRow(headers.map(h => cell(h, 'colHead')));
@@ -335,8 +337,12 @@ function exportLedgerExcel() {
 
     const selParty = document.getElementById('l-party').value;
     const from = document.getElementById('l-from').value;
-    const to = document.getElementById('l-to').value;
-    const pList = selParty ? [selParty] : parties;
+    const allKnownParties = Array.from(new Set([
+        ...(Array.isArray(parties) ? parties : []),
+        ...(Array.isArray(records) ? records.map(r => r.party) : []),
+        ...(Array.isArray(payments) ? payments.map(p => p.party) : [])
+    ].map(p => (p || '').trim()).filter(Boolean)));
+    const pList = selParty ? [selParty] : allKnownParties;
 
     if (!pList.length) { al('al-login', L.noData, 'er'); return; }
 
@@ -371,7 +377,7 @@ function exportLedgerExcel() {
     merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 7 } });
 
     if (from || to) {
-        addRow([cell(`📅 ${from ? fd(from) : '...'} ${L_arrow()} ${to ? fd(to) : '...'}`, 'sub')]);
+        addRow([cell(`${from ? fd(from) : '...'} ${L_arrow()} ${to ? fd(to) : '...'}`, 'sub')]);
         merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 7 } });
     }
 
@@ -380,8 +386,8 @@ function exportLedgerExcel() {
     const headers = [L.voucherCol, L.dateCol, L.txType, L.desc, L.debitCol, L.creditCol, L.balance, L.notesCol];
 
     pList.forEach(party => {
-        let recs = [...records].filter(r => r.party === party);
-        let pays = [...payments].filter(p => p.party === party);
+        let recs = [...records].filter(r => (r.party || '').trim() === party.trim());
+        let pays = [...payments].filter(p => (p.party || '').trim() === party.trim());
 
         if (from) { recs = recs.filter(r => r.date >= from); pays = pays.filter(p => p.date >= from); }
         if (to) { recs = recs.filter(r => r.date <= to); pays = pays.filter(p => p.date <= to); }
@@ -397,7 +403,7 @@ function exportLedgerExcel() {
         const totalCredit = pays.reduce((s, p) => s + p.amount, 0);
         const balance = totalCredit - totalDebit;
 
-        addRow([cell(`📌 ${party} [${getCode(party)}]`, 'groupHead')]);
+        addRow([cell(`${party} [${getCode(party)}]`, 'groupHead')]);
         merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 7 } });
 
         addRow(headers.map(h => cell(h, 'colHead')));

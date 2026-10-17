@@ -6,12 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>Umrah Transport System</title>
     <link rel="icon" type="image/x-icon" href="icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Amiri:wght@400;700&family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js">
-    </script>
+    <link rel="stylesheet" href="css/entry.css" />
+    <link rel="stylesheet" href="css/payment.css" />
+    <link rel="stylesheet" href="css/ledger.css" />
+    <link rel="stylesheet" href="css/records.css" />
+    <link rel="stylesheet" href="css/report.css" />
+    <link rel="stylesheet" href="css/daily-note.css" />
+    <link rel="stylesheet" href="css/settings.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+    <!-- Lucide Icons Library -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 </head>
 
 <body class="lang-ur">
@@ -21,11 +31,13 @@
         <div class="loader-container">
             <div class="spinner-ring">
                 <svg width="70" height="70" viewBox="0 0 70 70">
-                    <circle cx="35" cy="35" r="28" fill="none" stroke="#C9A84C" stroke-width="4" stroke-dasharray="60 130" stroke-linecap="round" />
-                    <circle cx="35" cy="35" r="28" fill="none" stroke="#E8DDD0" stroke-width="4" stroke-dasharray="40 150" stroke-linecap="round" stroke-dashoffset="-40" />
-                    <circle cx="35" cy="35" r="28" fill="none" stroke="#2D6A4F" stroke-width="3" stroke-dasharray="20 170" stroke-linecap="round" stroke-dashoffset="-80" />
+                    <circle cx="35" cy="35" r="28" fill="none" stroke="var(--gold)" stroke-width="4" stroke-dasharray="60 130" stroke-linecap="round" />
+                    <circle cx="35" cy="35" r="28" fill="none" stroke="var(--gold-light)" stroke-width="4" stroke-dasharray="40 150" stroke-linecap="round" stroke-dashoffset="-40" />
+                    <circle cx="35" cy="35" r="28" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="20 170" stroke-linecap="round" stroke-dashoffset="-80" />
                 </svg>
-                <div class="loader-icon">🕋</div>
+                <div class="loader-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
             </div>
             <div class="loader-text">ڈیٹا لوڈ ہو رہا ہے...</div>
             <div class="loader-bar"><div class="loader-bar-fill"></div></div>
@@ -36,7 +48,9 @@
     <!-- ===== LOGIN PAGE ===== -->
     <div id="login-container" style="display:none;">
         <div class="login-card">
-            <div class="login-logo">🕋</div>
+            <div class="login-logo" style="color:var(--gold);display:flex;align-items:center;justify-content:center;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
             <h2 id="login-title">لاگ ان کریں</h2>
             <p id="app-sub-login">Umrah Transport Management System</p>
             <div id="al-login"></div>
@@ -46,9 +60,9 @@
             </div>
             <div class="login-fg">
                 <label id="lbl-li-password">پاس ورڈ</label>
-                <div style="position:relative;">
-                    <input type="password" id="li-password" autocomplete="current-password" style="padding-left:36px;" onkeydown="if(event.key==='Enter'){event.preventDefault();login();}" />
-                    <span id="toggle-password" onclick="togglePasswordVisibility()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);user-select:none;display:flex;align-items:center;" title="Show Password">
+                <div class="login-password-wrap">
+                    <input type="password" id="li-password" class="login-password-input" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();login();}" />
+                    <span id="toggle-password" class="password-toggle" onclick="togglePasswordVisibility()" title="Show Password">
                         <svg id="icon-eye" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </span>
                 </div>
@@ -58,538 +72,334 @@
     </div>
 
     <!-- ===== MAIN APP ===== -->
-    <div id="main-app-container" style="display:none;">
+    <!-- ===== MAIN APP ===== -->
+    <div id="main-app-container" style="display:none;" class="app-layout">
 
-        <!-- HEADER -->
-        <header>
-            <div class="header-inner">
-                <div class="header-left">
+        <!-- MOBILE BACKDROP -->
+        <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
+        <!-- SIDEBAR -->
+        <aside id="app-sidebar" class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
                     <div class="header-icon" id="header-logo-wrap" onclick="document.getElementById('logo-file-input').click()" title="لوگو تبدیل کریں">
-                        <span id="header-logo-emoji">🕋</span>
+                        <span id="header-logo-emoji" style="display:flex;align-items:center;justify-content:center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        </span>
                         <img id="header-logo-img" src="" alt="" style="display:none;" />
                     </div>
                     <input type="file" id="logo-file-input" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)" />
-                    <div class="header-text">
-                        <h1 id="app-title">عمرہ ٹرانسپورٹ مینجمنٹ سسٹم</h1>
-                        <p id="app-sub">حاجیوں کی آمدورفت کا مکمل ریکارڈ</p>
+                    <div class="sidebar-brand-text">
+                        <h1 id="app-title">عمرہ ٹرانسپورٹ</h1>
+                        <p id="app-sub">مینجمنٹ سسٹم</p>
+                    </div>
+                </div>
+                <button class="sidebar-close-btn no-print" onclick="toggleSidebar(false)" aria-label="Close sidebar">✕</button>
+            </div>
+
+            <div class="sidebar-scrollable">
+                <div class="sidebar-section-title" id="lbl-sidebar-nav">نیویگیشن</div>
+                <nav id="main-nav" class="sidebar-nav">
+                    <button class="active" id="nav-entry" onclick="showPage('entry',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <span class="nav-text">نئی انٹری</span>
+                    </button>
+                    <button id="nav-payment" onclick="showPage('payment',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        <span class="nav-text">ادائیگی</span>
+                    </button>
+                    <button id="nav-ledger" onclick="showPage('ledger',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span class="nav-text">لیجر</span>
+                    </button>
+                    <button id="nav-records" onclick="showPage('records',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        <span class="nav-text">تمام ریکارڈز</span>
+                    </button>
+                    <button id="nav-report" onclick="showPage('report',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        <span class="nav-text">رپورٹس</span>
+                    </button>
+                    <button id="nav-dailynote" onclick="showPage('dailynote',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span class="nav-text">ڈیلی رپورٹ</span>
+                    </button>
+                    <button id="nav-settings" onclick="showPage('settings',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <span class="nav-text">سیٹنگز</span>
+                    </button>
+                    <button id="nav-admin-panel" onclick="showPage('admin',this)" style="display:none;">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span class="nav-text">ایڈمن پینل</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user" id="user-status-wrap">
+                    <div class="sidebar-user-avatar">
+                        <span class="user-status-dot"></span>
+                        <span id="sidebar-user-initial">A</span>
+                    </div>
+                    <div class="sidebar-user-info">
+                        <span class="header-user-name" id="lbl-logged-in-user">admin</span>
+                        <span class="role-badge" id="role-badge" style="display:none;"></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN APP CONTENT AREA -->
+        <div class="app-main">
+            <!-- TOPBAR UTILITY HEADER -->
+            <header class="app-topbar no-print">
+                <div class="topbar-start">
+                    <button class="topbar-menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Navigation">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="topbar-breadcrumb">
+                        <span class="topbar-breadcrumb-title" id="topbar-current-page">نئی انٹری</span>
                     </div>
                 </div>
 
-                <!-- NAV in the Middle -->
-                <nav id="main-nav">
-                    <button class="active" id="nav-entry" onclick="showPage('entry',this)">📝 نئی</button>
-                    <button id="nav-payment" onclick="showPage('payment',this)">💰 ادائیگی</button>
-                    <button id="nav-ledger" onclick="showPage('ledger',this)">📒 لیجر</button>
-                    <button id="nav-records" onclick="showPage('records',this)">📋 ریکارڈ</button>
-                    <button id="nav-report" onclick="showPage('report',this)">📊 رپورٹ</button>
-                    <button id="nav-dailynote" onclick="showPage('dailynote',this)">📊 ڈیلی رپورٹ</button>
-                    <button id="nav-settings" onclick="showPage('settings',this)">⚙️ سیٹنگ</button>
-                    <button id="nav-admin-panel" onclick="showPage('admin',this)" style="display:none;background:linear-gradient(135deg,#7B2FF7,#F107A3);color:#fff;border:none;">👑 ایڈمن</button>
-                </nav>
-
-                <div class="header-right">
-                    <div class="header-user-wrap" id="user-status-wrap">
-                        <span class="header-user-name" id="lbl-logged-in-user">صارف: admin</span>
-                        <span class="role-badge" id="role-badge" style="display:none;"></span>
-                        <button class="btn-logout" id="btn-logout" onclick="logout()">لاگ آؤٹ 🚪</button>
-                    </div>
+                <div class="topbar-end">
+                    <!-- Global Dark/Light Mode Switcher -->
+                    <button class="topbar-theme-btn" id="theme-toggle-btn" onclick="toggleAppTheme()" title="تبدیل تھیم (Light / Dark)">
+                        <span id="theme-toggle-icon">🌙</span>
+                        <span class="theme-btn-text" id="theme-btn-text">ڈارک</span>
+                    </button>
                     <div class="lang-switcher">
                         <button class="lang-btn active" id="lb-ur" onclick="setLang('ur')">اردو</button>
                         <button class="lang-btn" id="lb-en" onclick="setLang('en')">EN</button>
                         <button class="lang-btn" id="lb-ar" onclick="setLang('ar')">ع</button>
                     </div>
+                    <button class="btn-logout" id="btn-logout" onclick="logout()" title="لاگ آؤٹ">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-inline-end:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <span class="logout-text">لاگ آؤٹ</span>
+                    </button>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <div class="wrap">
-            <div id="mdi-tabs" class="mdi-tabs no-print"></div>
+            <main class="wrap">
+                <div id="mdi-tabs" class="mdi-tabs no-print"></div>
 
-            <!-- ===== ENTRY ===== -->
-            <div id="page-entry" class="page active">
-                <div class="card">
-                    <div class="card-title" id="lbl-entry">نئی ٹرانسپورٹ انٹری 🚌</div>
-                    <div id="al-entry"></div>
-                    <input type="hidden" id="e-id" />
-                    <div class="grid">
-                        <div class="fg"><label id="lbl-date">تاریخ</label><input type="date" id="e-date" /></div>
-                        <div class="fg"><label id="lbl-voucher">واوچر نمبر</label><input type="text" id="e-voucher" class="voucher-input" /></div>
-                        <div class="fg"><label><span id="lbl-transporter-dropdown">ٹرانسپوٹر</span></label>
-                            <div class="ddr">
-                                <select id="e-party" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
-                            </div>
-                        </div>
-                        <div class="fg">
-                            <label id="lbl-party">پارٹی</label>
-                            <div class="custom-multi-select" id="hp-multi-select">
-                                <div class="cms-header" onclick="toggleMultiSelect(event)">
-                                    <span id="hp-selected-text">منتخب کریں...</span>
-                                    <span class="cms-arrow">▼</span>
-                                </div>
-                                <div class="cms-dropdown" id="hp-dropdown-container" style="display:none;">
-                                    <div class="cms-search">
-                                        <input type="text" id="hp-search-input" placeholder="تلاش کریں..." oninput="filterHajiPartyDropdown()" onclick="event.stopPropagation()" />
-                                    </div>
-                                    <div id="hp-dropdown-list"></div>
-                                </div>
-                            </div>
-                            <input type="hidden" id="e-new-party" />
-                        </div>
-                        <div class="fg"><label><span id="lbl-sector">سیکٹر</span></label>
-                            <div class="ddr">
-                                <select id="e-sector" style="flex:1;"></select>
-                            </div>
-                        </div>
-                        <div class="fg"><label><span id="lbl-transport">ٹرانسپورٹ</span></label><div class="ddr"><select id="e-transport" onchange="onTransportChange('e')"><option value="">-- منتخب کریں --</option></select></div></div>
-                    </div>
-                    <div class="grid">
-                        <div class="fg" id="e-count-wrap"><label id="lbl-count">حاجیوں کی تعداد</label><input type="number" id="e-count" min="1" placeholder="0" oninput="calcE()" /></div>
-                        <div class="fg" id="e-fare-wrap"><label id="lbl-fare">فی حاجی کرایہ (SAR)</label><input type="number" id="e-fare" min="0" placeholder="0" oninput="calcE()" /></div>
-                        <div class="fg"><label id="lbl-total">کل رقم (SAR)</label><input type="number" id="e-total" readonly class="total-input" /></div>
-                        <div class="fg" id="e-vehicle-wrap" style="display:none;"><label id="lbl-vehicletotal">پوری گاڑی کی رقم (SAR)</label><input type="number" id="e-vehicle-total" min="0" placeholder="0" oninput="calcE()" /></div>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
-                        <label style="font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:14px; color:var(--primary);">
-                            <input type="checkbox" id="e-show-flight" onchange="document.getElementById('e-flight-details').style.display = this.checked ? 'grid' : 'none';" /> ✈️ فلائیٹ / ائیرپورٹ کی تفصیلات شامل کریں
-                        </label>
-                        <div id="e-flight-details" class="grid" style="display:none; margin-top:15px; margin-bottom:0;">
-                            <div class="fg"><label id="lbl-eName">نام (NAME)</label><input type="text" id="e-name" /></div>
-                            <div class="fg"><label id="lbl-eFlightTime">وقت آمد (Arrival Time)</label><input type="time" id="e-flight-time" /></div>
-                            <div class="fg"><label id="lbl-eFlightNo">فلائیٹ نمبر (Flight No)</label><input type="text" id="e-flight-no" /></div>
-                            <div class="fg"><label id="lbl-eAirport">ائیرپورٹ (Airport)</label>
-                                <input type="text" id="e-airport" list="airport-list" />
-                                <datalist id="airport-list">
-                                    <option value="Jeddah Airport (KAIA)"></option>
-                                    <option value="Madinah Airport (AMAA)"></option>
-                                </datalist>
-                            </div>
-                            <div class="fg"><label id="lbl-eTransportNature">ٹرانسپورٹ کی نوعیت (TRANSPORT By)</label>
-                                <div class="ddr">
-                                    <select id="e-transport-nature-sel" style="flex:1;"><option value="">-- منتخب کریں --</option></select>
-                                </div>
-                            </div>
-                            <div class="fg"><label id="lbl-eShirka">شرکہ (Shirka)</label><input type="text" id="e-shirka" list="shirka-list" /><datalist id="shirka-list"></datalist></div>
-                            <div class="fg"><label id="lbl-eGroup">گروپ نمبر (Group No)</label><input type="text" id="e-group" /></div>
-                            <div class="fg"><label id="lbl-eMobile">موبائل نمبر (Contact)</label><input type="text" id="e-mobile" class="ltr-input" /></div>
-                        </div>
-                    </div>
+                <!-- ===== MODULAR PAGES (LOADED DYNAMICALLY FROM /pages) ===== -->
+                <div id="page-entry" class="page active"></div>
+                <div id="page-payment" class="page"></div>
+                <div id="page-ledger" class="page"></div>
+                <div id="page-records" class="page"></div>
 
-                    <div id="e-transport-hint" style="display:none;margin-bottom:12px;padding:8px 14px;border-radius:8px;font-size:12px;"></div>
-                    <div class="fg" style="margin-bottom:15px;"><label id="lbl-notes">نوٹس</label><textarea id="e-notes" rows="2"></textarea></div>
-                    <div class="btn-row">
-                        <button class="btn btn-p" id="btn-save" onclick="addEntry()">✅ انٹری محفوظ کریں</button>
-                        <button class="btn btn-o" id="btn-clear" onclick="clearEntryForm()">🔄 صاف کریں</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title" id="lbl-todaysum">آج کا خلاصہ 📊</div>
-                    <div class="sg">
-                        <div class="sc"><div class="num" id="ts-p">0</div><div class="lbl" id="lbl-ts-p">پارٹیاں آج</div></div>
-                        <div class="sc"><div class="num" id="ts-h">0</div><div class="lbl" id="lbl-ts-h">کل حاجی آج</div></div>
-                        <div class="sc"><div class="num" id="ts-a">0</div><div class="lbl" id="lbl-ts-a">کل رقم (SAR)</div></div>
-                        <div class="sc"><div class="num" id="ts-t">0</div><div class="lbl" id="lbl-ts-t">کل سفر آج</div></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== PAYMENT ===== -->
-            <div id="page-payment" class="page">
-                <div class="card">
-                    <div class="card-title" id="lbl-payTitle">پارٹی کی ادائیگی درج کریں 💰</div>
-                    <div id="al-pay"></div>
-                    <div class="grid">
-                        <div class="fg"><label id="lbl-paydate">تاریخ</label><input type="date" id="p-date" /></div>
-                        <div class="fg"><label id="lbl-payparty">پارٹی</label><select id="p-party"><option value="">-- منتخب کریں --</option></select></div>
-                        <div class="fg"><label id="lbl-received">موصول رقم (SAR)</label><input type="number" id="p-amount" min="1" placeholder="0" /></div>
-                        <div class="fg"><label id="lbl-method">ادائیگی کا طریقہ</label><select id="p-method"><option value="cash" id="opt-cash">نقد</option><option value="bank" id="opt-bank">بینک</option><option value="cheque" id="opt-cheque">چیک</option><option value="online" id="opt-online">آن لائن</option></select></div>
-                    </div>
-                    <div class="fg" style="margin-bottom:15px;"><label id="lbl-paynotes">نوٹس</label><textarea id="p-notes" rows="2"></textarea></div>
-                    <button class="btn btn-p" id="btn-savepay" onclick="addPayment()">✅ ادائیگی محفوظ کریں</button>
-                </div>
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
-                        <div class="card-title" id="lbl-recentpay" style="margin:0;">حالیہ ادائیگیاں 💳</div>
-                        <div style="max-width:280px; width:100%;">
-                            <input type="text" id="pay-search" placeholder="🔍 تلاش کریں..." oninput="filterPayments()" style="width:100%; box-sizing:border-box; padding:6px 12px; font-size:12px; border:1px solid var(--border); border-radius:6px;" />
-                        </div>
-                    </div>
-                    <div class="tbl-wrap"><table><thead><tr id="pay-head"></tr></thead><tbody id="pay-tbody"></tbody></table></div>
-                </div>
-            </div>
-
-            <!-- ===== LEDGER ===== -->
-            <div id="page-ledger" class="page">
-                <div class="card">
-                    <div class="card-title" id="lbl-ledgerTitle">پارٹی لیجر 📒</div>
-                    <div class="fb">
-                        <div class="fg"><label id="lbl-ledparty">پارٹی</label><select id="l-party" onchange="renderLedger()"></select></div>
-                        <div class="fg"><label id="lbl-ledfrom">تاریخ سے</label><input type="date" id="l-from" onchange="renderLedger()" /></div>
-                        <div class="fg"><label id="lbl-ledto">تاریخ تک</label><input type="date" id="l-to" onchange="renderLedger()" /></div>
-                        <div class="fb-actions">
-                            <button class="btn btn-g no-print" id="btn-print" onclick="printCurrentPage()">🖨️ پرنٹ</button>
-                            <button class="btn btn-g no-print" onclick="exportLedgerExcel()">📥 Excel</button>
-                            <button class="btn btn-o no-print" id="btn-resetled" onclick="clearLedgerFilter()">↩ صاف</button>
-                        </div>
-                    </div>
-                    <div class="print-header"><div class="ph-title">Umrah Transport Management System</div><div class="ph-sub ph-sub-text">پارٹی لیجر — Party Ledger</div><div class="ph-meta"><span class="ph-range"></span><span class="ph-printed-on"></span></div></div>
-                    <div id="ledger-output"></div>
-                    <div class="print-footer">Umrah Transport Management System — Generated Report</div>
-                </div>
-            </div>
-
-            <!-- ===== RECORDS ===== -->
-            <div id="page-records" class="page">
-                <div class="card">
-                    <div class="card-title" id="lbl-recTitle">تمام ریکارڈ 📋</div>
-                    <div class="fb">
-                        <div class="fg" style="min-width: 180px;"><label id="lbl-recsearch">سرچ (واوچر / پارٹی / فلائیٹ)</label><input type="text" id="f-search" placeholder="تلاش کریں..." oninput="filterRecords()" /></div>
-                        <div class="fg"><label id="lbl-recfrom">تاریخ سے</label><input type="date" id="f-from" onchange="filterRecords()" /></div>
-                        <div class="fg"><label id="lbl-recto">تاریخ تک</label><input type="date" id="f-to" onchange="filterRecords()" /></div>
-                        <div class="fg"><label id="lbl-recparty">پارٹی</label><select id="f-party" onchange="filterRecords()"></select></div>
-                        <div class="fg"><label id="lbl-recsector">سیکٹر</label><select id="f-sector" onchange="filterRecords()"></select></div>
-                        <div class="fb-actions">
-                            <button class="btn btn-g" id="btn-filter" onclick="filterRecords()">🔍 فلٹر</button>
-                            <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️ پرنٹ</button>
-                            <button class="btn btn-o" id="btn-clearfilter" onclick="clearFilter()">↩ صاف</button>
-                        </div>
-                    </div>
-                    <div class="print-header"><div class="ph-title">Umrah Transport Management System</div><div class="ph-sub ph-sub-text">تمام ریکارڈ — All Records</div><div class="ph-meta"><span class="ph-range"></span><span class="ph-printed-on"></span></div></div>
-                    <div id="rec-output"></div>
-                    <div class="print-footer">Umrah Transport Management System — Generated Report</div>
-                </div>
-            </div>
-
-            <!-- ===== REPORT ===== -->
-            <div id="page-report" class="page">
-                <div class="card">
-                    <div class="card-title" id="lbl-repTitle">رپورٹ سینٹر 📊</div>
-                    <div class="fb">
-                        <div class="fg"><label id="lbl-repfrom">تاریخ سے</label><input type="date" id="r-from" /></div>
-                        <div class="fg"><label id="lbl-repto">تاریخ تک</label><input type="date" id="r-to" /></div>
-                        <div class="fg"><label id="lbl-reptype">رپورٹ کی قسم</label><select id="r-type" onchange="toggleReportParty()"><option value="date" id="opt-bydate">تاریخ وائز</option><option value="party" id="opt-byparty">ٹرانسپوٹر وائز</option><option value="newparty" id="opt-bynewparty">پارٹی وائز</option><option value="sector" id="opt-bysector">سیکٹر وائز</option></select></div>
-                        <div class="fg" id="r-party-wrap" style="display:none;"><label id="lbl-rparty">پارٹی منتخب کریں</label><select id="r-party"><option value="">-- All --</option></select></div>
-                        <div class="fb-actions">
-                            <button class="btn btn-p" id="btn-genrep" onclick="genReport()">📊 رپورٹ بنائیں</button>
-                            <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️</button>
-                            <button class="btn btn-g no-print" onclick="exportReportExcel()">📥 Excel</button>
-                        </div>
-                    </div>
-                    <div class="print-header"><div class="ph-title">Umrah Transport Management System</div><div class="ph-sub ph-sub-text">رپورٹ سینٹر — Report Center</div><div class="ph-meta"><span class="ph-range"></span><span class="ph-printed-on"></span></div></div>
-                    <div id="rep-out"></div>
-                    <div class="print-footer">Umrah Transport Management System — Generated Report</div>
-                </div>
-            </div>
-
-            <!-- ===== DAILY NOTE REPORT ===== -->
-            <div id="page-dailynote" class="page">
-                <div class="card">
-                    <div class="card-title" id="lbl-dnRepTitle">ڈیلی رپورٹ 📊</div>
-                    <div class="fb">
-                        <div class="fg"><label id="lbl-dnRepFrom">تاریخ سے</label><input type="date" id="dnr-from" onchange="renderDailyNoteReport()" /></div>
-                        <div class="fg"><label id="lbl-dnRepTo">تاریخ تک</label><input type="date" id="dnr-to" onchange="renderDailyNoteReport()" /></div>
-                        <div class="fg" style="flex:2;">
-                            <label id="lbl-dnRepNature">TRANSPORT By</label>
-                            <div class="custom-multi-select" id="dnr-nature-multi-select">
-                                <div class="cms-header" onclick="toggleDnrNatureMultiSelect(event)">
-                                    <span id="dnr-nature-selected-text">-- All --</span>
-                                    <span class="cms-arrow">▼</span>
-                                </div>
-                                <div class="cms-dropdown" id="dnr-nature-dropdown-container" style="display:none; padding:10px;">
-                                    <div id="dnr-nature-checkboxes" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="fg" style="flex:2;">
-                            <label id="lbl-dnRepTransporter">Transporter / ٹرانسپورٹر</label>
-                            <div class="custom-multi-select" id="dnr-transporter-multi-select">
-                                <div class="cms-header" onclick="toggleDnrTransporterMultiSelect(event)">
-                                    <span id="dnr-transporter-selected-text">-- All --</span>
-                                    <span class="cms-arrow">▼</span>
-                                </div>
-                                <div class="cms-dropdown" id="dnr-transporter-dropdown-container" style="display:none; padding:10px;">
-                                    <div id="dnr-transporter-checkboxes" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="fb-actions">
-                            <button class="btn btn-g no-print" onclick="printCurrentPage()">🖨️</button>
-                            <button class="btn btn-o no-print" id="btn-dn-resetrep" onclick="clearDailyNoteReport()">↩ صاف</button>
-                        </div>
-                    </div>
-                    <div class="print-header"><div class="ph-title">Umrah Transport Management System</div><div class="ph-sub ph-sub-text">ڈیلی رپورٹ — Daily Report</div><div class="ph-meta"><span class="ph-range"></span><span class="ph-printed-on"></span></div></div>
-                    <div id="dn-report-out"></div>
-                    <div class="print-footer">Umrah Transport Management System — Generated Report</div>
-                </div>
-            </div>
-
-
-            <!-- ===== SETTINGS ===== -->
-            <div id="page-settings" class="page">
-                <div class="settings-tabs">
-                    <button class="tab-btn active" onclick="switchSettingsTab('tab-app')" id="tab-btn-app">ایپ کی ترتیب ⚙️</button>
-                    <button class="tab-btn" onclick="switchSettingsTab('tab-transporters')" id="tab-btn-transporters">ٹرانسپورٹر 👥</button>
-                    <button class="tab-btn" onclick="switchSettingsTab('tab-hajiparties')" id="tab-btn-hajiparties">حاجی پارٹی 👥</button>
-                    <button class="tab-btn" onclick="switchSettingsTab('tab-sectors')" id="tab-btn-sectors">سیکٹر 🗺️</button>
-                    <button class="tab-btn" onclick="switchSettingsTab('tab-transports')" id="tab-btn-transports">ٹرانسپورٹ 🚌</button>
-                    <button class="tab-btn" onclick="switchSettingsTab('tab-shirkas')" id="tab-btn-shirkas">شرکہ 🏢</button>
-                    <button class="tab-btn" onclick="switchSettingsTab('tab-users')" id="tab-btn-users">صارفین 👥</button>
-                </div>
-
-                <!-- Tab: App Settings -->
-                <div id="tab-app" class="tab-content active card">
-                    <div class="sgr">
-                        <div>
-                            <div class="fg" style="margin-bottom:10px;"><label id="lbl-logoLbl">لوگو تبدیل کریں</label></div>
-                            <div id="logo-drop-zone" onclick="document.getElementById('logo-file-input2').click()" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color .2s;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLogoDrop(event)">
-                                <div id="logo-preview-wrap"><div id="logo-preview-emoji" style="font-size:44px;line-height:1;">🕋</div><img id="logo-preview-img" src="" alt="" style="display:none;width:70px;height:70px;object-fit:cover;border-radius:50%;border:3px solid var(--gold);" /></div>
-                                <div style="font-size:12px;color:var(--muted);" id="lbl-logoHint">PNG / JPG / SVG (کلک یا ڈراپ کریں)</div>
-                                <button class="btn btn-o btn-sm no-print" onclick="event.stopPropagation();removeLogo()" id="btn-removeLogo" style="display:none;">✕ حذف</button>
-                            </div>
-                            <input type="file" id="logo-file-input2" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)" />
-                        </div>
-                        <div>
-                            <div class="fg" style="margin-bottom:11px;"><label id="lbl-appNameLbl">ایپ کا نام</label><input type="text" id="set-appname" style="font-size:15px;" /></div>
-                            <div class="fg" style="margin-bottom:14px;"><label id="lbl-appSubLbl">ذیلی عنوان</label><input type="text" id="set-appsub" /></div>
-                            <div style="display:flex;gap:8px;align-items:center;"><button class="btn btn-p" id="btn-saveApp" onclick="saveAppSettings()">💾 محفوظ کریں</button></div>
-                            <div id="al-app" style="margin-top:8px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab: Transporters -->
-                <div id="tab-transporters" class="tab-content card">
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newpartylbl">نیا ٹرانسپورٹر</label><input type="text" id="sp-in" placeholder="ٹرانسپورٹر کا نام" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addparty" onclick="addFromSettings('party')">➕ شامل</button></div></div>
-                    <div id="al-sp"></div>
-                    <div class="settings-table-wrapper">
-                        <table class="settings-table">
-                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-transporter">ٹرانسپورٹر</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
-                            <tbody id="parties-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tab: Haji Parties -->
-                <div id="tab-hajiparties" class="tab-content card">
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newhajipartylbl">نئی حاجی پارٹی</label><input type="text" id="shp-in" placeholder="حاجی پارٹی کا نام" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addhajiparty" onclick="addFromSettings('hajiParty')">➕ شامل</button></div></div>
-                    <div id="al-shp"></div>
-                    <div class="settings-table-wrapper">
-                        <table class="settings-table">
-                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-hajiparty">حاجی پارٹی</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
-                            <tbody id="hajiparties-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tab: Sectors -->
-                <div id="tab-sectors" class="tab-content card">
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newsectorlbl">نیا سیکٹر</label><input type="text" id="ss-in" placeholder="مثلاً: جدہ ➜ مکہ" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addsector" onclick="addFromSettings('sector')">➕ شامل</button></div></div>
-                    <div id="al-ss"></div>
-                    <div class="settings-table-wrapper">
-                        <table class="settings-table">
-                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-sector">سیکٹر</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
-                            <tbody id="sectors-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tab: Shirkas -->
-                <div id="tab-shirkas" class="tab-content card">
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newshirkalbl">نیا شرکہ</label><input type="text" id="ssh-in" placeholder="شرکہ کا نام" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addshirka" onclick="addFromSettings('shirka')">➕ شامل</button></div></div>
-                    <div id="al-ssh"></div>
-                    <div class="settings-table-wrapper">
-                        <table class="settings-table">
-                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-shirka">شرکہ</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
-                            <tbody id="shirkas-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tab: Transports -->
-                <div id="tab-transports" class="tab-content card">
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:500px;"><div class="fg" style="flex:1;min-width:160px;"><label id="lbl-newtransportlbl">نئی ٹرانسپورٹ</label><input type="text" id="st-in" placeholder="مثلاً: بس، وین، کوچ" /></div><div style="margin-top:auto;"><button class="btn btn-p" id="btn-addtransport" onclick="addFromSettings('transport')">➕ شامل</button></div></div>
-                    <div id="al-st"></div>
-                    <div class="settings-table-wrapper">
-                        <table class="settings-table">
-                            <thead><tr><th style="width:60px;">#</th><th><span id="lbl-tbl-transport">ٹرانسپورٹ</span></th><th style="width:120px;"><span class="lbl-tbl-action">کارروائی</span></th></tr></thead>
-                            <tbody id="transports-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tab: Users (redirects to admin panel) -->
-                <div id="tab-users" class="tab-content card">
-                    <div style="text-align:center;padding:30px;color:var(--muted);">
-                        <div style="font-size:36px;margin-bottom:10px;">👑</div>
-                        <p style="font-size:14px;font-weight:600;color:var(--primary);">یوزر مینجمنٹ ایڈمن پینل میں منتقل ہوگئی</p>
-                        <button class="btn btn-p" onclick="showPage('admin',null)" style="margin-top:10px;">👑 سوپر ایڈمن پینل کھولیں</button>
-                    </div>
-                </div>
-            </div>
-
-        </div><!-- /wrap -->
-
-        <div class="nav-spacer"></div>
-
+                <div id="page-report" class="page"></div>
+                <div id="page-dailynote" class="page"></div>
+                <div id="page-settings" class="page"></div>
+                <div id="page-admin" class="page" style="padding:0;"></div>
+            </main><!-- /wrap -->
+        </div><!-- /app-main -->
     </div><!-- /main-app-container -->
 
-    <!-- ===== ADMIN PANEL PAGE (outside wrap, inside main-app-container) ===== -->
-    <div id="page-admin" class="page" style="padding:0;">
-        <!-- Admin Header -->
-        <div class="admin-panel-header">
-            <div class="admin-panel-title">
-                <span class="admin-crown">👑</span>
-                <div>
-                    <h2 style="margin:0;font-size:20px;color:#fff;">سوپر ایڈمن پینل</h2>
-                    <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.75);">یوزر مینجمنٹ اور رول کنٹرول</p>
-                </div>
-            </div>
-        </div>
-
-        <div style="padding:20px;">
-            <!-- Admin Tabs -->
-            <div class="admin-tabs">
-                <button class="admin-tab-btn active" id="atb-admin-tab-dashboard" onclick="switchAdminTab('admin-tab-dashboard')">📊 ڈیش بورڈ</button>
-                <button class="admin-tab-btn" id="atb-admin-tab-users" onclick="switchAdminTab('admin-tab-users')">👥 یوزر مینجمنٹ</button>
-                <button class="admin-tab-btn" id="atb-admin-tab-perms" onclick="switchAdminTab('admin-tab-perms')">🔒 اجازتیں</button>
-            </div>
-
-            <div id="al-admin"></div>
-
-            <!-- Tab: Dashboard -->
-            <div id="admin-tab-dashboard" class="admin-tab-content active">
-                <div id="admin-dashboard" class="admin-dash-grid"></div>
-                <div id="admin-total-stats" class="admin-total-stats"></div>
-            </div>
-
-            <!-- Tab: Users -->
-            <div id="admin-tab-users" class="admin-tab-content">
-                <!-- Add New User -->
-                <div class="card" style="margin-bottom:16px;">
-                    <div class="card-title" style="font-size:14px;">➕ نیا یوزر شامل کریں</div>
-                    <div id="adm-al-su"></div>
-                    <div class="grid" style="grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end;">
-                        <div class="fg">
-                            <label>صارف نام</label>
-                            <input type="text" id="adm-su-username" placeholder="مثلاً: ahmed" autocomplete="off" />
-                        </div>
-                        <div class="fg">
-                            <label>پاس ورڈ</label>
-                            <input type="password" id="adm-su-password" placeholder="کم از کم 6 حروف" autocomplete="new-password" />
-                        </div>
-                        <div class="fg">
-                            <label>رول منتخب کریں</label>
-                            <select id="adm-su-role" style="width:100%;">
-                                <option value="admin">ایڈمن 🔑</option>
-                                <option value="operator" selected>آپریٹر ✍️</option>
-                                <option value="viewer">ویور 👁️</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-p" id="adm-btn-add-user" onclick="addUser()">➕ شامل</button>
-                    </div>
-                </div>
-
-                <!-- Users Table -->
-                <div class="card">
-                    <div class="card-title" style="font-size:14px;">📋 صارفین کی فہرست</div>
-                    <div class="tbl-wrap">
-                        <table class="settings-table">
-                            <thead>
-                                <tr>
-                                    <th>صارف نام</th>
-                                    <th style="min-width:160px;">رول</th>
-                                    <th style="width:80px;">فعال</th>
-                                    <th style="width:100px;">تاریخ</th>
-                                    <th style="width:100px;">آخری لاگ ان</th>
-                                    <th style="width:60px;">حذف</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-users-tbody"></tbody>
-                        </table>
-                    </div>
-                    <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <button class="btn btn-p" onclick="saveAdminUsers()" style="display:inline-flex; align-items:center; gap:6px; font-weight:bold;">
-                            💾 صارفین کی تبدیلیاں محفوظ کریں
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Permissions -->
-            <div id="admin-tab-perms" class="admin-tab-content">
-                <div class="card">
-                    <div class="card-title" style="font-size:14px;">🔒 رول وائز اجازتیں</div>
-                    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">ہر رول کے لیے نیچے Toggle کریں — تبدیلیاں فوری محفوظ ہوں گی</p>
-                    <div class="tbl-wrap">
-                        <table class="settings-table perms-table">
-                            <thead>
-                                <tr>
-                                    <th style="min-width:200px;">اجازت</th>
-                                    <th style="width:110px;text-align:center;">ایڈمن 🔑</th>
-                                    <th style="width:110px;text-align:center;">آپریٹر ✍️</th>
-                                    <th style="width:110px;text-align:center;">ویور 👁️</th>
-                                </tr>
-                            </thead>
-                            <tbody id="perms-table-body"></tbody>
-                        </table>
-                    </div>
-                    <div style="margin-top:12px;text-align:left;">
-                        <button class="btn btn-p" onclick="savePermissions()">💾 محفوظ کریں</button>
-                    </div>
-                </div>
-            </div>
-
-        </div><!-- /admin padding -->
-    </div><!-- /page-admin -->
-
-    <!-- end of wrap was already closed above, admin page is sibling -->
-
     <!-- ===== MODALS ===== -->
-    <div class="mo" id="modal"><div class="md"><h3 id="m-title"></h3><input type="text" id="m-input" placeholder="" /><div class="md-btns"><button class="btn btn-p" id="btn-msave" onclick="confirmModal()">✅ شامل کریں</button><button class="btn btn-o" id="btn-mcancel" onclick="closeModal()">❌ منسوخ</button></div></div></div>
-    <div class="mo" id="del-modal"><div class="md del-md"><div class="del-icon">⚠️</div><h3 id="del-m-title"></h3><p id="del-m-msg"></p><input type="password" id="del-m-input" placeholder="" /><div class="md-btns" style="justify-content:center;margin-top:20px;"><button class="btn btn-d" id="btn-del-confirm" onclick="confirmDeleteModal()">🗑️</button><button class="btn btn-o" id="btn-del-cancel" onclick="closeDeleteModal()">❌</button></div></div></div>
+    <div class="mo" id="modal"><div class="md"><h3 id="m-title"></h3><input type="text" id="m-input" placeholder="" /><div class="md-btns"><button class="btn btn-p" id="btn-msave" onclick="confirmModal()">شامل کریں</button><button class="btn btn-o" id="btn-mcancel" onclick="closeModal()">منسوخ</button></div></div></div>
+    <div class="mo" id="del-modal"><div class="md del-md"><div class="del-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--red);"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 id="del-m-title"></h3><p id="del-m-msg"></p><input type="password" id="del-m-input" placeholder="" /><div class="md-btns" style="justify-content:center;margin-top:20px;"><button class="btn btn-d" id="btn-del-confirm" onclick="confirmDeleteModal()">حذف کریں</button><button class="btn btn-o" id="btn-del-cancel" onclick="closeDeleteModal()">منسوخ</button></div></div></div>
 
     <!-- ===== COPY VOUCHER MODAL ===== -->
     <div class="mo" id="copy-modal" onclick="if(event.target===this)closeCopyModal()">
         <div class="md" style="max-width:520px;width:95%;padding:0;overflow:hidden;border-radius:16px;">
             <!-- Header -->
-            <div style="background:linear-gradient(135deg,#2D6A4F,#40916C);padding:18px 22px;display:flex;align-items:center;gap:12px;">
-                <span style="font-size:26px;">📋</span>
+            <div style="background:linear-gradient(135deg, var(--charcoal-blue) 0%, var(--dark-slate-grey) 100%);padding:18px 22px;display:flex;align-items:center;gap:12px;">
                 <div>
                     <h3 style="margin:0;color:#fff;font-size:16px;">واوچر کاپی کریں</h3>
                     <p style="margin:0;color:rgba(255,255,255,0.75);font-size:12px;" id="copy-modal-voucher-label">واوچر: —</p>
                 </div>
-                <button onclick="closeCopyModal()" style="margin-right:auto;background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+                <button onclick="closeCopyModal()" style="margin-inline-start:auto;background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
             </div>
             <!-- Original Record Info -->
-            <div style="background:#f0faf4;border-bottom:1px solid #d1e9db;padding:12px 22px;font-size:12px;color:#2D6A4F;" id="copy-modal-info"></div>
+            <div style="background:var(--surface-alt);border-bottom:1px solid var(--border);padding:12px 22px;font-size:12px;color:var(--text);" id="copy-modal-info"></div>
             <!-- Form -->
             <div style="padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                 <div class="fg" style="grid-column:1/-1;">
-                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">📅 نئی تاریخ</label>
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">نئی تاریخ</label>
                     <input type="date" id="copy-date" style="width:100%;box-sizing:border-box;" />
                 </div>
                 <div class="fg">
-                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">🗺️ نیا سیکٹر</label>
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">نیا سیکٹر</label>
                     <select id="copy-sector" style="width:100%;box-sizing:border-box;"></select>
                 </div>
                 <div class="fg">
-                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">🚌 ٹرانسپورٹ</label>
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">ٹرانسپورٹ</label>
                     <select id="copy-transport" style="width:100%;box-sizing:border-box;"></select>
                 </div>
                 <div class="fg">
-                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">💰 فی کس کرایہ</label>
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">فی کس کرایہ</label>
                     <input type="number" id="copy-fare" style="width:100%;box-sizing:border-box;" min="0" />
                 </div>
                 <div class="fg">
-                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">👥 حجاج (تعداد)</label>
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">حجاج کی تعداد</label>
                     <input type="number" id="copy-count" style="width:100%;box-sizing:border-box;" min="0" />
                 </div>
             </div>
             <div id="al-copy" style="padding:0 22px;"></div>
             <!-- Footer Buttons -->
-            <div style="padding:14px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);background:#fafafa;">
-                <button class="btn btn-o" onclick="closeCopyModal()" id="btn-copy-cancel">❌ منسوخ</button>
-                <button class="btn btn-p" onclick="confirmCopyVoucher()" id="btn-copy-confirm" style="background:linear-gradient(135deg,#2D6A4F,#40916C);border:none;color:#fff;">✅ کاپی کریں</button>
+            <div style="padding:14px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);background:var(--bg-page);">
+                <button class="btn btn-o" onclick="closeCopyModal()" id="btn-copy-cancel">منسوخ</button>
+                <button class="btn btn-p" onclick="confirmCopyVoucher()" id="btn-copy-confirm">کاپی کریں</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT RECORD MODAL ===== -->
+    <div class="mo" id="edit-record-modal" onclick="if(event.target===this)closeEditRecordModal()">
+        <div class="md edit-record-md" style="max-width:760px;width:95%;padding:0;overflow:hidden;border-radius:16px;max-height:90vh;display:flex;flex-direction:column;border-top:none;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+            <!-- Modal Header -->
+            <div class="edit-modal-hdr" style="background:linear-gradient(135deg, var(--charcoal-blue, #2f3e46) 0%, var(--dark-slate-grey, #354f52) 100%);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 style="margin:0;color:#fff;font-size:16px;font-weight:700;" id="edit-rec-m-title">ریکارڈ میں تبدیلی کریں (Edit Record)</h3>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+                            <span class="voucher-tag" id="edit-rec-modal-voucher-badge" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11.5px;padding:2px 8px;border-radius:6px;font-weight:600;">واوچر: —</span>
+                            <span id="edit-rec-modal-party-badge" style="color:rgba(255,255,255,0.8);font-size:11.5px;"></span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeEditRecordModal()" aria-label="Close" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+            </div>
+
+            <!-- Modal Scrollable Body -->
+            <div class="edit-modal-body" style="padding:20px 22px;overflow-y:auto;flex:1;background:var(--white);">
+                <div id="al-edit-record" style="margin-bottom:14px;"></div>
+                <input type="hidden" id="edit-rec-id" />
+
+                <!-- Group 1: Booking Essentials -->
+                <div style="margin-bottom:18px;">
+                    <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                        <span>📋</span> <span>بنیادی بکنگ معلومات</span>
+                    </div>
+                    <div class="grid edit-modal-grid-3" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:12px;margin-bottom:12px;">
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">تاریخ</label>
+                            <input type="date" id="edit-rec-date" style="width:100%;box-sizing:border-box;" />
+                        </div>
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">واوچر نمبر</label>
+                            <input type="text" id="edit-rec-voucher" style="width:100%;box-sizing:border-box;font-weight:700;color:var(--primary);" />
+                        </div>
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">ٹرانسپورٹر</label>
+                            <select id="edit-rec-party" style="width:100%;box-sizing:border-box;"></select>
+                        </div>
+                    </div>
+
+                    <div class="grid edit-modal-grid-3" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:12px;margin-bottom:12px;">
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">حاجی پارٹی</label>
+                            <input type="text" id="edit-rec-new-party" list="edit-rec-haji-party-list" placeholder="ہاجی پارٹی درج یا منتخب کریں" style="width:100%;box-sizing:border-box;" />
+                            <datalist id="edit-rec-haji-party-list"></datalist>
+                        </div>
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">سیکٹر</label>
+                            <select id="edit-rec-sector" onchange="calcEditRecordTotal()" style="width:100%;box-sizing:border-box;"></select>
+                        </div>
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">ٹرانسپورٹ</label>
+                            <select id="edit-rec-transport" onchange="calcEditRecordTotal()" style="width:100%;box-sizing:border-box;"></select>
+                        </div>
+                    </div>
+
+                    <div class="grid edit-modal-grid-3" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:12px;">
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">حاجیوں کی تعداد</label>
+                            <input type="number" id="edit-rec-count" min="1" oninput="calcEditRecordTotal()" style="width:100%;box-sizing:border-box;" />
+                        </div>
+                        <div class="fg">
+                            <label id="lbl-edit-rec-fare" style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">کرایہ (SAR)</label>
+                            <input type="number" id="edit-rec-fare" min="0" oninput="calcEditRecordTotal()" style="width:100%;box-sizing:border-box;" />
+                        </div>
+                        <div class="fg">
+                            <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;font-weight:700;">کل رقم (SAR)</label>
+                            <input type="number" id="edit-rec-total" readonly style="width:100%;box-sizing:border-box;font-weight:700;background:var(--cream-dark);color:var(--text);" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group 2: Flight & Passenger Details (Collapsible/Toggle) -->
+                <div style="background:var(--surface-alt, rgba(0,0,0,0.02));border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:18px;">
+                    <label style="display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;margin-bottom:0;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <input type="checkbox" id="edit-rec-show-flight" onchange="toggleEditFlightDetails()" />
+                            <span>✈️ فلائیٹ اور ائیرپورٹ تفصیلات</span>
+                        </div>
+                        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--cream-dark);color:var(--muted);font-weight:500;">اختیاری</span>
+                    </label>
+
+                    <div id="edit-rec-flight-section" style="display:none;margin-top:14px;">
+                        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:12px;">
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">نام (Name)</label>
+                                <input type="text" id="edit-rec-name" style="width:100%;box-sizing:border-box;" />
+                            </div>
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">وقت آمد (Arrival Time)</label>
+                                <input type="time" id="edit-rec-flight-time" style="width:100%;box-sizing:border-box;" />
+                            </div>
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">فلائیٹ نمبر (Flight No)</label>
+                                <input type="text" id="edit-rec-flight-no" style="width:100%;box-sizing:border-box;" />
+                            </div>
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">ائیرپورٹ (Airport)</label>
+                                <input type="text" id="edit-rec-airport" list="edit-rec-airport-list" style="width:100%;box-sizing:border-box;" />
+                                <datalist id="edit-rec-airport-list">
+                                    <option value="Jeddah Airport (KAIA)"></option>
+                                    <option value="Madinah Airport (AMAA)"></option>
+                                </datalist>
+                            </div>
+                        </div>
+
+                        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:12px;margin-top:10px;">
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">نوعیت (Nature)</label>
+                                <select id="edit-rec-nature" style="width:100%;box-sizing:border-box;"></select>
+                            </div>
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">شرکہ (Shirka)</label>
+                                <input type="text" id="edit-rec-shirka" list="edit-rec-shirka-list" style="width:100%;box-sizing:border-box;" />
+                                <datalist id="edit-rec-shirka-list"></datalist>
+                            </div>
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">گروپ نمبر (Group No)</label>
+                                <input type="text" id="edit-rec-group" style="width:100%;box-sizing:border-box;" />
+                            </div>
+                            <div class="fg">
+                                <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">موبائل (Mobile)</label>
+                                <input type="text" id="edit-rec-mobile" style="width:100%;box-sizing:border-box;direction:ltr;text-align:right;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group 3: Notes -->
+                <div class="fg">
+                    <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">نوٹس (Notes)</label>
+                    <textarea id="edit-rec-notes" rows="2" placeholder="اضافی ہدایات یا نوٹس..." style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="edit-modal-footer" style="padding:14px 22px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);background:var(--bg-page);">
+                <button type="button" class="btn btn-o" onclick="closeEditRecordModal()" id="btn-cancel-edit-rec">منسوخ</button>
+                <button type="button" class="btn btn-p" onclick="saveRecordEditModal()" id="btn-save-edit-rec" style="display:inline-flex;align-items:center;gap:6px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    <span>تبدیلی محفوظ کریں</span>
+                </button>
             </div>
         </div>
     </div>
@@ -611,6 +421,8 @@
     <script src="scripts/core/state.js">
     </script>
     <script src="scripts/core/helpers.js">
+    </script>
+    <script src="scripts/core/loader.js">
     </script>
     <script src="scripts/core/db-helpers.js">
     </script>
@@ -650,6 +462,8 @@
     </script>
     <script src="scripts/app.js">
     </script>
+
+
 </body>
 
 </html>

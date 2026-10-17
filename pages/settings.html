@@ -1,0 +1,310 @@
+<!-- ===== SETTINGS TABS & CONTENT ===== -->
+<div class="settings-tabs">
+    <button class="tab-btn active" onclick="switchSettingsTab('tab-app')" id="tab-btn-app">ایپ ترتیبات</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-transporters')" id="tab-btn-transporters">ٹرانسپورٹرز</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-hajiparties')" id="tab-btn-hajiparties">حاجی پارٹیاں</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-sectors')" id="tab-btn-sectors">سیکٹرز</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-transports')" id="tab-btn-transports">گاڑیاں</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-shirkas')" id="tab-btn-shirkas">شرکہ</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-users')" id="tab-btn-users">صارفین</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-backup')" id="tab-btn-backup">بیک اپ و ڈیٹا ٹرانسفر</button>
+</div>
+
+<!-- Tab: App Settings -->
+<div id="tab-app" class="tab-content active card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">ایپلی کیشن ترتیبات</h2>
+                <div class="card-subtitle">سسٹم کا نام، لوگو اور برانڈنگ کی معلومات تبدیل کریں</div>
+            </div>
+        </div>
+    </div>
+    <div class="sgr">
+        <div>
+            <div class="fg" style="margin-bottom:10px;"><label id="lbl-logoLbl">لوگو تبدیل کریں</label></div>
+            <div id="logo-drop-zone" onclick="document.getElementById('logo-file-input2').click()" class="logo-drop-zone" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleLogoDrop(event)">
+                <div id="logo-preview-wrap">
+                    <div id="logo-preview-emoji" class="logo-preview-emoji">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <img id="logo-preview-img" src="" alt="" class="logo-preview-img" style="display:none;" />
+                </div>
+                <div class="logo-hint" id="lbl-logoHint">PNG / JPG / SVG (کلک یا ڈراپ کریں)</div>
+                <button class="btn btn-o btn-sm no-print" onclick="event.stopPropagation();removeLogo()" id="btn-removeLogo" style="display:none;">✕ حذف</button>
+            </div>
+            <input type="file" id="logo-file-input2" accept="image/*" style="display:none;" onchange="handleLogoUpload(this)" />
+        </div>
+        <div>
+            <div class="fg" style="margin-bottom:11px;"><label id="lbl-appNameLbl">ایپ کا نام</label><input type="text" id="set-appname" style="font-size:15px;" /></div>
+            <div class="fg" style="margin-bottom:14px;"><label id="lbl-appSubLbl">ذیلی عنوان</label><input type="text" id="set-appsub" /></div>
+            <div style="display:flex;gap:8px;align-items:center;"><button class="btn btn-p" id="btn-saveApp" onclick="saveAppSettings()">محفوظ کریں</button></div>
+            <div id="al-app" style="margin-top:8px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab: Transporters -->
+<div id="tab-transporters" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">ٹرانسپورٹرز کی فہرست</h2>
+                <div class="card-subtitle">تمام ٹرانسپورٹرز اور ان کے خودکار کوڈز (UTS) کی فہرست</div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-add-form">
+        <div class="fg" style="flex:1;min-width:180px;">
+            <label id="lbl-newpartylbl">نیا ٹرانسپورٹر</label>
+            <input type="text" id="sp-in" placeholder="ٹرانسپورٹر کا نام" onkeydown="if(event.key==='Enter')addFromSettings('party')" />
+        </div>
+        <button class="btn btn-p" id="btn-addparty" onclick="addFromSettings('party')">شامل کریں</button>
+    </div>
+    <div id="al-sp"></div>
+    <div class="settings-table-wrapper">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th><span id="lbl-tbl-transporter">ٹرانسپورٹر</span></th>
+                    <th style="width:130px;"><span class="lbl-tbl-action">کارروائی</span></th>
+                </tr>
+            </thead>
+            <tbody id="parties-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab: Haji Parties -->
+<div id="tab-hajiparties" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">حاجی پارٹیاں</h2>
+                <div class="card-subtitle">عمرہ ٹورز، ایجنٹس اور پارٹیاں</div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-add-form">
+        <div class="fg" style="flex:1;min-width:180px;">
+            <label id="lbl-newhajipartylbl">نئی حاجی پارٹی</label>
+            <input type="text" id="shp-in" placeholder="حاجی پارٹی کا نام" onkeydown="if(event.key==='Enter')addFromSettings('hajiParty')" />
+        </div>
+        <button class="btn btn-p" id="btn-addhajiparty" onclick="addFromSettings('hajiParty')">شامل کریں</button>
+    </div>
+    <div id="al-shp"></div>
+    <div class="settings-table-wrapper">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th><span id="lbl-tbl-hajiparty">حاجی پارٹی</span></th>
+                    <th style="width:130px;"><span class="lbl-tbl-action">کارروائی</span></th>
+                </tr>
+            </thead>
+            <tbody id="hajiparties-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab: Sectors -->
+<div id="tab-sectors" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">سیکٹرز / روٹس</h2>
+                <div class="card-subtitle">سفر کے راستے اور سیکٹرز کی ترتیبات</div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-add-form">
+        <div class="fg" style="flex:1;min-width:180px;">
+            <label id="lbl-newsectorlbl">نیا سیکٹر</label>
+            <input type="text" id="ss-in" placeholder="مثلاً: جدہ ➜ مکہ" onkeydown="if(event.key==='Enter')addFromSettings('sector')" />
+        </div>
+        <button class="btn btn-p" id="btn-addsector" onclick="addFromSettings('sector')">شامل کریں</button>
+    </div>
+    <div id="al-ss"></div>
+    <div class="settings-table-wrapper">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th><span id="lbl-tbl-sector">سیکٹر</span></th>
+                    <th style="width:130px;"><span class="lbl-tbl-action">کارروائی</span></th>
+                </tr>
+            </thead>
+            <tbody id="sectors-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab: Shirkas -->
+<div id="tab-shirkas" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 21h18"></path>
+                    <path d="M5 21V7l8-4v18"></path>
+                    <path d="M19 21V11l-6-3"></path>
+                    <path d="M9 9h1"></path>
+                    <path d="M9 13h1"></path>
+                    <path d="M9 17h1"></path>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">شرکہ لسٹ</h2>
+                <div class="card-subtitle">سعودی عمرہ شُرکات و کمپنیوں کے نام</div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-add-form">
+        <div class="fg" style="flex:1;min-width:180px;">
+            <label id="lbl-newshirkalbl">نیا شرکہ</label>
+            <input type="text" id="ssh-in" placeholder="شرکہ کا نام" onkeydown="if(event.key==='Enter')addFromSettings('shirka')" />
+        </div>
+        <button class="btn btn-p" id="btn-addshirka" onclick="addFromSettings('shirka')">شامل کریں</button>
+    </div>
+    <div id="al-ssh"></div>
+    <div class="settings-table-wrapper">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th><span id="lbl-tbl-shirka">شرکہ</span></th>
+                    <th style="width:130px;"><span class="lbl-tbl-action">کارروائی</span></th>
+                </tr>
+            </thead>
+            <tbody id="shirkas-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab: Transports -->
+<div id="tab-transports" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <circle cx="7" cy="18" r="2"></circle>
+                    <circle cx="17" cy="18" r="2"></circle>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">گاڑیاں و ٹرانسپورٹ کی اقسام</h2>
+                <div class="card-subtitle">بس، کوسٹر، جی ایم سی، کار وغیرہ</div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-add-form">
+        <div class="fg" style="flex:1;min-width:180px;">
+            <label id="lbl-newtransportlbl">نئی ٹرانسپورٹ</label>
+            <input type="text" id="st-in" placeholder="مثلاً: بس، وین، کوچ" onkeydown="if(event.key==='Enter')addFromSettings('transport')" />
+        </div>
+        <button class="btn btn-p" id="btn-addtransport" onclick="addFromSettings('transport')">شامل کریں</button>
+    </div>
+    <div id="al-st"></div>
+    <div class="settings-table-wrapper">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th><span id="lbl-tbl-transport">ٹرانسپورٹ</span></th>
+                    <th style="width:130px;"><span class="lbl-tbl-action">کارروائی</span></th>
+                </tr>
+            </thead>
+            <tbody id="transports-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab: Users -->
+<div id="tab-users" class="tab-content card">
+    <div class="settings-users-redirect">
+        <p>یوزر مینجمنٹ ایڈمن پینل میں منتقل ہوگئی</p>
+        <button class="btn btn-p" onclick="showPage('admin',null)">سوپر ایڈمن پینل کھولیں</button>
+    </div>
+</div>
+
+<!-- Tab: Backup & Restore -->
+<div id="tab-backup" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">ڈیٹا بیک اپ، امپورٹ اور ٹرانسفر</h2>
+                <div class="card-subtitle">F5 (file://) سے Go Live (Live Server) پر ڈیٹا منتقل کریں اور بیک اپ محفوظ کریں</div>
+            </div>
+        </div>
+    </div>
+    <div id="al-backup"></div>
+    <div class="backup-grid">
+        <!-- Card 1: Export -->
+        <div class="backup-card">
+            <h3 class="backup-title">📥 بیک اپ ڈاؤنلوڈ کریں</h3>
+            <p class="backup-text">تمام ریکارڈز، پارٹیاں، ادائیگیاں اور ترتیبات کو JSON فائل میں ڈاؤنلوڈ کریں۔ یہ بیک اپ آپ کسی بھی وقت بحال کر سکتے ہیں۔</p>
+            <div class="backup-actions">
+                <button class="btn btn-p" onclick="exportAllDataBackup()">
+                    <span>ڈاؤنلوڈ بیک اپ (JSON)</span>
+                </button>
+                <button class="btn btn-o" onclick="copyBackupToClipboard()">
+                    <span>ڈیٹا کاپی کریں</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Card 2: Import -->
+        <div class="backup-card">
+            <h3 class="backup-title">📤 بیک اپ بحال کریں (Import)</h3>
+            <p class="backup-text">پہلے سے محفوظ شدہ بیک اپ فائل منتخب کریں یا پیسٹ کریں تاکہ ڈیٹا یہاں بحال ہو جائے اور فائر بیس پر سنک ہو سکے۔</p>
+            <div class="backup-actions">
+                <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="importAllDataBackup(this.files[0])" />
+                <button class="btn btn-p" onclick="document.getElementById('backup-file-input').click()">
+                    <span>فائل منتخب کریں (JSON)</span>
+                </button>
+                <button class="btn btn-o" onclick="pasteBackupFromPrompt()">
+                    <span>پیسٹ سے بحال کریں</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>

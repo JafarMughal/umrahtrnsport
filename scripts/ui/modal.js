@@ -4,9 +4,9 @@
 function openModal(type, ctx) {
     _mt = type; _mc = ctx;
     const L = T[lang] || T.ur;
-    const titles = { party: L.addPartyTitle, sector: L.addSectorTitle, transport: '➕ ' + L.newTransportLbl, nature: '➕ نئی نوعیت' };
+    const titles = { party: L.addPartyTitle, sector: L.addSectorTitle, transport: L.newTransportLbl || 'نئی گاڑی / ٹرانسپورٹ', nature: 'نئی نوعیت' };
     const holders = { party: L.partyPlaceholder, sector: L.sectorPlaceholder, transport: L.transportPlaceholder, nature: 'مثلاً: Marhba-Al Mosair' };
-    document.getElementById('m-title').textContent = titles[type] || '➕';
+    document.getElementById('m-title').textContent = titles[type] || (L.add || 'شامل کریں');
     document.getElementById('m-input').placeholder = holders[type] || '';
     document.getElementById('m-input').value = '';
     document.getElementById('modal').classList.add('open');

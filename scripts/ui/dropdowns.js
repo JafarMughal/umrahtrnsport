@@ -43,7 +43,7 @@ function sdShowCode(prefix, partyName) {
     if (!badge) {
         badge = document.createElement('div');
         badge.id = prefix + '-badge';
-        badge.style.cssText = 'margin-top:4px;font-size:12px;color:var(--muted);';
+        badge.className = 'sd-badge'; // replaced inline style
         document.getElementById('sd-' + prefix).parentElement.appendChild(badge);
     }
     badge.innerHTML = partyName ? `<span class="party-code">${code}</span> ${partyName}` : '';
@@ -79,8 +79,12 @@ function fillDrop(id, arr, withAll = false) {
 
 function refreshAllDrops() {
     fillDrop('e-sector', sectors);
-    fillDrop('e-transport', transports);
-    fillDrop('l-party', parties, true);
+    const allLedgerParties = Array.from(new Set([
+        ...(Array.isArray(parties) ? parties : []),
+        ...(typeof records !== 'undefined' && Array.isArray(records) ? records.map(r => r.party) : []),
+        ...(typeof payments !== 'undefined' && Array.isArray(payments) ? payments.map(p => p.party) : [])
+    ].map(p => (p || '').trim()).filter(Boolean)));
+    fillDrop('l-party', allLedgerParties.length ? allLedgerParties : parties, true);
     fillDrop('f-party', parties, true);
     fillDrop('f-sector', sectors, true);
     fillDrop('r-party', parties, true);
@@ -117,7 +121,7 @@ function fillHajiPartyDropdown(query = '') {
     const filtered = hajiParties.filter(hp => !q || hp.toLowerCase().includes(q));
     
     if (filtered.length === 0) {
-        listEl.innerHTML = `<div class="cms-label" style="color:var(--muted); justify-content:center;">کوئی نتیجہ نہیں</div>`;
+        listEl.innerHTML = `<div class="cms-label no-result">کوئی نتیجہ نہیں</div>`; // Replaced inline style
     } else {
         listEl.innerHTML = filtered.map(hp => {
             const isActive = currentSelected === hp ? 'active' : '';
