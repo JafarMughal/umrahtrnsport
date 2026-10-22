@@ -121,11 +121,17 @@ function setLang(l) {
     const stIn = document.getElementById('st-in'); if (stIn) stIn.placeholder = L.transportPlaceholder;
     setText('btn-addtransport', L.add);
 
+    setText('lbl-newnaturelbl', L.newNatureLbl || 'نئی نوعیت (New Nature)');
+    const sntIn = document.getElementById('snt-in'); if (sntIn) sntIn.placeholder = L.naturePlaceholder || 'مثلاً: Jed Arrival یا مکہ تا مدینہ';
+    setText('btn-addnature', L.add || 'شامل کریں');
+    setText('tab-btn-natures', L.setNatures || 'ٹرانسپورٹ کی نوعیت');
+
     setText('lbl-appNameLbl', L.appNameLbl); setText('lbl-appSubLbl', L.appSubLbl);
     setText('lbl-logoLbl', L.logoLbl); setText('lbl-logoHint', L.logoHint); setText('btn-saveApp', L.saveApp);
 
     setText('lbl-tbl-transporter', L.partyCol); setText('lbl-tbl-sector', L.sectorCol);
     setText('lbl-tbl-transport', L.transportCol); setText('lbl-tbl-hajiparty', L.hajiPartyCol || L.hajiParty);
+    setText('lbl-tbl-nature', L.natureCol || 'نوعیت (TRANSPORT By)');
     document.querySelectorAll('.lbl-tbl-action').forEach(el => el.textContent = L.actionCol);
 
     setText('lbl-su-username', L.username);
@@ -189,7 +195,7 @@ function setLang(l) {
         if (id === 'ledger' && typeof renderLedger === 'function') renderLedger();
         if (id === 'records' && typeof initRecordsPage === 'function') initRecordsPage();
         if (id === 'dailynote' && typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
-        if (id === 'settings') { if (typeof renderPartyList === 'function') renderPartyList(); if (typeof renderSectorList === 'function') renderSectorList(); if (typeof renderTransportList === 'function') renderTransportList(); if (typeof renderUsers === 'function') renderUsers(); }
+        if (id === 'settings') { if (typeof renderPartyList === 'function') renderPartyList(); if (typeof renderSectorList === 'function') renderSectorList(); if (typeof renderTransportList === 'function') renderTransportList(); if (typeof renderNatureList === 'function') renderNatureList(); if (typeof renderUsers === 'function') renderUsers(); }
     }
     if (typeof renderPayHead === 'function') renderPayHead();
     if (typeof renderRecHead === 'function') renderRecHead();

@@ -37,37 +37,27 @@ function confirmModal() {
         const tEl = _mc === 'entry' ? 'e-transport' : 'dn-transport-sel';
         setTimeout(() => { document.getElementById(tEl).value = val; }, 50);
     } else if (_mt === 'nature') {
-        // Update the correct nature dropdown based on context
+        if (!Array.isArray(transportNatures)) transportNatures = [];
+        const isDup = transportNatures.some(item => (typeof item === 'string' ? item.trim().toLowerCase() : '') === val.toLowerCase());
+        if (isDup) { alert(L.alreadyExists); return; }
+        transportNatures.push(val);
+        if (typeof svTN === 'function') svTN();
+        if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
         const selId = _mc === 'entry' ? 'e-transport-nature-sel' : 'dn-transport-nature-sel';
-        const sel = document.getElementById(selId);
-        if (sel) {
-            let exists = false;
-            for (let i = 0; i < sel.options.length; i++) if (sel.options[i].value === val) exists = true;
-            if (!exists) {
-                const opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = val;
-                sel.appendChild(opt);
-            }
-            sel.value = val;
-        }
-        // Also update the entry form nature dropdown if it exists and context is dailynote
-        if (_mc !== 'entry') {
-            const entryNature = document.getElementById('e-transport-nature-sel');
-            if (entryNature) {
-                let exists = false;
-                for (let i = 0; i < entryNature.options.length; i++) if (entryNature.options[i].value === val) exists = true;
-                if (!exists) {
-                    const opt = document.createElement('option');
-                    opt.value = val; opt.textContent = val;
-                    entryNature.appendChild(opt);
-                }
-            }
-        }
+        setTimeout(() => {
+            const sel = document.getElementById(selId);
+            if (sel) sel.value = val;
+        }, 50);
     }
     closeModal();
-    if (document.getElementById('page-settings').classList.contains('active')) {
-        renderPartyList(); renderSectorList(); renderTransportList();
+    const setPage = document.getElementById('page-settings');
+    if (setPage && setPage.classList.contains('active')) {
+        if (typeof renderPartyList === 'function') renderPartyList();
+        if (typeof renderSectorList === 'function') renderSectorList();
+        if (typeof renderTransportList === 'function') renderTransportList();
+        if (typeof renderShirkaList === 'function') renderShirkaList();
+        if (typeof renderHajiPartyList === 'function') renderHajiPartyList();
+        if (typeof renderNatureList === 'function') renderNatureList();
     }
 }
 

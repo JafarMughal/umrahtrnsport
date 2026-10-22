@@ -577,7 +577,8 @@ function openEditRecordModal(id) {
     const natureEl = document.getElementById('edit-rec-nature');
     if (natureEl) {
         const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
-        const allNatures = Array.from(new Set([...defaultNatures, ...(typeof records !== 'undefined' ? records.map(x => x.transportNature) : []), r.transportNature].filter(Boolean)));
+        const baseNatures = (typeof transportNatures !== 'undefined' && Array.isArray(transportNatures) && transportNatures.length) ? transportNatures : defaultNatures;
+        const allNatures = Array.from(new Set([...baseNatures, ...(typeof records !== 'undefined' ? records.map(x => x.transportNature) : []), r.transportNature].filter(Boolean)));
         natureEl.innerHTML = '<option value="">-- منتخب کریں --</option>' +
             allNatures.map(n => `<option value="${n}" ${n === r.transportNature ? 'selected' : ''}>${n}</option>`).join('');
     }

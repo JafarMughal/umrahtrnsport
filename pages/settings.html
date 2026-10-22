@@ -5,6 +5,7 @@
     <button class="tab-btn" onclick="switchSettingsTab('tab-hajiparties')" id="tab-btn-hajiparties">حاجی پارٹیاں</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-sectors')" id="tab-btn-sectors">سیکٹرز</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-transports')" id="tab-btn-transports">گاڑیاں</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-natures')" id="tab-btn-natures">ٹرانسپورٹ کی نوعیت</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-shirkas')" id="tab-btn-shirkas">شرکہ</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-users')" id="tab-btn-users">صارفین</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-backup')" id="tab-btn-backup">بیک اپ و ڈیٹا ٹرانسفر</button>
@@ -246,6 +247,44 @@
                 </tr>
             </thead>
             <tbody id="transports-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab: Transport Nature (TRANSPORT By) -->
+<div id="tab-natures" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title">ٹرانسپورٹ کی نوعیت (TRANSPORT By)</h2>
+                <div class="card-subtitle">Jed Arrival, MED Arrival, Makkah to Madina وغیرہ کی فہرست و ترتیبات</div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-add-form">
+        <div class="fg" style="flex:1;min-width:180px;">
+            <label id="lbl-newnaturelbl">نئی نوعیت (New Nature)</label>
+            <input type="text" id="snt-in" placeholder="مثلاً: Jed Arrival یا مکہ تا مدینہ" onkeydown="if(event.key==='Enter')addFromSettings('nature')" />
+        </div>
+        <button class="btn btn-p" id="btn-addnature" onclick="addFromSettings('nature')">شامل کریں</button>
+    </div>
+    <div id="al-snt"></div>
+    <div class="settings-table-wrapper">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th><span id="lbl-tbl-nature">نوعیت (TRANSPORT By)</span></th>
+                    <th style="width:130px;"><span class="lbl-tbl-action">کارروائی</span></th>
+                </tr>
+            </thead>
+            <tbody id="natures-list"></tbody>
         </table>
     </div>
 </div>

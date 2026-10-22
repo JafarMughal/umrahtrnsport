@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             sectors = toArray(data.sectors);
             shirkas = toArray(data.shirkas);
             transports = toArray(data.transports);
+            transportNatures = toArray(data.transportNatures);
             partyCodes = data.partyCodes || {};
             users = toArray(data.users);
             if (!users.length) users = [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
@@ -35,6 +36,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!parties.length) { parties = (T[lang] || T.ur).defaultParties.slice(); svP(); }
             if (!sectors.length) { sectors = (T[lang] || T.ur).defaultSectors.slice(); svS(); }
             if (!transports.length) { transports = ['بس', 'وین', 'کار', 'کوچ']; svTr(); }
+            if (!transportNatures.length) {
+                const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+                const saved = (records || []).map(r => r.transportNature).filter(Boolean);
+                transportNatures = Array.from(new Set([...defaultNatures, ...saved]));
+                svTN();
+            }
             parties.forEach(p => getCode(p));
 
             if (!hajiParties.length && records.length > 0) {
@@ -75,6 +82,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             sectors = getLocal('sectors') || (T[lang] || T.ur).defaultSectors.slice();
             shirkas = getLocal('shirkas') || [];
             transports = getLocal('transports') || ['بس', 'وین', 'کار', 'کوچ'];
+            transportNatures = getLocal('transportNatures');
+            if (!transportNatures || !transportNatures.length) {
+                const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+                const saved = (records || []).map(r => r.transportNature).filter(Boolean);
+                transportNatures = Array.from(new Set([...defaultNatures, ...saved]));
+            }
             users = getLocal('users') || [{ username: 'admin', role: 'admin' }];
             records = getLocal('records') || [];
             deletedRecords = getLocal('deletedRecords') || [];
@@ -119,6 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sectors = data.sectors !== undefined ? toArray(data.sectors) : sectors;
                 shirkas = data.shirkas !== undefined ? toArray(data.shirkas) : shirkas;
                 transports = data.transports !== undefined ? toArray(data.transports) : transports;
+                transportNatures = data.transportNatures !== undefined ? toArray(data.transportNatures) : transportNatures;
                 partyCodes = data.partyCodes || partyCodes;
                 users = data.users !== undefined ? toArray(data.users) : users;
                 dailyNotes = data.dailyNotes !== undefined ? toArray(data.dailyNotes) : dailyNotes;
@@ -155,6 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         renderPartyList();
                         renderSectorList();
                         renderTransportList();
+                        renderNatureList();
                         renderShirkaList();
                         renderHajiPartyList();
                     }
@@ -260,8 +275,10 @@ window.renderUsers = renderUsers;
 window.renderPartyList = renderPartyList;
 window.renderSectorList = renderSectorList;
 window.renderTransportList = renderTransportList;
+window.renderNatureList = renderNatureList;
 window.renderShirkaList = renderShirkaList;
 window.renderHajiPartyList = renderHajiPartyList;
+window.svTN = svTN;
 window.renderPayments = renderPayments;
 window.renderPayHead = renderPayHead;
 window.renderRecHead = renderRecHead;

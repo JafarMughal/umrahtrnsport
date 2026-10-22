@@ -4,8 +4,8 @@
 
 function addFromSettings(type) {
     try {
-        const inpMap = { party: 'sp-in', sector: 'ss-in', transport: 'st-in', hajiParty: 'shp-in', shirka: 'ssh-in' };
-        const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st', hajiParty: 'al-shp', shirka: 'al-ssh' };
+        const inpMap = { party: 'sp-in', sector: 'ss-in', transport: 'st-in', hajiParty: 'shp-in', shirka: 'ssh-in', nature: 'snt-in' };
+        const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st', hajiParty: 'al-shp', shirka: 'al-ssh', nature: 'al-snt' };
         const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
 
         const inputEl = document.getElementById(inpMap[type]);
@@ -26,8 +26,9 @@ function addFromSettings(type) {
         if (type === 'transport' && !Array.isArray(transports)) transports = [];
         if (type === 'shirka' && !Array.isArray(shirkas)) shirkas = [];
         if (type === 'hajiParty' && !Array.isArray(hajiParties)) hajiParties = [];
+        if (type === 'nature' && !Array.isArray(transportNatures)) transportNatures = [];
 
-        const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
+        const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : type === 'nature' ? transportNatures : hajiParties;
 
         const isDuplicate = arr.some(item => (typeof item === 'string' ? item.trim().toLowerCase() : '') === val.toLowerCase());
         if (isDuplicate) {
@@ -46,6 +47,8 @@ function addFromSettings(type) {
             if (typeof svTr === 'function') svTr();
         } else if (type === 'shirka') {
             if (typeof svSh === 'function') svSh();
+        } else if (type === 'nature') {
+            if (typeof svTN === 'function') svTN();
         } else {
             if (typeof svHP === 'function') svHP();
         }
@@ -59,23 +62,25 @@ function addFromSettings(type) {
         else if (type === 'sector') renderSectorList();
         else if (type === 'transport') renderTransportList();
         else if (type === 'shirka') renderShirkaList();
+        else if (type === 'nature') renderNatureList();
         else renderHajiPartyList();
     } catch (err) {
         console.error(`Error in addFromSettings(${type}):`, err);
-        const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st', hajiParty: 'al-shp', shirka: 'al-ssh' };
+        const alMap = { party: 'al-sp', sector: 'al-ss', transport: 'al-st', hajiParty: 'al-shp', shirka: 'al-ssh', nature: 'al-snt' };
         if (typeof al === 'function') al(alMap[type], 'خرابی: ' + (err.message || err), 'er');
     }
 }
 
 async function deleteItem(type, idx) {
     const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
-    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
+    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : type === 'nature' ? transportNatures : hajiParties;
     const name = arr[idx];
     let used = false;
     if (type === 'party') used = (records || []).some(r => r.party === name) || (payments || []).some(p => p.party === name);
     else if (type === 'sector') used = (records || []).some(r => r.sector === name);
     else if (type === 'transport') used = (records || []).some(r => r.transport === name);
     else if (type === 'shirka') used = (records || []).some(r => r.shirka === name);
+    else if (type === 'nature') used = (records || []).some(r => r.transportNature === name);
     else used = (records || []).some(r => r.newParty && r.newParty.split(',').map(s => s.trim()).includes(name));
 
     if (used) {
@@ -89,6 +94,7 @@ async function deleteItem(type, idx) {
     else if (type === 'sector') { if (typeof svS === 'function') svS(); }
     else if (type === 'transport') { if (typeof svTr === 'function') svTr(); }
     else if (type === 'shirka') { if (typeof svSh === 'function') svSh(); }
+    else if (type === 'nature') { if (typeof svTN === 'function') svTN(); }
     else { if (typeof svHP === 'function') svHP(); }
 
     if (typeof refreshAllDrops === 'function') refreshAllDrops();
@@ -96,6 +102,7 @@ async function deleteItem(type, idx) {
     else if (type === 'sector') renderSectorList();
     else if (type === 'transport') renderTransportList();
     else if (type === 'shirka') renderShirkaList();
+    else if (type === 'nature') renderNatureList();
     else renderHajiPartyList();
 }
 
@@ -219,6 +226,30 @@ function renderHajiPartyList() {
     `).join('');
 }
 
+function renderNatureList() {
+    const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
+    const el = document.getElementById('natures-list');
+    if (!el) return;
+    if (!transportNatures || !transportNatures.length) {
+        el.innerHTML = `<tr><td colspan="3" class="settings-table-empty">${L.noneNature || 'کوئی نوعیت موجود نہیں'}</td></tr>`;
+        return;
+    }
+    const editLbl = L.edit || 'ترمیم';
+    const delLbl = L.del || 'حذف';
+    el.innerHTML = transportNatures.map((n, i) => `
+        <tr id="row-nature-${i}">
+            <td class="col-idx">${i + 1}</td>
+            <td><span class="tag-name" id="val-nature-${i}">${n}</span></td>
+            <td>
+                <div class="st-actions">
+                    <button class="btn btn-o btn-sm" onclick="editItem('nature', ${i})">${editLbl}</button>
+                    <button class="btn btn-o btn-sm btn-del" onclick="deleteItem('nature', ${i})">${delLbl}</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  INLINE EDIT & TABS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -229,11 +260,18 @@ function switchSettingsTab(tabId) {
     if (targetContent) targetContent.classList.add('active');
     const targetBtn = document.getElementById('tab-btn-' + tabId.split('-')[1]);
     if (targetBtn) targetBtn.classList.add('active');
+
+    if (tabId === 'tab-transporters') { if (typeof renderPartyList === 'function') renderPartyList(); }
+    else if (tabId === 'tab-hajiparties') { if (typeof renderHajiPartyList === 'function') renderHajiPartyList(); }
+    else if (tabId === 'tab-sectors') { if (typeof renderSectorList === 'function') renderSectorList(); }
+    else if (tabId === 'tab-transports') { if (typeof renderTransportList === 'function') renderTransportList(); }
+    else if (tabId === 'tab-natures') { if (typeof renderNatureList === 'function') renderNatureList(); }
+    else if (tabId === 'tab-shirkas') { if (typeof renderShirkaList === 'function') renderShirkaList(); }
 }
 
 function editItem(type, idx) {
     const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
-    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
+    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : type === 'nature' ? transportNatures : hajiParties;
     const val = arr[idx];
     const rowEl = document.getElementById(`row-${type}-${idx}`);
     if (!rowEl) return;
@@ -253,12 +291,13 @@ function cancelEditItem(type) {
     else if (type === 'sector') renderSectorList();
     else if (type === 'transport') renderTransportList();
     else if (type === 'shirka') renderShirkaList();
+    else if (type === 'nature') renderNatureList();
     else renderHajiPartyList();
 }
 
 function saveItemEdit(type, idx) {
     const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
-    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : hajiParties;
+    const arr = type === 'party' ? parties : type === 'sector' ? sectors : type === 'transport' ? transports : type === 'shirka' ? shirkas : type === 'nature' ? transportNatures : hajiParties;
     const oldName = arr[idx];
     const inputEl = document.getElementById(`edit-input-${type}-${idx}`);
     if (!inputEl) return;
@@ -315,6 +354,11 @@ function saveItemEdit(type, idx) {
             (records || []).forEach(r => { if (r.shirka === oldName) r.shirka = newName; });
             if (typeof svSh === 'function') svSh();
             if (typeof svR === 'function') svR();
+        } else if (type === 'nature') {
+            transportNatures[idx] = newName;
+            (records || []).forEach(r => { if (r.transportNature === oldName) r.transportNature = newName; });
+            if (typeof svTN === 'function') svTN();
+            if (typeof svR === 'function') svR();
         }
         if (typeof refreshAllDrops === 'function') refreshAllDrops();
     }
@@ -334,6 +378,7 @@ function exportAllDataBackup() {
         parties: parties || [],
         sectors: sectors || [],
         transports: transports || [],
+        transportNatures: transportNatures || [],
         shirkas: shirkas || [],
         hajiParties: hajiParties || [],
         partyCodes: partyCodes || {},
@@ -372,6 +417,7 @@ function copyBackupToClipboard() {
         parties: parties || [],
         sectors: sectors || [],
         transports: transports || [],
+        transportNatures: transportNatures || [],
         shirkas: shirkas || [],
         hajiParties: hajiParties || [],
         partyCodes: partyCodes || {},
@@ -438,6 +484,7 @@ function applyBackupData(data) {
     if (Array.isArray(data.parties)) parties = data.parties;
     if (Array.isArray(data.sectors)) sectors = data.sectors;
     if (Array.isArray(data.transports)) transports = data.transports;
+    if (Array.isArray(data.transportNatures)) transportNatures = data.transportNatures;
     if (Array.isArray(data.shirkas)) shirkas = data.shirkas;
     if (Array.isArray(data.hajiParties)) hajiParties = data.hajiParties;
     if (data.partyCodes && typeof data.partyCodes === 'object') partyCodes = data.partyCodes;
@@ -457,6 +504,7 @@ function applyBackupData(data) {
     if (typeof svP === 'function') svP();
     if (typeof svS === 'function') svS();
     if (typeof svTr === 'function') svTr();
+    if (typeof svTN === 'function') svTN();
     if (typeof svSh === 'function') svSh();
     if (typeof svHP === 'function') svHP();
     if (typeof svC === 'function') svC();
@@ -470,6 +518,7 @@ function applyBackupData(data) {
     if (typeof initRecordsPage === 'function') initRecordsPage();
     else if (typeof filterRecords === 'function') filterRecords();
     if (typeof renderPartyList === 'function') renderPartyList();
+    if (typeof renderNatureList === 'function') renderNatureList();
 
     if (typeof al === 'function') {
         al('al-backup', `ڈیٹا کامیابی سے بحال ہو گیا! (${records.length} ریکارڈز، ${payments.length} ادائیگیاں)`, 'ok');
@@ -477,6 +526,7 @@ function applyBackupData(data) {
     alert(`ڈیٹا کامیابی سے بحال ہو گیا!\nکل ریکارڈز: ${records.length}\nکل ادائیگیاں: ${payments.length}`);
 }
 
+window.renderNatureList = renderNatureList;
 window.exportAllDataBackup = exportAllDataBackup;
 window.copyBackupToClipboard = copyBackupToClipboard;
 window.importAllDataBackup = importAllDataBackup;

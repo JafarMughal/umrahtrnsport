@@ -23,6 +23,7 @@ function svP() { _safeFbSet('parties', parties); }
 function svS() { _safeFbSet('sectors', sectors); }
 function svSh() { _safeFbSet('shirkas', shirkas); }
 function svTr() { _safeFbSet('transports', transports); }
+function svTN() { _safeFbSet('transportNatures', transportNatures); }
 function svC() { _safeFbSet('partyCodes', partyCodes); }
 function svU() { _safeFbSet('users', users); }
 function svHP() { _safeFbSet('hajiParties', hajiParties); }

@@ -6,8 +6,9 @@
 function fillTransportNatureDropdown() {
     // Fill dropdown in main Entry form
     const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+    const baseNatures = (typeof transportNatures !== 'undefined' && Array.isArray(transportNatures) && transportNatures.length) ? transportNatures : defaultNatures;
     const savedNatures = (records || []).map(n => n.transportNature).filter(Boolean);
-    const allNatures = [...new Set([...defaultNatures, ...savedNatures])];
+    const allNatures = [...new Set([...baseNatures, ...savedNatures])];
 
     const sel = document.getElementById('e-transport-nature-sel');
     if (sel) {
@@ -216,9 +217,10 @@ function renderDailyNoteReport() {
 
     // Fixed order of known natures
     const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+    const activeNaturesList = (typeof transportNatures !== 'undefined' && Array.isArray(transportNatures) && transportNatures.length) ? transportNatures : defaultNatures;
     const sortedKeys = Object.keys(grouped).sort((a, b) => {
-        let idxA = defaultNatures.indexOf(a);
-        let idxB = defaultNatures.indexOf(b);
+        let idxA = activeNaturesList.indexOf(a);
+        let idxB = activeNaturesList.indexOf(b);
         if (idxA === -1) idxA = 999;
         if (idxB === -1) idxB = 999;
         if (idxA !== idxB) return idxA - idxB;
