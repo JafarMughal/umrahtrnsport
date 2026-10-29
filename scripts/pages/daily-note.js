@@ -257,10 +257,8 @@ function renderDailyNoteReport() {
                 <td class="col-date">${formattedDate}</td>
                 <td class="col-time">${formattedTime}</td>
                 <td class="col-flight"><code>${r.flightNo || '—'}</code></td>
-                <td><span class="dn-tag">${r.airport || r.sector || '—'}</span></td>
                 <td class="col-hujjaj">${hujjajCount}</td>
                 <td>${r.transport || '—'}</td>
-                <td><span class="dn-nature-tag">${r.transportNature || '—'}</span></td>
                 <td>${r.shirka || '—'}</td>
                 <td class="col-group">${r.group || '—'}</td>
                 <td class="col-mobile" dir="ltr">${r.mobile || '—'}</td>
@@ -274,10 +272,10 @@ function renderDailyNoteReport() {
         }).join('');
 
         const totalRow = `<tr class="dn-total-row">
-            <td colspan="8" class="dn-total-label no-print">${L.totalHujjaj || 'کل حاجی'}:</td>
-            <td colspan="7" class="dn-total-label print-only">${L.totalHujjaj || 'کل حاجی'}:</td>
+            <td colspan="7" class="dn-total-label no-print">${L.totalHujjaj || 'کل حاجی'}:</td>
+            <td colspan="6" class="dn-total-label print-only">${L.totalHujjaj || 'کل حاجی'}:</td>
             <td class="dn-total-hujjaj">${groupTotalHujjaj}</td>
-            <td colspan="6"></td>
+            <td colspan="5"></td>
             <td class="no-print"></td>
         </tr>`;
 
@@ -314,10 +312,8 @@ function renderDailyNoteReport() {
                             <th style="min-width:105px;">${dateHeader}</th>
                             <th style="min-width:95px;">${timeHeader}</th>
                             <th>${L.flightNoCol || L.dnFlightNo || 'Flight No'}</th>
-                            <th>${L.airportCol || L.sectorCol || 'Airport'}</th>
                             <th style="min-width:70px;">${L.countCol || L.dnCount || 'T (Hujjaj)'}</th>
                             <th>${L.transportCol || L.dnTripType || 'Transport'}</th>
-                            <th>${L.natureCol || L.dnNature || 'TRANSPORT By'}</th>
                             <th>${L.shirkaCol || 'Shirka'}</th>
                             <th>${L.groupCol || L.dnGroup || 'Group No'}</th>
                             <th style="min-width:110px;">${L.mobileCol || L.dnMobile || 'CONTACT NUMBER'}</th>
@@ -328,8 +324,6 @@ function renderDailyNoteReport() {
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td class="col-party-name no-print"><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
-                            <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
-                            <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
                             <td><input type="text" onkeyup="filterDailyNoteTable(this)" class="dn-col-filter" placeholder="Search..." /></td>
@@ -462,7 +456,7 @@ function exportDailyNoteExcel() {
 
     const headers = [
         'Voucher #', 'Transporter', 'Party Name', 'NAME', 'Date', 'Time',
-        'Flight No', 'Airport', 'Hujjaj Count', 'Transport', 'TRANSPORT By',
+        'Flight No', 'Hujjaj Count', 'Transport',
         'Shirka', 'Group No', 'CONTACT NUMBER', 'Notes'
     ];
 
@@ -474,10 +468,8 @@ function exportDailyNoteExcel() {
         r.date ? (typeof fd === 'function' ? fd(r.date) : r.date) : '',
         r.flightTime ? (typeof formatTime12 === 'function' ? formatTime12(r.flightTime) : r.flightTime) : '',
         r.flightNo || '',
-        r.airport || r.sector || '',
         Number(r.count) || 0,
         r.transport || '',
-        r.transportNature || '',
         r.shirka || '',
         r.group || '',
         r.mobile || '',
@@ -485,7 +477,7 @@ function exportDailyNoteExcel() {
     ]);
 
     const totalHujjaj = recs.reduce((sum, r) => sum + (Number(r.count) || 0), 0);
-    const totalRow = ['Total', '', '', '', '', '', '', '', totalHujjaj, '', '', '', '', '', ''];
+    const totalRow = ['Total', '', '', '', '', '', '', totalHujjaj, '', '', '', '', ''];
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows, totalRow]);
