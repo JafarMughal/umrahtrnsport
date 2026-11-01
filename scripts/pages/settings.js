@@ -265,6 +265,10 @@ function switchSettingsTab(tabId) {
     else if (tabId === 'tab-hajiparties') { if (typeof renderHajiPartyList === 'function') renderHajiPartyList(); }
     else if (tabId === 'tab-sectors') { if (typeof renderSectorList === 'function') renderSectorList(); }
     else if (tabId === 'tab-transports') { if (typeof renderTransportList === 'function') renderTransportList(); }
+    else if (tabId === 'tab-rates') { 
+        if (typeof populateRateFormDropdowns === 'function') populateRateFormDropdowns();
+        if (typeof renderRateList === 'function') renderRateList(); 
+    }
     else if (tabId === 'tab-natures') { if (typeof renderNatureList === 'function') renderNatureList(); }
     else if (tabId === 'tab-shirkas') { if (typeof renderShirkaList === 'function') renderShirkaList(); }
 }
@@ -378,6 +382,7 @@ function exportAllDataBackup() {
         parties: parties || [],
         sectors: sectors || [],
         transports: transports || [],
+        vehicleRates: vehicleRates || [],
         transportNatures: transportNatures || [],
         shirkas: shirkas || [],
         hajiParties: hajiParties || [],
@@ -417,6 +422,7 @@ function copyBackupToClipboard() {
         parties: parties || [],
         sectors: sectors || [],
         transports: transports || [],
+        vehicleRates: vehicleRates || [],
         transportNatures: transportNatures || [],
         shirkas: shirkas || [],
         hajiParties: hajiParties || [],
@@ -484,6 +490,7 @@ function applyBackupData(data) {
     if (Array.isArray(data.parties)) parties = data.parties;
     if (Array.isArray(data.sectors)) sectors = data.sectors;
     if (Array.isArray(data.transports)) transports = data.transports;
+    if (Array.isArray(data.vehicleRates)) vehicleRates = data.vehicleRates;
     if (Array.isArray(data.transportNatures)) transportNatures = data.transportNatures;
     if (Array.isArray(data.shirkas)) shirkas = data.shirkas;
     if (Array.isArray(data.hajiParties)) hajiParties = data.hajiParties;
@@ -504,6 +511,7 @@ function applyBackupData(data) {
     if (typeof svP === 'function') svP();
     if (typeof svS === 'function') svS();
     if (typeof svTr === 'function') svTr();
+    if (typeof svVR === 'function') svVR();
     if (typeof svTN === 'function') svTN();
     if (typeof svSh === 'function') svSh();
     if (typeof svHP === 'function') svHP();
@@ -519,6 +527,7 @@ function applyBackupData(data) {
     else if (typeof filterRecords === 'function') filterRecords();
     if (typeof renderPartyList === 'function') renderPartyList();
     if (typeof renderNatureList === 'function') renderNatureList();
+    if (typeof renderRateList === 'function') renderRateList();
 
     if (typeof al === 'function') {
         al('al-backup', `ڈیٹا کامیابی سے بحال ہو گیا! (${records.length} ریکارڈز، ${payments.length} ادائیگیاں)`, 'ok');
@@ -526,8 +535,243 @@ function applyBackupData(data) {
     alert(`ڈیٹا کامیابی سے بحال ہو گیا!\nکل ریکارڈز: ${records.length}\nکل ادائیگیاں: ${payments.length}`);
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  VEHICLE RATES & VALIDITY MANAGEMENT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function populateRateFormDropdowns() {
+    const secSel = document.getElementById('sr-sector');
+    const trSel = document.getElementById('sr-transport');
+    if (secSel && Array.isArray(sectors)) {
+        const curSec = secSel.value;
+        secSel.innerHTML = '<option value="">-- سیکٹر منتخب کریں --</option>' +
+            sectors.map(s => `<option value="${s}" ${s === curSec ? 'selected' : ''}>${s}</option>`).join('');
+    }
+    if (trSel && Array.isArray(transports)) {
+        const curTr = trSel.value;
+        trSel.innerHTML = '<option value="">-- گاڑی منتخب کریں --</option>' +
+            transports.map(t => `<option value="${t}" ${t === curTr ? 'selected' : ''}>${t}</option>`).join('');
+    }
+}
+
+function renderRateList() {
+    const el = document.getElementById('rates-list');
+    const badge = document.getElementById('sr-count-badge');
+    if (!el) return;
+
+    if (!Array.isArray(vehicleRates)) vehicleRates = [];
+
+    const searchInp = document.getElementById('sr-search');
+    const q = (searchInp?.value || '').toLowerCase().trim();
+
+    const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    const filtered = vehicleRates.filter(r => {
+        if (!q) return true;
+        const text = `${r.sector || ''} ${r.transport || ''} ${r.fare || ''} ${r.note || ''}`.toLowerCase();
+        return text.includes(q);
+    });
+
+    if (badge) badge.textContent = filtered.length;
+
+    if (!filtered.length) {
+        el.innerHTML = `<tr><td colspan="9" class="settings-table-empty">${vehicleRates.length === 0 ? (L.noneRate || 'کوئی ریٹ موجود نہیں ہے') : 'کوئی مماثل ریکارڈ نہیں ملا'}</td></tr>`;
+        return;
+    }
+
+    el.innerHTML = filtered.map((r, i) => {
+        let statusHtml = '';
+        const hasFrom = !!r.validFrom;
+        const hasTo = !!r.validTo;
+
+        if (hasTo && todayStr > r.validTo) {
+            statusHtml = `<span style="background:rgba(239, 68, 68, 0.12); color:#dc2626; padding:3px 8px; border-radius:12px; font-size:11.5px; font-weight:600; display:inline-block;">● ${L.rateStatusExpired || 'ختم شدہ'}</span>`;
+        } else if (hasFrom && todayStr < r.validFrom) {
+            statusHtml = `<span style="background:rgba(245, 158, 11, 0.12); color:#d97706; padding:3px 8px; border-radius:12px; font-size:11.5px; font-weight:600; display:inline-block;">● آئندہ</span>`;
+        } else if (hasFrom || hasTo) {
+            statusHtml = `<span style="background:rgba(16, 185, 129, 0.12); color:#059669; padding:3px 8px; border-radius:12px; font-size:11.5px; font-weight:600; display:inline-block;">● ${L.rateStatusActive || 'فعال'}</span>`;
+        } else {
+            statusHtml = `<span style="background:rgba(2, 132, 199, 0.12); color:#0284c7; padding:3px 8px; border-radius:12px; font-size:11.5px; font-weight:600; display:inline-block;">● ${L.rateStatusPermanent || 'مستقل'}</span>`;
+        }
+
+        let validityText = 'مستقل (عام سیزن)';
+        if (hasFrom && hasTo) validityText = `${r.validFrom} تا ${r.validTo}`;
+        else if (hasTo) validityText = `تا ${r.validTo}`;
+        else if (hasFrom) validityText = `از ${r.validFrom}`;
+
+        const typeText = r.type === 'pilgrim' ? (L.rateTypePilgrim || 'فی حاجی') : (L.rateTypeVehicle || 'پوری گاڑی');
+
+        return `
+            <tr id="row-rate-${r.id || i}">
+                <td class="col-idx" style="text-align:center;">${i + 1}</td>
+                <td style="font-weight:600;">${r.sector || '-'}</td>
+                <td><span class="badge" style="background:var(--border, #e2e8f0); color:var(--text, #1e293b); padding:2px 8px; border-radius:6px; font-size:12px;">${r.transport || '-'}</span></td>
+                <td style="font-weight:700; color:#0d9488; font-size:14.5px;">${r.fare || 0} <small style="font-size:11px; font-weight:normal; color:var(--text-muted, #64748b);">SAR</small></td>
+                <td style="font-size:12.5px;">${typeText}</td>
+                <td style="font-size:12px; direction:ltr; text-align:right;">${validityText}</td>
+                <td style="font-size:12px; color:var(--text-muted, #64748b);">${r.note || '—'}</td>
+                <td style="text-align:center;">${statusHtml}</td>
+                <td>
+                    <div class="st-actions" style="justify-content:center;">
+                        <button class="btn btn-o btn-sm" onclick="editRate('${r.id || i}')">${L.edit || 'ترمیم'}</button>
+                        <button class="btn btn-o btn-sm btn-del" onclick="deleteRate('${r.id || i}')">${L.del || 'حذف'}</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function addOrUpdateRate() {
+    const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
+    const idEl = document.getElementById('sr-id');
+    const sectorEl = document.getElementById('sr-sector');
+    const transEl = document.getElementById('sr-transport');
+    const fareEl = document.getElementById('sr-fare');
+    const typeEl = document.getElementById('sr-type');
+    const fromEl = document.getElementById('sr-from');
+    const toEl = document.getElementById('sr-to');
+    const noteEl = document.getElementById('sr-note');
+
+    const sector = sectorEl?.value?.trim() || '';
+    const transport = transEl?.value?.trim() || '';
+    const fare = parseFloat(fareEl?.value);
+    const type = typeEl?.value || 'vehicle';
+    const validFrom = fromEl?.value || '';
+    const validTo = toEl?.value || '';
+    const note = noteEl?.value?.trim() || '';
+    const editId = idEl?.value || '';
+
+    if (!sector || !transport || isNaN(fare) || fare < 0) {
+        if (typeof al === 'function') al('al-sr', L.rateRequired || 'سیکٹر، گاڑی اور درست کرایہ درج کرنا ضروری ہے', 'er');
+        return;
+    }
+
+    if (validFrom && validTo && validFrom > validTo) {
+        if (typeof al === 'function') al('al-sr', 'آخری تاریخ شروع کی تاریخ سے پہلے نہیں ہو سکتی', 'er');
+        return;
+    }
+
+    if (!Array.isArray(vehicleRates)) vehicleRates = [];
+
+    if (editId) {
+        const idx = vehicleRates.findIndex(r => String(r.id) === String(editId));
+        if (idx !== -1) {
+            vehicleRates[idx] = {
+                ...vehicleRates[idx],
+                sector,
+                transport,
+                fare,
+                type,
+                validFrom,
+                validTo,
+                note,
+                updatedAt: new Date().toISOString()
+            };
+        }
+        if (typeof al === 'function') al('al-sr', L.updOk || 'ریٹ اپڈیٹ ہو گیا', 'ok');
+    } else {
+        const newRate = {
+            id: 'vr_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+            sector,
+            transport,
+            fare,
+            type,
+            validFrom,
+            validTo,
+            note,
+            createdAt: new Date().toISOString()
+        };
+        vehicleRates.push(newRate);
+        if (typeof al === 'function') al('al-sr', L.rateSavedOk || 'گاڑی کا ریٹ محفوظ ہو گیا', 'ok');
+    }
+
+    if (typeof svVR === 'function') svVR();
+    cancelRateEdit();
+    renderRateList();
+}
+
+function editRate(rateId) {
+    if (!Array.isArray(vehicleRates)) return;
+    const r = vehicleRates.find(x => String(x.id) === String(rateId));
+    if (!r) return;
+
+    populateRateFormDropdowns();
+
+    const idEl = document.getElementById('sr-id');
+    const sectorEl = document.getElementById('sr-sector');
+    const transEl = document.getElementById('sr-transport');
+    const fareEl = document.getElementById('sr-fare');
+    const typeEl = document.getElementById('sr-type');
+    const fromEl = document.getElementById('sr-from');
+    const toEl = document.getElementById('sr-to');
+    const noteEl = document.getElementById('sr-note');
+    const btnCancel = document.getElementById('btn-cancel-rate');
+    const btnSaveText = document.getElementById('btn-save-rate-text');
+
+    if (idEl) idEl.value = r.id;
+    if (sectorEl) sectorEl.value = r.sector || '';
+    if (transEl) transEl.value = r.transport || '';
+    if (fareEl) fareEl.value = r.fare !== undefined ? r.fare : '';
+    if (typeEl) typeEl.value = r.type || 'vehicle';
+    if (fromEl) fromEl.value = r.validFrom || '';
+    if (toEl) toEl.value = r.validTo || '';
+    if (noteEl) noteEl.value = r.note || '';
+
+    if (btnCancel) btnCancel.style.display = 'inline-flex';
+    if (btnSaveText) btnSaveText.textContent = (T[lang] || T.ur).saveUpd || 'اپڈیٹ محفوظ کریں';
+
+    const card = document.querySelector('.rate-form-card');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function cancelRateEdit() {
+    const idEl = document.getElementById('sr-id');
+    const fareEl = document.getElementById('sr-fare');
+    const fromEl = document.getElementById('sr-from');
+    const toEl = document.getElementById('sr-to');
+    const noteEl = document.getElementById('sr-note');
+    const btnCancel = document.getElementById('btn-cancel-rate');
+    const btnSaveText = document.getElementById('btn-save-rate-text');
+
+    if (idEl) idEl.value = '';
+    if (fareEl) fareEl.value = '';
+    if (fromEl) fromEl.value = '';
+    if (toEl) toEl.value = '';
+    if (noteEl) noteEl.value = '';
+
+    if (btnCancel) btnCancel.style.display = 'none';
+    if (btnSaveText) btnSaveText.textContent = (T[lang] || T.ur).save || 'ریٹ محفوظ کریں';
+}
+
+async function deleteRate(rateId) {
+    const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
+    if (!Array.isArray(vehicleRates)) return;
+    const r = vehicleRates.find(x => String(x.id) === String(rateId));
+    if (!r) return;
+
+    if (typeof verifyPassword === 'function') {
+        const ok = await verifyPassword(`کیا آپ ${r.sector} (${r.transport}) کا ریٹ حذف کرنا چاہتے ہیں؟`);
+        if (!ok) return;
+    } else {
+        if (!confirm('کیا آپ یہ ریٹ حذف کرنا چاہتے ہیں؟')) return;
+    }
+
+    vehicleRates = vehicleRates.filter(x => String(x.id) !== String(rateId));
+    if (typeof svVR === 'function') svVR();
+    if (typeof al === 'function') al('al-sr', L.rateDeletedOk || 'ریٹ حذف ہو گیا', 'ok');
+    renderRateList();
+}
+
 window.renderNatureList = renderNatureList;
 window.exportAllDataBackup = exportAllDataBackup;
 window.copyBackupToClipboard = copyBackupToClipboard;
 window.importAllDataBackup = importAllDataBackup;
 window.pasteBackupFromPrompt = pasteBackupFromPrompt;
+window.renderRateList = renderRateList;
+window.populateRateFormDropdowns = populateRateFormDropdowns;
+window.addOrUpdateRate = addOrUpdateRate;
+window.editRate = editRate;
+window.cancelRateEdit = cancelRateEdit;
+window.deleteRate = deleteRate;

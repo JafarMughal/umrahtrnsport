@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             sectors = toArray(data.sectors);
             shirkas = toArray(data.shirkas);
             transports = toArray(data.transports);
+            vehicleRates = toArray(data.vehicleRates);
             transportNatures = toArray(data.transportNatures);
             partyCodes = data.partyCodes || {};
             users = toArray(data.users);
@@ -82,6 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             sectors = getLocal('sectors') || (T[lang] || T.ur).defaultSectors.slice();
             shirkas = getLocal('shirkas') || [];
             transports = getLocal('transports') || ['بس', 'وین', 'کار', 'کوچ'];
+            vehicleRates = getLocal('vehicleRates') || [];
             transportNatures = getLocal('transportNatures');
             if (!transportNatures || !transportNatures.length) {
                 const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
@@ -132,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sectors = data.sectors !== undefined ? toArray(data.sectors) : sectors;
                 shirkas = data.shirkas !== undefined ? toArray(data.shirkas) : shirkas;
                 transports = data.transports !== undefined ? toArray(data.transports) : transports;
+                vehicleRates = data.vehicleRates !== undefined ? toArray(data.vehicleRates) : vehicleRates;
                 transportNatures = data.transportNatures !== undefined ? toArray(data.transportNatures) : transportNatures;
                 partyCodes = data.partyCodes || partyCodes;
                 users = data.users !== undefined ? toArray(data.users) : users;
@@ -152,6 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (activePage.id === 'page-entry') { todayStats(); fillTransportNatureDropdown(); }
                     if (activePage.id === 'page-payment') renderPayments();
                     if (activePage.id === 'page-ledger') renderLedger();
+                    if (activePage.id === 'page-settings') { if (typeof renderRateList === 'function') renderRateList(); }
 
                     // ← یہاں تبدیلی کی گئی ہے: initRecordsPage() استعمال کریں
                     if (activePage.id === 'page-records') {

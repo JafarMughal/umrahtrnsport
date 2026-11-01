@@ -85,6 +85,10 @@ function setLang(l) {
     const spanClear = document.getElementById('lbl-btn-clear') || document.querySelector('#btn-clearfilter span');
     if (spanClear) spanClear.textContent = L.resetFilter;
     else setText('btn-clearfilter', L.resetFilter);
+    const spanRecExcel = document.getElementById('lbl-btn-excel-rec');
+    if (spanRecExcel) spanRecExcel.textContent = L.exportExcel || 'Excel';
+    const spanRecImport = document.getElementById('lbl-btn-import-rec');
+    if (spanRecImport) spanRecImport.textContent = L.importExcel || 'امپورٹ';
     setText('lbl-totalrec', L.totalRec); setText('lbl-totalhj', L.totalHujjaj); setText('lbl-totalamt', L.totalAmt);
 
     // Report
@@ -108,6 +112,7 @@ function setLang(l) {
     // Settings
     setText('tab-btn-app', L.setApp); setText('tab-btn-transporters', L.setParties);
     setText('tab-btn-sectors', L.setSectors); setText('tab-btn-transports', L.setTransports);
+    setText('tab-btn-rates', L.setRates || 'گاڑیوں کے ریٹس');
     setText('tab-btn-users', L.userManagement); setText('tab-btn-hajiparties', L.setHajiParties);
 
     setText('lbl-newpartylbl', L.newPartyLbl); setText('lbl-newsectorlbl', L.newSectorLbl);

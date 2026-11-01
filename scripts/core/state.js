@@ -10,6 +10,7 @@ let sectors = [];
 let shirkas = [];
 let transports = [];
 let transportNatures = [];
+let vehicleRates = [];
 let partyCodes = {};
 let users = [];
 let dailyNotes = [];

@@ -205,7 +205,11 @@ function _executeShowPageLogic(p) {
     if (p === 'report') { fillDrop('r-party', parties, true); genReport(); }
     if (p === 'admin') { if (canDo('adminPanel')) renderAdminPanel(); }
     if (p === 'settings') {
-        renderPartyList(); renderHajiPartyList(); renderSectorList(); renderTransportList(); renderShirkaList(); if (typeof renderNatureList === 'function') renderNatureList(); loadAppName(lang);
+        renderPartyList(); renderHajiPartyList(); renderSectorList(); renderTransportList(); renderShirkaList(); 
+        if (typeof renderNatureList === 'function') renderNatureList(); 
+        if (typeof populateRateFormDropdowns === 'function') populateRateFormDropdowns();
+        if (typeof renderRateList === 'function') renderRateList();
+        loadAppName(lang);
         const an = document.getElementById('set-appname'); if (an) an.value = fbAppName[lang] || T[lang].appTitle;
         const as = document.getElementById('set-appsub'); if (as) as.value = fbAppSub[lang] || T[lang].appSub;
     }

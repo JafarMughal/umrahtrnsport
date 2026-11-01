@@ -86,6 +86,11 @@ function enforcePermissions() {
     }
 
     // ── Export buttons ──
+    const btnExpRec = document.getElementById('btn-exportrecords');
+    if (btnExpRec) btnExpRec.style.display = perms.canExport ? '' : 'none';
+    const btnImpRec = document.getElementById('btn-importrecords');
+    if (btnImpRec) btnImpRec.style.display = canDo('entry') ? '' : 'none';
+
     document.querySelectorAll('.export-btn').forEach(el => {
         el.style.display = perms.canExport ? '' : 'none';
     });

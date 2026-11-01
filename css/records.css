@@ -679,3 +679,57 @@
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(132, 169, 140, 0.2);
 }
+
+
+/* ═══════════════════════════════════════════
+   IMPORT RECORDS MODAL & DRAG/DROP STYLES
+   ═══════════════════════════════════════════ */
+.import-records-md {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border);
+}
+
+.import-drop-zone:hover {
+  border-color: var(--primary) !important;
+  background: var(--surface-hover, #f1f5f9) !important;
+}
+
+.import-drop-zone.dragover {
+  border-color: var(--accent) !important;
+  background: rgba(20, 125, 100, 0.08) !important;
+  transform: scale(1.005);
+}
+
+[data-theme="dark"] .import-records-md {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .import-modal-body {
+  background: var(--surface) !important;
+}
+
+[data-theme="dark"] .import-modal-footer {
+  background: var(--bg-page) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .import-template-box {
+  background: var(--surface-alt) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .import-drop-zone {
+  background: var(--surface-alt) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .import-drop-zone:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--muted-teal) !important;
+}
+
+[data-theme="dark"] .import-drop-zone.dragover {
+  background: rgba(132, 169, 140, 0.15) !important;
+  border-color: var(--muted-teal) !important;
+}

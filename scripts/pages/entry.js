@@ -57,14 +57,135 @@ function updateEntryModeBadge(isUpdate) {
     }
 }
 
-// ── 3. TRANSPORT CHANGE & SHARING LOGIC ──
+// ── 3. TRANSPORT CHANGE, AUTO-RATE & SHARING LOGIC ──
 function isEconomyBus(transport, sector) {
     const str = ((transport || '') + ' ' + (sector || '')).trim();
     return /economy.*bus|bus.*economy|شیئرنگ|sharing|مشترك|بس|bus/i.test(str);
 }
 
-function onTransportChange(prefix) {
+function findMatchingVehicleRate(sector, transport, date) {
+    if (!sector || !transport || !Array.isArray(vehicleRates) || vehicleRates.length === 0) {
+        return null;
+    }
+
+    const secNorm = sector.trim().toLowerCase();
+    const trNorm = transport.trim().toLowerCase();
+    const d = (date || '').trim() || new Date().toISOString().slice(0, 10);
+
+    // Filter matching sector & transport
+    const matched = vehicleRates.filter(r => 
+        (r.sector || '').trim().toLowerCase() === secNorm &&
+        (r.transport || '').trim().toLowerCase() === trNorm
+    );
+
+    if (matched.length === 0) return null;
+
+    // 1. First priority: date-specific seasonal rate valid for the given date
+    const activeSeasonal = matched.find(r => {
+        const hasFrom = !!r.validFrom;
+        const hasTo = !!r.validTo;
+        if (!hasFrom && !hasTo) return false;
+        if (hasFrom && d < r.validFrom) return false;
+        if (hasTo && d > r.validTo) return false;
+        return true;
+    });
+
+    if (activeSeasonal) {
+        return {
+            rate: activeSeasonal,
+            fare: activeSeasonal.fare,
+            isSeasonal: true,
+            isExpired: false,
+            note: activeSeasonal.note || '',
+            validTo: activeSeasonal.validTo || '',
+            validFrom: activeSeasonal.validFrom || '',
+            type: activeSeasonal.type || 'vehicle'
+        };
+    }
+
+    // 2. Second priority: default / permanent rate (no date constraints)
+    const permanent = matched.find(r => !r.validFrom && !r.validTo);
+    if (permanent) {
+        return {
+            rate: permanent,
+            fare: permanent.fare,
+            isSeasonal: false,
+            isExpired: false,
+            note: permanent.note || '',
+            type: permanent.type || 'vehicle'
+        };
+    }
+
+    // 3. If there are rates but they are expired for this date
+    const expiredRate = matched.find(r => r.validTo && d > r.validTo);
+    if (expiredRate) {
+        return {
+            rate: expiredRate,
+            fare: expiredRate.fare,
+            isSeasonal: true,
+            isExpired: true,
+            note: expiredRate.note || '',
+            validTo: expiredRate.validTo,
+            type: expiredRate.type || 'vehicle'
+        };
+    }
+
+    return null;
+}
+
+function onDateOrTransportChange(prefix = 'e') {
+    const editId = document.getElementById(prefix + '-id')?.value;
+    const sectorEl = document.getElementById(prefix + '-sector');
+    const trEl = document.getElementById(prefix + '-transport');
+    const dateEl = document.getElementById(prefix + '-date');
+    const fareEl = document.getElementById(prefix + '-fare');
+    const badgeEl = document.getElementById(prefix + '-rate-badge');
+
+    const sector = sectorEl ? sectorEl.value : '';
+    const transport = trEl ? trEl.value : '';
+    const date = dateEl ? dateEl.value : '';
+
+    if (sector && transport && fareEl) {
+        const matchResult = findMatchingVehicleRate(sector, transport, date);
+        if (matchResult) {
+            if (matchResult.isExpired) {
+                if (badgeEl) {
+                    badgeEl.style.display = 'block';
+                    badgeEl.style.color = '#dc2626';
+                    badgeEl.innerHTML = `⚠️ ریٹ میعاد ختم ہو چکی ہے (${matchResult.fare} SAR — آخری تاریخ ${matchResult.validTo})`;
+                }
+            } else {
+                // Auto-fill rate if not editing an existing record or if field was auto-filled
+                if (!editId || fareEl.value === '' || fareEl.dataset.autoFilled === 'true') {
+                    fareEl.value = matchResult.fare;
+                    fareEl.dataset.autoFilled = 'true';
+                }
+                if (badgeEl) {
+                    badgeEl.style.display = 'block';
+                    badgeEl.style.color = '#0d9488';
+                    const noteText = matchResult.note ? ` (${matchResult.note})` : (matchResult.isSeasonal ? ' (سیزنل ریٹ)' : ' (طے شدہ ریٹ)');
+                    const validityInfo = matchResult.validTo ? ` — تا ${matchResult.validTo}` : '';
+                    badgeEl.innerHTML = `✓ خودکار ریٹ: <b>${matchResult.fare} SAR</b>${noteText}${validityInfo}`;
+                }
+            }
+        } else {
+            if (badgeEl) {
+                badgeEl.style.display = 'none';
+                badgeEl.innerHTML = '';
+            }
+        }
+    } else {
+        if (badgeEl) {
+            badgeEl.style.display = 'none';
+            badgeEl.innerHTML = '';
+        }
+    }
+
     calcE();
+}
+
+function onTransportChange(prefix) {
+    onDateOrTransportChange(prefix || 'e');
 }
 
 function calcE() {
@@ -292,6 +413,11 @@ function clearEntryForm() {
     const fareWrap = document.getElementById('e-fare-wrap'); if (fareWrap) fareWrap.style.display = '';
     const vehicleWrap = document.getElementById('e-vehicle-wrap'); if (vehicleWrap) vehicleWrap.style.display = 'none';
     const hint = document.getElementById('e-transport-hint'); if (hint) hint.style.display = 'none';
+    const badge = document.getElementById('e-rate-badge');
+    if (badge) {
+        badge.style.display = 'none';
+        badge.innerHTML = '';
+    }
 
     const eDate = document.getElementById('e-date');
     if (eDate && typeof today === 'function') eDate.value = today();
@@ -340,6 +466,8 @@ window.toggleAppTheme = toggleAppTheme;
 window.initAppTheme = initAppTheme;
 window.updateEntryModeBadge = updateEntryModeBadge;
 window.onTransportChange = onTransportChange;
+window.onDateOrTransportChange = onDateOrTransportChange;
+window.findMatchingVehicleRate = findMatchingVehicleRate;
 window.isEconomyBus = typeof isEconomyBus !== 'undefined' ? isEconomyBus : null;
 window.calcE = calcE;
 window.setNextVoucher = setNextVoucher;

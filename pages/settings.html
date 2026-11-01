@@ -5,6 +5,7 @@
     <button class="tab-btn" onclick="switchSettingsTab('tab-hajiparties')" id="tab-btn-hajiparties">حاجی پارٹیاں</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-sectors')" id="tab-btn-sectors">سیکٹرز</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-transports')" id="tab-btn-transports">گاڑیاں</button>
+    <button class="tab-btn" onclick="switchSettingsTab('tab-rates')" id="tab-btn-rates">گاڑیوں کے ریٹس</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-natures')" id="tab-btn-natures">ٹرانسپورٹ کی نوعیت</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-shirkas')" id="tab-btn-shirkas">شرکہ</button>
     <button class="tab-btn" onclick="switchSettingsTab('tab-users')" id="tab-btn-users">صارفین</button>
@@ -247,6 +248,122 @@
                 </tr>
             </thead>
             <tbody id="transports-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab: Vehicle Rates & Validity -->
+<div id="tab-rates" class="tab-content card">
+    <div class="card-header-bar" style="margin-bottom:16px;">
+        <div class="card-title-group">
+            <div class="card-title-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </div>
+            <div class="card-title-text">
+                <h2 class="card-title" id="lbl-rateSettingsTitle">گاڑیوں کے ریٹس و میعاد (Vehicle Rates & Validity)</h2>
+                <div class="card-subtitle" id="lbl-rateSettingsSub">ہر سیکٹر اور گاڑی کا کرایہ اور تاریخِ میعاد مقرر کریں تاکہ انٹری میں آٹو شو ہو</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Add/Edit Form -->
+    <div class="rate-form-card" style="background:var(--surface-alt, #f8fafc); border:1px solid var(--border, #e2e8f0); border-radius:10px; padding:16px; margin-bottom:20px;">
+        <input type="hidden" id="sr-id" />
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:12px;">
+            <div class="fg">
+                <label><span id="lbl-sr-sector">سیکٹر (Sector)</span> <span style="color:#ef4444;">*</span></label>
+                <div class="ddr">
+                    <select id="sr-sector" style="flex:1;">
+                        <option value="">-- سیکٹر منتخب کریں --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="fg">
+                <label><span id="lbl-sr-transport">گاڑی (Transport)</span> <span style="color:#ef4444;">*</span></label>
+                <div class="ddr">
+                    <select id="sr-transport" style="flex:1;">
+                        <option value="">-- گاڑی منتخب کریں --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="fg">
+                <label><span id="lbl-sr-fare">کرایہ (SAR)</span> <span style="color:#ef4444;">*</span></label>
+                <input type="number" id="sr-fare" min="0" placeholder="مثلاً: 500" style="font-weight:600;" />
+            </div>
+            <div class="fg">
+                <label id="lbl-sr-type">کرایہ کی نوعیت</label>
+                <div class="ddr">
+                    <select id="sr-type" style="flex:1;">
+                        <option value="vehicle">پوری گاڑی (Vehicle Total)</option>
+                        <option value="pilgrim">فی حاجی (Per Pilgrim / Sharing)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Date validity and Season Note -->
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:14px;">
+            <div class="fg">
+                <label id="lbl-sr-from">نافذ العمل از (تاریخ شروع - اختیاری)</label>
+                <input type="date" id="sr-from" />
+            </div>
+            <div class="fg">
+                <label id="lbl-sr-to">نافذ العمل تا (آخری تاریخ - اختیاری)</label>
+                <input type="date" id="sr-to" />
+            </div>
+            <div class="fg" style="grid-column: span 2;">
+                <label id="lbl-sr-note">سیزن کا نام / نوٹ (اختیاری)</label>
+                <input type="text" id="sr-note" placeholder="مثلاً: رمضان المبارک سیزن، عام سیزن، رجب وغیرہ" />
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-p" id="btn-save-rate" onclick="addOrUpdateRate()">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                <span id="btn-save-rate-text">ریٹ محفوظ کریں</span>
+            </button>
+            <button class="btn btn-o" id="btn-cancel-rate" onclick="cancelRateEdit()" style="display:none;">منسوخ کریں</button>
+        </div>
+    </div>
+
+    <!-- Alert Message Container -->
+    <div id="al-sr"></div>
+
+    <!-- Search / Filter in Rates -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-weight:600; font-size:14px;">محفوظ شدہ ریٹس لسٹ</span>
+            <span class="badge" id="sr-count-badge" style="background:#0284c7; color:#fff; padding:2px 8px; border-radius:12px; font-size:12px;">0</span>
+        </div>
+        <div style="width:260px;">
+            <input type="text" id="sr-search" placeholder="تلاش کریں (سیکٹر، گاڑی، سیزن)..." oninput="renderRateList()" style="width:100%; height:36px; padding:6px 12px; font-size:13px; border-radius:6px; border:1px solid var(--border,#cbd5e1);" />
+        </div>
+    </div>
+
+    <!-- Rates Table -->
+    <div class="settings-table-wrapper">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:45px;">#</th>
+                    <th>سیکٹر</th>
+                    <th>گاڑی</th>
+                    <th>کرایہ (SAR)</th>
+                    <th>قسم</th>
+                    <th>نافذ العمل مدت (Validity)</th>
+                    <th>سیزن / نوٹ</th>
+                    <th style="width:110px; text-align:center;">اسٹیٹس</th>
+                    <th style="width:130px; text-align:center;">کارروائی</th>
+                </tr>
+            </thead>
+            <tbody id="rates-list"></tbody>
         </table>
     </div>
 </div>

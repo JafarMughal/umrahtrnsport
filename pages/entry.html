@@ -34,7 +34,7 @@
     <div class="grid">
         <div class="fg">
             <label id="lbl-date">تاریخ</label>
-            <input type="date" id="e-date" />
+            <input type="date" id="e-date" onchange="onDateOrTransportChange('e')" />
         </div>
         <div class="fg">
             <label id="lbl-voucher">واوچر نمبر</label>
@@ -68,13 +68,13 @@
         <div class="fg">
             <label><span id="lbl-sector">سیکٹر</span></label>
             <div class="ddr">
-                <select id="e-sector" style="flex:1;" onchange="onTransportChange('e')"></select>
+                <select id="e-sector" style="flex:1;" onchange="onDateOrTransportChange('e')"></select>
             </div>
         </div>
         <div class="fg">
             <label><span id="lbl-transport">ٹرانسپورٹ</span></label>
             <div class="ddr">
-                <select id="e-transport" onchange="onTransportChange('e')">
+                <select id="e-transport" onchange="onDateOrTransportChange('e')">
                     <option value="">-- منتخب کریں --</option>
                 </select>
             </div>
@@ -89,7 +89,8 @@
         </div>
         <div class="fg" id="e-fare-wrap">
             <label id="lbl-fare">فی حاجی کرایہ (SAR)</label>
-            <input type="number" id="e-fare" min="0" placeholder="0" oninput="calcE()" />
+            <input type="number" id="e-fare" min="0" placeholder="0" oninput="this.dataset.autoFilled='false';calcE()" />
+            <div id="e-rate-badge" style="display:none; font-size:11.5px; margin-top:4px; font-weight:600; line-height:1.4;"></div>
         </div>
         <div class="fg">
             <label id="lbl-total">کل رقم (SAR)</label>

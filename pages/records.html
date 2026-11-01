@@ -35,6 +35,22 @@
                 </svg>
                 <span id="lbl-btn-print">پرنٹ</span>
             </button>
+            <button type="button" class="btn btn-o btn-hdr no-print" id="btn-exportrecords" onclick="exportRecordsToExcel()" title="Excel ایکسپورٹ">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span id="lbl-btn-excel-rec">Excel</span>
+            </button>
+            <button type="button" class="btn btn-o btn-hdr no-print" id="btn-importrecords" onclick="openImportRecordsModal()" title="Excel امپورٹ">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span id="lbl-btn-import-rec">امپورٹ</span>
+            </button>
             <button type="button" class="btn btn-o btn-hdr no-print" id="btn-clearfilter" onclick="clearFilter()" title="فلٹر صاف کریں">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>

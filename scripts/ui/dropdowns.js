@@ -79,6 +79,8 @@ function fillDrop(id, arr, withAll = false) {
 
 function refreshAllDrops() {
     fillDrop('e-sector', sectors);
+    fillDrop('e-transport', transports);
+    if (typeof populateRateFormDropdowns === 'function') populateRateFormDropdowns();
     const allLedgerParties = Array.from(new Set([
         ...(Array.isArray(parties) ? parties : []),
         ...(typeof records !== 'undefined' && Array.isArray(records) ? records.map(r => r.party) : []),

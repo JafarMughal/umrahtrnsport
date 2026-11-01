@@ -412,6 +412,140 @@
     </div>
 
 
+    
+    <!-- ===== IMPORT RECORDS MODAL ===== -->
+    <div class="mo" id="import-records-modal" onclick="if(event.target===this)closeImportRecordsModal()">
+        <div class="md import-records-md" style="max-width:840px;width:95%;padding:0;overflow:hidden;border-radius:16px;max-height:90vh;display:flex;flex-direction:column;border-top:none;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+            <!-- Modal Header -->
+            <div class="import-modal-hdr" style="background:linear-gradient(135deg, var(--charcoal-blue, #2f3e46) 0%, var(--dark-slate-grey, #354f52) 100%);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 style="margin:0;color:#fff;font-size:16px;font-weight:700;">ایکسل سے ریکارڈز امپورٹ کریں</h3>
+                        <p style="margin:0;color:rgba(255,255,255,0.8);font-size:12px;">Excel فائل (.xlsx / .xls / .csv) منتخب کر کے ٹرانسپورٹ ریکارڈز سسٹم میں شامل کریں</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeImportRecordsModal()" aria-label="Close" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+            </div>
+
+            <!-- Modal Scrollable Body -->
+            <div class="import-modal-body" style="padding:20px 22px;overflow-y:auto;flex:1;background:var(--white);">
+                <!-- Step 1: Template Callout -->
+                <div class="import-template-box" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <div>
+                            <strong style="font-size:13px;display:block;">کیا آپ کو ایکسل ٹیمپلیٹ کی ضرورت ہے؟</strong>
+                            <span style="font-size:11.5px;color:var(--text-soft);">درست کالمز اور نمونہ ڈیٹا والی فائل ڈاؤنلوڈ کر کے ڈیٹا بھریں</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-o" onclick="downloadRecordsTemplate()" style="display:inline-flex;align-items:center;gap:6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span>نمونہ ٹیمپلیٹ ڈاؤنلوڈ کریں</span>
+                    </button>
+                </div>
+
+                <!-- Step 2: Drop Zone -->
+                <div class="import-drop-zone" id="import-drop-zone" onclick="document.getElementById('import-file-input').click()" ondragover="handleImportDragOver(event)" ondragleave="handleImportDragLeave(event)" ondrop="handleImportDrop(event)" style="border:2px dashed var(--border);border-radius:12px;padding:26px 20px;text-align:center;cursor:pointer;background:var(--surface-alt);transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                    <input type="file" id="import-file-input" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleImportFileSelect(this)" />
+                    <div style="width:48px;height:48px;border-radius:50%;background:rgba(20,125,100,0.1);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="12" y1="18" x2="12" y2="12"/>
+                            <line x1="9" y1="15" x2="12" y2="12"/>
+                            <line x1="15" y1="15" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <strong style="font-size:14px;color:var(--text);display:block;" id="import-zone-title">Excel یا CSV فائل یہاں ڈراپ کریں یا کلک کر کے منتخب کریں</strong>
+                        <span style="font-size:12px;color:var(--text-soft);" id="import-zone-sub">فارمیٹس: .xlsx, .xls, .csv</span>
+                    </div>
+                </div>
+
+                <!-- Step 3: Preview Area (hidden until file parsed) -->
+                <div id="import-preview-area" style="display:none;margin-top:18px;">
+                    <div class="rec-stats-strip" style="margin-bottom:12px;">
+                        <div class="rec-stat-item"><span class="lbl">کل قطاریں:</span> <span class="val" id="imp-stat-total">0</span></div>
+                        <div class="rec-stat-item"><span class="lbl">درست ریکارڈز:</span> <span class="val text-accent" id="imp-stat-valid">0</span></div>
+                        <div class="rec-stat-item"><span class="lbl">کل حجاج:</span> <span class="val" id="imp-stat-hujjaj">0</span></div>
+                        <div class="rec-stat-item"><span class="lbl">کل رقم:</span> <span class="val text-accent" id="imp-stat-amount">0 SAR</span></div>
+                    </div>
+
+                    <!-- Import Mode Selection -->
+                    <div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;">
+                        <div style="font-size:12.5px;font-weight:700;margin-bottom:8px;color:var(--text);">امپورٹ کا طریقہ منتخب کریں:</div>
+                        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                                <input type="radio" name="import-mode" value="append" checked />
+                                <span>موجودہ ریکارڈز میں شامل کریں (Append)</span>
+                            </label>
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--red);">
+                                <input type="radio" name="import-mode" value="replace" />
+                                <span>پرانے تمام ریکارڈز ختم کر کے نئے شامل کریں (Replace)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Table Preview -->
+                    <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+                        <span>پری ویو (پہلے چند ریکارڈز):</span>
+                        <span id="imp-preview-count" style="font-size:11.5px;color:var(--text-soft);"></span>
+                    </div>
+                    <div class="tbl-wrap" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">#</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">واوچر</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">تاریخ</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);">ٹرانسپورٹر</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);">پارٹی/کلائنٹ</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">سیکٹر</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">گاڑی</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">حجاج</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:right;">کرایہ</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:right;">ٹوٹل (SAR)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-preview-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="al-import-records" style="margin-top:14px;"></div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="import-modal-footer" style="padding:14px 22px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);background:var(--bg-page);">
+                <button type="button" class="btn btn-o" onclick="closeImportRecordsModal()">منسوخ</button>
+                <button type="button" class="btn btn-p" id="btn-confirm-import-records" onclick="confirmImportRecords()" disabled style="display:inline-flex;align-items:center;gap:6px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>امپورٹ محفوظ کریں</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ===== FIREBASE SDK ===== -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
     </script>
