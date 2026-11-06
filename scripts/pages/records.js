@@ -124,8 +124,11 @@ function renderRecords(rows) {
             ? (lang === 'en' ? 'Checked Records' : lang === 'ar' ? 'سجلات تم فحصها' : 'تصدیق شدہ ریکارڈ (Checked Records)')
             : (lang === 'en' ? 'All Transport Records' : lang === 'ar' ? 'جميع سجلات النقل' : 'تمام ریکارڈ (All Records)');
 
-    const excelBtn = (currentRecordsTab === 'all' && perms.canExport)
+    const excelBtn = perms.canExport
         ? `<button onclick="exportRecordsToExcel()" class="btn btn-sm btn-o no-print" title="${lang === 'en' ? 'Export to Excel' : 'ایکسل فائل محفوظ کریں'}">${lang === 'en' ? 'Export Excel' : 'ایکسل ڈاؤنلوڈ'}</button>`
+        : '';
+    const importBtn = canEntry
+        ? `<button onclick="openImportRecordsModal()" class="btn btn-sm btn-o no-print" title="${lang === 'en' ? 'Import from Excel' : 'ایکسل سے امپورٹ کریں'}">${lang === 'en' ? 'Import Excel' : 'ایکسل امپورٹ'}</button>`
         : '';
 
     const filterPlaceholder = lang === 'en' ? 'Filter...' : lang === 'ar' ? 'تصفية...' : 'تلاش...';
@@ -136,7 +139,10 @@ function renderRecords(rows) {
         ${tabsHtml}
         <div class="rec-header-bar">
             <span class="rec-header-title">${titleText}</span>
-            ${excelBtn}
+            <div style="display:inline-flex;gap:6px;align-items:center;">
+                ${excelBtn}
+                ${importBtn}
+            </div>
         </div>
 
         <div class="rec-stats-strip">
@@ -336,6 +342,7 @@ function renderTrash() {
     const L = T[lang] || T.ur;
     const out = document.getElementById('rec-output');
     const trashCount = (deletedRecords || []).length;
+    const canEdit = (typeof canDo === 'function') ? canDo('edit') : true;
 
     const trashTabsHtml = `
     <div class="rec-subtabs no-print">
@@ -364,7 +371,12 @@ function renderTrash() {
             <td style="text-align:center;">${r.count || '—'}</td>
             <td style="text-align:right;"><strong class="total-col">${sar(r.total)}</strong></td>
             <td style="font-size:11px;color:var(--text-muted);">${r.deletedAt ? new Date(r.deletedAt).toLocaleString('ur-PK') : '—'}</td>
-            <td><button class="btn btn-sm btn-o" onclick="restoreRecord('${r.id}')">${lang === 'en' ? 'Restore' : 'بحال کریں'}</button></td>
+            <td class="no-print rec-actions-cell">
+                <div class="rec-action-buttons" style="display:inline-flex;gap:6px;align-items:center;">
+                    ${canEdit ? `<button class="btn btn-sm btn-o" onclick="openEditRecordModal('${r.id}')" title="${L.edit || (lang === 'en' ? 'Edit' : 'ترمیم')}">${L.edit || (lang === 'en' ? 'Edit' : 'ترمیم')}</button>` : ''}
+                    <button class="btn btn-sm btn-p" onclick="restoreRecord('${r.id}')" title="${lang === 'en' ? 'Restore' : 'بحال کریں'}">${lang === 'en' ? 'Restore' : 'بحال کریں'}</button>
+                </div>
+            </td>
         </tr>
     `).join('');
 
@@ -496,14 +508,23 @@ function confirmCopyVoucher() {
 }
 
 // ── EDIT RECORD MODAL (IN-PLACE MODAL FOR TRANSPORT RECORDS) ──
+let _editingRecordIsTrash = false;
+
 function openEditRecordModal(id) {
     if (typeof canDo === 'function' && !canDo('edit')) {
         const msg = (typeof T !== 'undefined' && T[lang]?.noEditPerm) || 'آپ کو ریکارڈ میں تبدیلی کی اجازت نہیں ہے';
         alert(msg);
         return;
     }
-    const r = (typeof records !== 'undefined') ? records.find(x => x.id === id) : null;
+    let r = (typeof records !== 'undefined') ? records.find(x => x.id === id) : null;
+    let isTrash = false;
+    if (!r && typeof deletedRecords !== 'undefined' && Array.isArray(deletedRecords)) {
+        r = deletedRecords.find(x => x.id === id);
+        if (r) isTrash = true;
+    }
     if (!r) return;
+
+    _editingRecordIsTrash = isTrash;
 
     const modal = document.getElementById('edit-record-modal');
     if (!modal) return;
@@ -514,9 +535,19 @@ function openEditRecordModal(id) {
 
     // Header badge & title
     const vBadge = document.getElementById('edit-rec-modal-voucher-badge');
-    if (vBadge) vBadge.textContent = `${lang === 'en' ? 'Voucher:' : 'واوچر:'} ${r.voucher || '—'}`;
+    const trashBadge = isTrash
+        ? ` <span class="badge" style="background:#dc2626;color:#fff;font-size:11px;padding:2px 8px;border-radius:6px;margin-inline-start:6px;">${lang === 'en' ? 'Trash Record' : 'حذف شدہ ریکارڈ'}</span>`
+        : '';
+    if (vBadge) {
+        vBadge.innerHTML = `${lang === 'en' ? 'Voucher:' : 'واوچر:'} ${r.voucher || '—'}${trashBadge}`;
+    }
     const pBadge = document.getElementById('edit-rec-modal-party-badge');
     if (pBadge) pBadge.textContent = r.party ? `|  ${r.party}` : '';
+
+    const saveRestoreBtn = document.getElementById('btn-save-restore-edit-rec');
+    if (saveRestoreBtn) {
+        saveRestoreBtn.style.display = isTrash ? 'inline-flex' : 'none';
+    }
 
     // Date & Voucher
     const dateEl = document.getElementById('edit-rec-date');
@@ -622,7 +653,18 @@ function openEditRecordModal(id) {
 function closeEditRecordModal() {
     const modal = document.getElementById('edit-record-modal');
     if (modal) modal.classList.remove('open');
+    const saveRestoreBtn = document.getElementById('btn-save-restore-edit-rec');
+    if (saveRestoreBtn) saveRestoreBtn.style.display = 'none';
+    _editingRecordIsTrash = false;
     document.body.style.overflow = '';
+}
+
+function saveAndRestoreRecordEditModal() {
+    const editId = document.getElementById('edit-rec-id')?.value;
+    saveRecordEditModal();
+    if (editId) {
+        restoreRecord(editId);
+    }
 }
 
 function toggleEditFlightDetails() {
@@ -707,42 +749,80 @@ function saveRecordEditModal() {
     const mobile = document.getElementById('edit-rec-mobile')?.value?.trim() || '';
     const notes = document.getElementById('edit-rec-notes')?.value?.trim() || '';
 
-    const idx = records.findIndex(r => r.id === editId);
-    if (idx !== -1) {
-        records[idx] = {
-            ...records[idx],
-            voucher: voucher || records[idx].voucher,
-            date,
-            party,
-            newParty,
-            sector,
-            transport,
-            mode,
-            count,
-            fare,
-            vehicleTotal,
-            total,
-            notes,
-            name,
-            flightTime,
-            flightNo,
-            airport,
-            transportNature,
-            shirka,
-            group,
-            mobile
-        };
+    const isTrash = _editingRecordIsTrash || (typeof deletedRecords !== 'undefined' && deletedRecords && deletedRecords.some(r => r.id === editId));
+
+    if (isTrash) {
+        const dIdx = deletedRecords.findIndex(r => r.id === editId);
+        if (dIdx !== -1) {
+            deletedRecords[dIdx] = {
+                ...deletedRecords[dIdx],
+                voucher: voucher || deletedRecords[dIdx].voucher,
+                date,
+                party,
+                newParty,
+                sector,
+                transport,
+                mode,
+                count,
+                fare,
+                vehicleTotal,
+                total,
+                notes,
+                name,
+                flightTime,
+                flightNo,
+                airport,
+                transportNature,
+                shirka,
+                group,
+                mobile
+            };
+        }
+        if (typeof svDR === 'function') svDR();
+    } else {
+        const idx = records.findIndex(r => r.id === editId);
+        if (idx !== -1) {
+            records[idx] = {
+                ...records[idx],
+                voucher: voucher || records[idx].voucher,
+                date,
+                party,
+                newParty,
+                sector,
+                transport,
+                mode,
+                count,
+                fare,
+                vehicleTotal,
+                total,
+                notes,
+                name,
+                flightTime,
+                flightNo,
+                airport,
+                transportNature,
+                shirka,
+                group,
+                mobile
+            };
+        }
+        if (typeof svR === 'function') svR();
     }
 
-    if (typeof svR === 'function') svR();
     if (typeof todayStats === 'function') todayStats();
     if (typeof refreshAllDrops === 'function') refreshAllDrops();
 
     closeEditRecordModal();
 
     // Re-render records if on records page
-    if (typeof filterRecords === 'function') {
-        filterRecords();
+    if (currentRecordsTab === 'trash') {
+        if (typeof renderTrash === 'function') {
+            renderTrash();
+        }
+    } else {
+        if (typeof filterRecords === 'function') {
+            filterRecords();
+        }
     }
     // Also re-render daily-note if on daily note page
     if (typeof renderDailyNoteTable === 'function') {
@@ -754,25 +834,233 @@ function saveRecordEditModal() {
     }
 }
 
-function exportRecordsToExcel() {
+function getFilteredRecordsForExport() {
     const from = document.getElementById('f-from') ? document.getElementById('f-from').value : '';
     const to = document.getElementById('f-to') ? document.getElementById('f-to').value : '';
     const party = document.getElementById('f-party') ? document.getElementById('f-party').value : '';
     const sector = document.getElementById('f-sector') ? document.getElementById('f-sector').value : '';
     const search = normalizeRecordFilterValue(document.getElementById('f-search')?.value);
 
-    let rows = [...records];
+    let rows = (currentRecordsTab === 'trash') ? [...(deletedRecords || [])] : [...records];
     if (from) rows = rows.filter(r => String(r.date || '') >= from);
     if (to) rows = rows.filter(r => String(r.date || '') <= to);
     if (party) rows = rows.filter(r => normalizeRecordFilterValue(r.party) === normalizeRecordFilterValue(party));
     if (sector) rows = rows.filter(r => normalizeRecordFilterValue(r.sector) === normalizeRecordFilterValue(sector));
     if (search) {
-        rows = rows.filter(r => [r.voucher, r.party, r.sector, r.transport, r.flightNo, r.notes, r.date]
+        rows = rows.filter(r => [r.voucher, r.party, r.newParty, r.sector, r.transport, r.flightNo, r.notes, r.date, r.name, r.group]
             .some(value => normalizeRecordFilterValue(value).includes(search)));
     }
+    const activeColumnFilters = Object.entries(recordsColumnFilters || {})
+        .filter(([, value]) => value)
+        .map(([key, value]) => [key, value.toLowerCase().trim()]);
+    if (activeColumnFilters.length) {
+        rows = rows.filter(record => activeColumnFilters.every(([key, value]) =>
+            getRecordColumnValue(record, key).includes(value)
+        ));
+    }
 
-    rows = [...rows].sort((a, b) => b.date.localeCompare(a.date));
+    if (currentRecordsTab === 'checked') {
+        rows = rows.filter(r => r.checked);
+    } else if (currentRecordsTab === 'pending') {
+        rows = rows.filter(r => !r.checked);
+    }
 
+    return rows.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+}
+
+function exportRecordsToExcel() {
+    const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : {};
+    const rows = getFilteredRecordsForExport();
+
+    if (!rows.length) {
+        if (typeof al === 'function') {
+            al('al-entry', L.noRec || 'کوئی ریکارڈ موجود نہیں', 'er');
+        } else {
+            alert(L.noRec || 'کوئی ریکارڈ موجود نہیں');
+        }
+        return;
+    }
+
+    const tabName = currentRecordsTab === 'all' 
+        ? (lang === 'en' ? 'All' : lang === 'ar' ? 'الكل' : 'تمام')
+        : currentRecordsTab === 'checked' 
+            ? (lang === 'en' ? 'Checked' : lang === 'ar' ? 'تم التدقيق' : 'تصدیق شدہ')
+            : currentRecordsTab === 'trash'
+                ? (lang === 'en' ? 'Trash' : lang === 'ar' ? 'المحذوفة' : 'حذف شدہ')
+                : (lang === 'en' ? 'Pending' : lang === 'ar' ? 'قيد الانتظار' : 'زیر التواء');
+
+    const dateStamp = today().replace(/-/g, '');
+
+    if (typeof XLSX !== 'undefined') {
+        const thinBorder = {
+            top: { style: 'thin', color: { rgb: 'D0D7DE' } },
+            bottom: { style: 'thin', color: { rgb: 'D0D7DE' } },
+            left: { style: 'thin', color: { rgb: 'D0D7DE' } },
+            right: { style: 'thin', color: { rgb: 'D0D7DE' } }
+        };
+
+        const S = {
+            title: { 
+                font: { bold: true, sz: 15, color: { rgb: 'FFFFFF' } }, 
+                fill: { fgColor: { rgb: '054D28' }, patternType: 'solid' }, 
+                alignment: { horizontal: 'center', vertical: 'center' } 
+            },
+            sub: { 
+                font: { sz: 10, color: { rgb: '333333' }, bold: true },
+                alignment: { vertical: 'center' }
+            },
+            colHead: { 
+                font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, 
+                fill: { fgColor: { rgb: 'C9940A' }, patternType: 'solid' }, 
+                alignment: { horizontal: 'center', vertical: 'center' }, 
+                border: thinBorder 
+            },
+            dataRow: { border: thinBorder, alignment: { vertical: 'center' } },
+            dataRowCenter: { border: thinBorder, alignment: { horizontal: 'center', vertical: 'center' } },
+            dataRowRight: { border: thinBorder, alignment: { horizontal: 'right', vertical: 'center' } },
+            grandTotal: { 
+                font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, 
+                fill: { fgColor: { rgb: '054D28' }, patternType: 'solid' }, 
+                border: thinBorder,
+                alignment: { vertical: 'center' }
+            },
+            grandTotalRight: { 
+                font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, 
+                fill: { fgColor: { rgb: '054D28' }, patternType: 'solid' }, 
+                border: thinBorder,
+                alignment: { horizontal: 'right', vertical: 'center' }
+            },
+            grandTotalCenter: { 
+                font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, 
+                fill: { fgColor: { rgb: '054D28' }, patternType: 'solid' }, 
+                border: thinBorder,
+                alignment: { horizontal: 'center', vertical: 'center' }
+            }
+        };
+
+        const cell = (v, styleKey, type) => ({
+            v: v ?? '',
+            t: type || (typeof v === 'number' ? 'n' : 's'),
+            s: styleKey ? S[styleKey] : undefined
+        });
+
+        const sheetRows = [];
+        const merges = [];
+        const addRow = (cells) => { sheetRows.push(cells); };
+
+        const headers = [
+            'واوچر نمبر (Voucher)',
+            'تاریخ (Date)',
+            'پارٹی / ٹرانسپورٹر (Party)',
+            'حاجی پارٹی / کلائنٹ (Client)',
+            'سیکٹر (Sector)',
+            'ٹرانسپورٹ گاڑی (Transport)',
+            'حجاج تعداد (Pilgrims)',
+            'کرایہ فی کس (Fare SAR)',
+            'کل رقم (Total SAR)',
+            'فلائٹ نمبر (Flight No)',
+            'فلائٹ وقت (Flight Time)',
+            'ایئرپورٹ (Airport)',
+            'نوعیت (Nature)',
+            'شرکہ / کمپنی (Shirka)',
+            'گروپ نمبر (Group)',
+            'مسافر نام (Passenger)',
+            'موبائل (Mobile)',
+            'اسٹیٹس (Status)',
+            'نوٹس (Notes)'
+        ];
+
+        const numCols = headers.length;
+
+        addRow([cell('Umrah Transport Management System — تمام ریکارڈز (Transport Records)', 'title')]);
+        merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: numCols - 1 } });
+
+        const metaStr = `اسٹیٹس: ${tabName} | کل ریکارڈز: ${rows.length} | ڈاؤنلوڈ تاریخ: ${fd(today())}`;
+        addRow([cell(metaStr, 'sub')]);
+        merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: numCols - 1 } });
+
+        addRow([cell('')]);
+        addRow(headers.map(h => cell(h, 'colHead')));
+
+        let totalHujjaj = 0;
+        let totalAmount = 0;
+
+        rows.forEach(r => {
+            const sharing = r.mode === 'sharing' || isSharing(r.transport);
+            const count = sharing ? (Number(r.count) || 0) : 0;
+            const fare = Number(r.fare) || 0;
+            const total = Number(r.total) || 0;
+            totalHujjaj += count;
+            totalAmount += total;
+
+            const status = r.checked ? 'مکمل (Checked)' : 'زیر التواء (Pending)';
+
+            addRow([
+                cell(r.voucher || '—', 'dataRowCenter'),
+                cell(r.date ? fd(r.date) : '—', 'dataRowCenter'),
+                cell(r.party || '—', 'dataRow'),
+                cell(r.newParty || '—', 'dataRow'),
+                cell(r.sector || '—', 'dataRowCenter'),
+                cell(r.transport || '—', 'dataRowCenter'),
+                cell(sharing ? count : '—', 'dataRowCenter', sharing ? 'n' : 's'),
+                cell(sharing ? fare : '—', 'dataRowRight', sharing ? 'n' : 's'),
+                cell(total, 'dataRowRight', 'n'),
+                cell(r.flightNo || '—', 'dataRowCenter'),
+                cell(r.flightTime || '—', 'dataRowCenter'),
+                cell(r.airport || '—', 'dataRowCenter'),
+                cell(r.transportNature || '—', 'dataRowCenter'),
+                cell(r.shirka || '—', 'dataRow'),
+                cell(r.group || '—', 'dataRowCenter'),
+                cell(r.name || '—', 'dataRow'),
+                cell(r.mobile || '—', 'dataRowCenter'),
+                cell(status, 'dataRowCenter'),
+                cell(r.notes || '', 'dataRow')
+            ]);
+        });
+
+        addRow([cell('')]);
+
+        addRow([
+            cell('مجموعی ٹوٹل (Grand Total)', 'grandTotal'),
+            cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'),
+            cell(totalHujjaj, 'grandTotalCenter', 'n'),
+            cell('', 'grandTotal'),
+            cell(totalAmount, 'grandTotalRight', 'n'),
+            cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'),
+            cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal'), cell('', 'grandTotal')
+        ]);
+        merges.push({ s: { r: sheetRows.length - 1, c: 0 }, e: { r: sheetRows.length - 1, c: 5 } });
+
+        const ws = XLSX.utils.aoa_to_sheet(sheetRows.map(row => row.map(c => c.v)));
+
+        sheetRows.forEach((row, rIdx) => {
+            row.forEach((c, cIdx) => {
+                if (c.s) {
+                    const ref = XLSX.utils.encode_cell({ r: rIdx, c: cIdx });
+                    if (ws[ref]) ws[ref].s = c.s;
+                }
+            });
+        });
+
+        ws['!cols'] = [
+            { wch: 14 }, { wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 16 },
+            { wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 14 },
+            { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 12 },
+            { wch: 18 }, { wch: 15 }, { wch: 14 }, { wch: 24 }
+        ];
+        ws['!merges'] = merges;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Records');
+        XLSX.writeFile(wb, `UmrahTransport_Records_${tabName}_${dateStamp}.xlsx`);
+
+        if (typeof al === 'function') {
+            al('al-entry', `Excel فائل ڈاؤنلوڈ ہوگئی — ${rows.length} ریکارڈز`, 'ok');
+        }
+        return;
+    }
+
+    // Fallback to CSV if XLSX not available
     const headers = ['واوچر نمبر', 'تاریخ', 'پارٹی', 'سیکٹر', 'ٹرانسپورٹ', 'حجاج تعداد', 'کرایہ فی کس (SAR)', 'فلائٹ نمبر', 'کل رقم (SAR)', 'اسٹیٹس'];
     const csvRows = [headers.join(',')];
     let totalHujjaj = 0, totalAmount = 0;
@@ -804,17 +1092,466 @@ function exportRecordsToExcel() {
     const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
-    const date = today().replace(/-/g, '');
-    const tab = currentRecordsTab === 'all' ? 'تمام' : currentRecordsTab === 'checked' ? 'مکمل' : 'باقی';
-
     anchor.href = url;
-    anchor.download = `UmrahTransport_Records_${tab}_${date}.csv`;
+    anchor.download = `UmrahTransport_Records_${tabName}_${dateStamp}.csv`;
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
     URL.revokeObjectURL(url);
 
-    al('al-entry', `Excel فائل ڈاؤنلوڈ ہوگئی — ${rows.length} ریکارڈ`, 'ok');
+    if (typeof al === 'function') {
+        al('al-entry', `Excel فائل ڈاؤنلوڈ ہوگئی — ${rows.length} ریکارڈ`, 'ok');
+    }
+}
+
+// ── EXCEL IMPORT FUNCTIONS ──
+let _parsedImportRecords = [];
+
+function openImportRecordsModal() {
+    if (typeof canDo === 'function' && !canDo('entry')) {
+        alert(T[lang]?.noEntryPerm || 'آپ کو نیا ریکارڈ شامل کرنے کی اجازت نہیں ہے');
+        return;
+    }
+    const modal = document.getElementById('import-records-modal');
+    if (!modal) return;
+    _parsedImportRecords = [];
+    const prevArea = document.getElementById('import-preview-area');
+    if (prevArea) prevArea.style.display = 'none';
+    const fileIn = document.getElementById('import-file-input');
+    if (fileIn) fileIn.value = '';
+    const btnConfirm = document.getElementById('btn-confirm-import-records');
+    if (btnConfirm) btnConfirm.disabled = true;
+    const alImp = document.getElementById('al-import-records');
+    if (alImp) alImp.innerHTML = '';
+    const zTitle = document.getElementById('import-zone-title');
+    if (zTitle) zTitle.textContent = lang === 'en' ? 'Drop Excel or CSV file here or click to browse' : 'Excel یا CSV فائل یہاں ڈراپ کریں یا کلک کر کے منتخب کریں';
+    const zSub = document.getElementById('import-zone-sub');
+    if (zSub) zSub.textContent = 'فارمیٹس: .xlsx, .xls, .csv';
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImportRecordsModal() {
+    const modal = document.getElementById('import-records-modal');
+    if (modal) modal.classList.remove('open');
+    _parsedImportRecords = [];
+    document.body.style.overflow = '';
+}
+
+function downloadRecordsTemplate() {
+    if (typeof XLSX === 'undefined') {
+        alert('XLSX لائبریری دستیاب نہیں ہے');
+        return;
+    }
+
+    const headers = [
+        'واوچر نمبر (Voucher)',
+        'تاریخ (YYYY-MM-DD)',
+        'پارٹی / ٹرانسپورٹر (Party)',
+        'حاجی پارٹی / کلائنٹ (Haji Party)',
+        'سیکٹر (Sector)',
+        'ٹرانسپورٹ گاڑی (Transport)',
+        'حجاج تعداد (Pilgrims)',
+        'کرایہ (Fare SAR)',
+        'کل رقم (Total SAR)',
+        'فلائٹ نمبر (Flight No)',
+        'فلائٹ وقت (Flight Time)',
+        'ایئرپورٹ (Airport)',
+        'نوعیت (Nature)',
+        'شرکہ / کمپنی (Shirka)',
+        'گروپ نمبر (Group)',
+        'مسافر نام (Name)',
+        'موبائل (Mobile)',
+        'اسٹیٹس (Checked/Pending)',
+        'نوٹس (Notes)'
+    ];
+
+    const sample1 = [
+        'VCH-1001',
+        today(),
+        (parties && parties[0]) || 'الشہباء ٹرانسپورٹ',
+        (hajiParties && hajiParties[0]) || 'القریشی ٹورز',
+        (sectors && sectors[0]) || 'Jed to Mak',
+        (transports && transports[0]) || 'بس',
+        45,
+        120,
+        5400,
+        'SV-732',
+        '14:30',
+        'Jeddah',
+        'Arrival',
+        (shirkas && shirkas[0]) || 'الرواد',
+        'G-101',
+        'محمد علی',
+        '+966501234567',
+        'Pending',
+        'پہلی آمد - VIP گروپ'
+    ];
+
+    const sample2 = [
+        'VCH-1002',
+        today(),
+        (parties && parties[1]) || (parties && parties[0]) || 'القائد ٹرانسپورٹ',
+        (hajiParties && hajiParties[1]) || (hajiParties && hajiParties[0]) || 'الرحمان ٹریولز',
+        (sectors && sectors[1]) || (sectors && sectors[0]) || 'Mak to Med',
+        (transports && transports[1]) || (transports && transports[0]) || 'جی ایم سی',
+        1,
+        800,
+        800,
+        '—',
+        '—',
+        '—',
+        'Other',
+        '—',
+        'G-102',
+        'احمد رضا',
+        '+966509876543',
+        'Checked',
+        'فیملی بکنگ'
+    ];
+
+    const thinBorder = {
+        top: { style: 'thin', color: { rgb: 'D0D7DE' } },
+        bottom: { style: 'thin', color: { rgb: 'D0D7DE' } },
+        left: { style: 'thin', color: { rgb: 'D0D7DE' } },
+        right: { style: 'thin', color: { rgb: 'D0D7DE' } }
+    };
+
+    const S = {
+        header: {
+            font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '054D28' }, patternType: 'solid' },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: thinBorder
+        },
+        sampleRow: {
+            border: thinBorder,
+            alignment: { vertical: 'center' }
+        }
+    };
+
+    const sheetRows = [
+        headers.map(h => ({ v: h, t: 's', s: S.header })),
+        sample1.map(v => ({ v, t: typeof v === 'number' ? 'n' : 's', s: S.sampleRow })),
+        sample2.map(v => ({ v, t: typeof v === 'number' ? 'n' : 's', s: S.sampleRow }))
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetRows.map(row => row.map(c => c.v)));
+    sheetRows.forEach((row, rIdx) => {
+        row.forEach((c, cIdx) => {
+            if (c.s) {
+                const ref = XLSX.utils.encode_cell({ r: rIdx, c: cIdx });
+                if (ws[ref]) ws[ref].s = c.s;
+            }
+        });
+    });
+
+    ws['!cols'] = [
+        { wch: 15 }, { wch: 14 }, { wch: 22 }, { wch: 22 }, { wch: 16 },
+        { wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 14 },
+        { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 12 },
+        { wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 24 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, 'Umrah_Transport_Import_Template.xlsx');
+}
+
+function handleImportDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const zone = document.getElementById('import-drop-zone');
+    if (zone) zone.classList.add('dragover');
+}
+
+function handleImportDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const zone = document.getElementById('import-drop-zone');
+    if (zone) zone.classList.remove('dragover');
+}
+
+function handleImportDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const zone = document.getElementById('import-drop-zone');
+    if (zone) zone.classList.remove('dragover');
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+        processImportFile(files[0]);
+    }
+}
+
+function handleImportFileSelect(input) {
+    if (input.files && input.files.length > 0) {
+        processImportFile(input.files[0]);
+    }
+}
+
+function normalizeImportDate(val) {
+    if (!val) return today();
+    if (val instanceof Date) {
+        if (!isNaN(val.getTime())) {
+            const y = val.getFullYear();
+            const m = String(val.getMonth() + 1).padStart(2, '0');
+            const d = String(val.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+    }
+    const str = String(val).trim();
+    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) {
+        const parts = str.split('-');
+        return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+    }
+    const slashMatch = str.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+    if (slashMatch) {
+        const d = slashMatch[1].padStart(2, '0');
+        const m = slashMatch[2].padStart(2, '0');
+        const y = slashMatch[3];
+        return `${y}-${m}-${d}`;
+    }
+    if (typeof val === 'number' || /^\d{5}$/.test(str)) {
+        const num = Number(val);
+        const parsed = new Date((num - (25567 + 2)) * 86400 * 1000);
+        if (!isNaN(parsed.getTime())) {
+            const y = parsed.getFullYear();
+            const m = String(parsed.getMonth() + 1).padStart(2, '0');
+            const d = String(parsed.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+    }
+    return today();
+}
+
+function findImportRowValue(row, keys) {
+    const rowKeys = Object.keys(row);
+    for (const key of keys) {
+        const target = key.toLowerCase().replace(/[\s_\-\(\)\/]/g, '');
+        for (const rk of rowKeys) {
+            const norm = rk.toLowerCase().replace(/[\s_\-\(\)\/]/g, '');
+            if (norm.includes(target) || target.includes(norm)) {
+                return row[rk];
+            }
+        }
+    }
+    return '';
+}
+
+function processImportFile(file) {
+    if (!file) return;
+
+    const alImp = document.getElementById('al-import-records');
+    if (alImp) alImp.innerHTML = '';
+
+    const zTitle = document.getElementById('import-zone-title');
+    if (zTitle) zTitle.textContent = `فائل: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+    const zSub = document.getElementById('import-zone-sub');
+    if (zSub) zSub.textContent = 'ڈیٹا پروسیس ہو رہا ہے...';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            if (typeof XLSX === 'undefined') {
+                throw new Error('XLSX لائبریری لوڈ نہیں ہوئی');
+            }
+            const wb = XLSX.read(data, { type: 'array', cellDates: true, cellText: false });
+            const firstSheetName = wb.SheetNames[0];
+            const ws = wb.Sheets[firstSheetName];
+            const rawRows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false });
+
+            if (!rawRows || !rawRows.length) {
+                throw new Error('اس فائل میں کوئی ڈیٹا نہیں ملا');
+            }
+
+            const validRows = [];
+            rawRows.forEach((row, idx) => {
+                const voucher = String(findImportRowValue(row, ['voucherno', 'واوچرنمبر', 'voucher', 'واوچر', 'واؤچر', 'ref', 'سند'])).trim();
+                const rawDate = findImportRowValue(row, ['date', 'تاریخ', 'tarikh', 'day']);
+                const party = String(findImportRowValue(row, ['transporter', 'ٹرانسپورٹر', 'party', 'پارٹی', 'ناقل'])).trim();
+                const newParty = String(findImportRowValue(row, ['hajiparty', 'حاجی پارٹی', 'client', 'کلائنٹ', 'customer'])).trim();
+                const sector = String(findImportRowValue(row, ['sector', 'سیکٹر', 'route', 'روٹ', 'مسار'])).trim();
+                const transport = String(findImportRowValue(row, ['transport', 'ٹرانسپورٹ', 'vehicle', 'گاڑی', 'bus', 'car'])).trim();
+                const countVal = Number(findImportRowValue(row, ['count', 'حجاج', 'تعداد', 'pax', 'pilgrim', 'افراد'])) || 0;
+                const fareVal = Number(findImportRowValue(row, ['fare', 'کرایہ', 'rate', 'ریٹ'])) || 0;
+                let totalVal = Number(findImportRowValue(row, ['total', 'کلرقم', 'ٹوٹل', 'amount'])) || 0;
+
+                const flightNo = String(findImportRowValue(row, ['flightno', 'فلائٹنمبر', 'flight', 'فلائٹ'])).trim();
+                const flightTime = String(findImportRowValue(row, ['flighttime', 'فلائٹوقت', 'time', 'وقت'])).trim();
+                const airport = String(findImportRowValue(row, ['airport', 'ایئرپورٹ', 'مطار'])).trim();
+                const transportNature = String(findImportRowValue(row, ['nature', 'نوعیت', 'trip'])).trim();
+                const shirka = String(findImportRowValue(row, ['shirka', 'شرکہ', 'company', 'کمپنی'])).trim();
+                const group = String(findImportRowValue(row, ['group', 'گروپ'])).trim();
+                const name = String(findImportRowValue(row, ['passenger', 'مسافر', 'name', 'نام'])).trim();
+                const mobile = String(findImportRowValue(row, ['mobile', 'موبائل', 'phone', 'فون'])).trim();
+                const notes = String(findImportRowValue(row, ['notes', 'نوٹس', 'remarks', 'ہدایات'])).trim();
+
+                const statusVal = String(findImportRowValue(row, ['checked', 'status', 'اسٹیٹس', 'حالت'])).toLowerCase();
+                const checked = /checked|مکمل|true|1|yes|تصدیق/.test(statusVal);
+
+                // Ignore empty or summary row
+                if (!party && !sector && !totalVal && !countVal && !voucher) return;
+                if (String(party).includes('Grand Total') || String(voucher).includes('Grand Total') || String(party).includes('مجموعی ٹوٹل')) return;
+
+                const date = normalizeImportDate(rawDate);
+                const isSharingBus = (typeof isEconomyBus === 'function' ? isEconomyBus(transport, sector) : false) || countVal > 1;
+                const mode = isSharingBus ? 'sharing' : 'vehicle';
+
+                if (totalVal === 0) {
+                    totalVal = (mode === 'sharing') ? (countVal * fareVal) : fareVal;
+                }
+
+                validRows.push({
+                    id: typeof uid === 'function' ? uid() : ('imp_' + Date.now().toString(36) + '_' + idx),
+                    voucher: voucher || (typeof genVoucher === 'function' ? genVoucher() : 'VCH-' + (1000 + idx)),
+                    date,
+                    party: party || 'نامعلوم پارٹی',
+                    newParty,
+                    sector: sector || 'Jed to Mak',
+                    transport: transport || 'بس',
+                    mode,
+                    count: countVal,
+                    fare: fareVal,
+                    vehicleTotal: totalVal,
+                    total: totalVal,
+                    notes,
+                    name,
+                    flightTime,
+                    flightNo,
+                    airport,
+                    transportNature,
+                    shirka,
+                    group,
+                    mobile,
+                    checked
+                });
+            });
+
+            if (!validRows.length) {
+                throw new Error('فائل میں کوئی درست قطار نہیں ملی۔ براہ کرم ٹیمپلیٹ کے مطابق کالمز چیک کریں۔');
+            }
+
+            _parsedImportRecords = validRows;
+
+            // Render Preview
+            const prevArea = document.getElementById('import-preview-area');
+            if (prevArea) prevArea.style.display = 'block';
+
+            const statTotal = document.getElementById('imp-stat-total');
+            if (statTotal) statTotal.textContent = rawRows.length;
+            const statValid = document.getElementById('imp-stat-valid');
+            if (statValid) statValid.textContent = validRows.length;
+
+            const tCount = validRows.reduce((s, r) => s + (Number(r.count) || 0), 0);
+            const tAmount = validRows.reduce((s, r) => s + (Number(r.total) || 0), 0);
+
+            const statHujjaj = document.getElementById('imp-stat-hujjaj');
+            if (statHujjaj) statHujjaj.textContent = tCount;
+            const statAmount = document.getElementById('imp-stat-amount');
+            if (statAmount) statAmount.textContent = sar(tAmount) + ' SAR';
+
+            const prevCountEl = document.getElementById('imp-preview-count');
+            if (prevCountEl) prevCountEl.textContent = `کل ${validRows.length} میں سے پہلے ${Math.min(validRows.length, 10)} ریکارڈز دکھائے جا رہے ہیں`;
+
+            const tbody = document.getElementById('import-preview-tbody');
+            if (tbody) {
+                tbody.innerHTML = validRows.slice(0, 10).map((r, i) => `
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <td style="padding:5px 8px;text-align:center;">${i + 1}</td>
+                        <td style="padding:5px 8px;text-align:center;"><span class="voucher-tag">${r.voucher}</span></td>
+                        <td style="padding:5px 8px;text-align:center;">${fd(r.date)}</td>
+                        <td style="padding:5px 8px;"><strong>${r.party}</strong></td>
+                        <td style="padding:5px 8px;">${r.newParty || '—'}</td>
+                        <td style="padding:5px 8px;text-align:center;"><span class="badge">${r.sector}</span></td>
+                        <td style="padding:5px 8px;text-align:center;">${r.transport}</td>
+                        <td style="padding:5px 8px;text-align:center;">${r.count || '—'}</td>
+                        <td style="padding:5px 8px;text-align:right;">${sar(r.fare)}</td>
+                        <td style="padding:5px 8px;text-align:right;"><strong>${sar(r.total)}</strong></td>
+                    </tr>
+                `).join('');
+            }
+
+            const btnConfirm = document.getElementById('btn-confirm-import-records');
+            if (btnConfirm) btnConfirm.disabled = false;
+
+            if (zSub) zSub.textContent = `${validRows.length} درست ریکارڈز تیار ہیں`;
+
+        } catch (err) {
+            console.error('Import parse error:', err);
+            if (alImp) {
+                alImp.innerHTML = `<div class="al er" style="padding:10px 14px;border-radius:8px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.25);font-size:13px;font-weight:600;">⚠️ خرابی: ${err.message || 'فائل پڑھنے میں مسئلہ ہوا'}</div>`;
+            }
+            const btnConfirm = document.getElementById('btn-confirm-import-records');
+            if (btnConfirm) btnConfirm.disabled = true;
+            if (zSub) zSub.textContent = 'فائل پروسیسنگ میں خرابی';
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+async function confirmImportRecords() {
+    if (!_parsedImportRecords || !_parsedImportRecords.length) {
+        alert('امپورٹ کرنے کے لیے کوئی ریکارڈ موجود نہیں ہے');
+        return;
+    }
+
+    const modeRadio = document.querySelector('input[name="import-mode"]:checked');
+    const importMode = modeRadio ? modeRadio.value : 'append';
+
+    if (importMode === 'replace') {
+        const confirmMsg = '⚠️ کیا آپ واقعی تمام پرانے ریکارڈز حذف کر کے صرف یہ نئی ایکسل فائل امپورٹ کرنا چاہتے ہیں؟';
+        if (typeof verifyPassword === 'function') {
+            if (!(await verifyPassword(confirmMsg))) return;
+        } else if (!confirm(confirmMsg)) {
+            return;
+        }
+    }
+
+    // Collect new dropdown items
+    const newParties = [];
+    const newSectors = [];
+    const newTransports = [];
+    const newHajiParties = [];
+
+    _parsedImportRecords.forEach(r => {
+        if (r.party && !parties.includes(r.party) && !newParties.includes(r.party)) newParties.push(r.party);
+        if (r.sector && !sectors.includes(r.sector) && !newSectors.includes(r.sector)) newSectors.push(r.sector);
+        if (r.transport && !transports.includes(r.transport) && !newTransports.includes(r.transport)) newTransports.push(r.transport);
+        if (r.newParty && !hajiParties.includes(r.newParty) && !newHajiParties.includes(r.newParty)) newHajiParties.push(r.newParty);
+    });
+
+    if (newParties.length) { parties.push(...newParties); if (typeof svP === 'function') svP(); }
+    if (newSectors.length) { sectors.push(...newSectors); if (typeof svS === 'function') svS(); }
+    if (newTransports.length) { transports.push(...newTransports); if (typeof svTr === 'function') svTr(); }
+    if (newHajiParties.length) { hajiParties.push(...newHajiParties); if (typeof svHP === 'function') svHP(); }
+
+    const count = _parsedImportRecords.length;
+
+    if (importMode === 'replace') {
+        deletedRecords = deletedRecords || [];
+        deletedRecords.push(...records.map(r => ({ ...r, deletedAt: new Date().toISOString(), replacedByImport: true })));
+        records = [..._parsedImportRecords];
+        if (typeof svDR === 'function') svDR();
+    } else {
+        records.push(..._parsedImportRecords);
+    }
+
+    if (typeof svR === 'function') svR();
+    if (typeof refreshAllDrops === 'function') refreshAllDrops();
+    if (typeof todayStats === 'function') todayStats();
+
+    closeImportRecordsModal();
+
+    if (typeof filterRecords === 'function') {
+        filterRecords();
+    }
+
+    if (typeof al === 'function') {
+        al('al-entry', `Excel فائل سے ${count} ریکارڈز کامیابی کے ساتھ امپورٹ ہو گئے!`, 'ok');
+    }
 }
 
 // ── FILTER PERSISTENCE (GLOBAL VARIABLE - RESETS ON REFRESH) ──
@@ -871,6 +1608,14 @@ window.copyVoucher = copyVoucher;
 window.closeCopyModal = closeCopyModal;
 window.confirmCopyVoucher = confirmCopyVoucher;
 window.exportRecordsToExcel = exportRecordsToExcel;
+window.openImportRecordsModal = openImportRecordsModal;
+window.closeImportRecordsModal = closeImportRecordsModal;
+window.downloadRecordsTemplate = downloadRecordsTemplate;
+window.handleImportDragOver = handleImportDragOver;
+window.handleImportDragLeave = handleImportDragLeave;
+window.handleImportDrop = handleImportDrop;
+window.handleImportFileSelect = handleImportFileSelect;
+window.confirmImportRecords = confirmImportRecords;
 window.initRecordsPage = initRecordsPage;
 window.setRecordsPage = setRecordsPage;
 window.setRecordsPageSize = setRecordsPageSize;
@@ -880,6 +1625,7 @@ window.renderRecHead = renderRecHead;
 window.openEditRecordModal = openEditRecordModal;
 window.closeEditRecordModal = closeEditRecordModal;
 window.saveRecordEditModal = saveRecordEditModal;
+window.saveAndRestoreRecordEditModal = saveAndRestoreRecordEditModal;
 window.calcEditRecordTotal = calcEditRecordTotal;
 window.toggleEditFlightDetails = toggleEditFlightDetails;
 window.editRecord = openEditRecordModal;

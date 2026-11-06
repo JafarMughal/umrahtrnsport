@@ -399,6 +399,13 @@
             <!-- Modal Footer -->
             <div class="edit-modal-footer" style="padding:14px 22px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);background:var(--bg-page);">
                 <button type="button" class="btn btn-o" onclick="closeEditRecordModal()" id="btn-cancel-edit-rec">منسوخ</button>
+                <button type="button" class="btn btn-o" id="btn-save-restore-edit-rec" onclick="saveAndRestoreRecordEditModal()" style="display:none;align-items:center;gap:6px;border-color:var(--primary);color:var(--primary);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                    </svg>
+                    <span>محفوظ اور بحال کریں</span>
+                </button>
                 <button type="button" class="btn btn-p" onclick="saveRecordEditModal()" id="btn-save-edit-rec" style="display:inline-flex;align-items:center;gap:6px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
