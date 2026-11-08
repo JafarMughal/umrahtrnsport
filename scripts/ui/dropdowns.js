@@ -95,18 +95,141 @@ function refreshAllDrops() {
     if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
     fillHajiPartyDropdown();
     fillShirkaDatalist();
+    fillAirportDatalist();
+    fillHajiPartyDatalist();
+}
+
+const DEFAULT_SHIRKAS = [
+    'الرواد', 'الشہداء', 'المختار', 'الدولية', 'ضيوف الرحمن',
+    'العالمية', 'رواحل', 'سماء المشاعر', 'قافلة الإيمان', 'دلہ',
+    'سدرہ', 'مواسم', 'انوار الحرمین', 'فنادق الہدایہ', 'دار الایمان',
+    'الماسیہ', 'باب السلام'
+];
+
+const DEFAULT_AIRPORTS = [
+    'Jeddah Airport - Terminal 1 (KAIA T1)',
+    'Jeddah Airport - North Terminal (شمالی ٹرمینل)',
+    'Jeddah Airport - South Terminal (جنوبی ٹرمینل)',
+    'Jeddah Airport - Hajj Terminal (حج ٹرمینل)',
+    'Jeddah Airport (KAIA)',
+    'Madinah Airport (AMAA)',
+    'Madinah Airport - International Terminal',
+    'Madinah Airport - Hajj Terminal',
+    'Taif Airport (TIF)',
+    'Yanbu Airport (YNB)',
+    'Riyadh Airport (KKIA)'
+];
+
+function attachDatalistAutoOpen(inputId) {
+    const el = document.getElementById(inputId);
+    if (!el || el._dlAttached) return;
+    el._dlAttached = true;
+    const trigger = () => {
+        try {
+            if (typeof el.showPicker === 'function') {
+                el.showPicker();
+            }
+        } catch (e) {
+            // Silently ignore if showPicker is unsupported
+        }
+    };
+    el.addEventListener('focus', trigger);
+    el.addEventListener('click', trigger);
 }
 
 function fillShirkaDatalist() {
-    const list = document.getElementById('shirka-list');
-    if (!list) return;
-    let allShirkas = typeof shirkas !== 'undefined' ? [...shirkas] : [];
-    if (typeof records !== 'undefined') {
-        allShirkas = [...allShirkas, ...records.map(r => r.shirka)];
+    let allShirkas = Array.isArray(DEFAULT_SHIRKAS) ? [...DEFAULT_SHIRKAS] : [];
+    if (typeof shirkas !== 'undefined' && Array.isArray(shirkas)) {
+        allShirkas.push(...shirkas);
     }
-    const uniqueShirkas = [...new Set(allShirkas.filter(s => s && s.trim() !== ''))];
-    uniqueShirkas.sort();
-    list.innerHTML = uniqueShirkas.map(s => `<option value="${s}">`).join('');
+    if (typeof records !== 'undefined' && Array.isArray(records)) {
+        allShirkas.push(...records.map(r => r && r.shirka));
+    }
+    if (typeof deletedRecords !== 'undefined' && Array.isArray(deletedRecords)) {
+        allShirkas.push(...deletedRecords.map(r => r && r.shirka));
+    }
+    const uniqueShirkas = [...new Set(allShirkas.map(s => (s || '').trim()).filter(Boolean))];
+    uniqueShirkas.sort((a, b) => a.localeCompare(b, 'ar'));
+
+    const html = uniqueShirkas.map(s => `<option value="${s}">`).join('');
+    
+    const list = document.getElementById('shirka-list');
+    if (list) list.innerHTML = html;
+
+    const editList = document.getElementById('edit-rec-shirka-list');
+    if (editList) editList.innerHTML = html;
+
+    attachDatalistAutoOpen('e-shirka');
+    attachDatalistAutoOpen('edit-rec-shirka');
+}
+
+function fillAirportDatalist() {
+    let allAirports = Array.isArray(DEFAULT_AIRPORTS) ? [...DEFAULT_AIRPORTS] : [];
+    if (typeof records !== 'undefined' && Array.isArray(records)) {
+        allAirports.push(...records.map(r => r && r.airport));
+    }
+    if (typeof deletedRecords !== 'undefined' && Array.isArray(deletedRecords)) {
+        allAirports.push(...deletedRecords.map(r => r && r.airport));
+    }
+    const uniqueAirports = [...new Set(allAirports.map(a => (a || '').trim()).filter(Boolean))];
+
+    const html = uniqueAirports.map(a => `<option value="${a}">`).join('');
+    
+    const list = document.getElementById('airport-list');
+    if (list) list.innerHTML = html;
+
+    const editList = document.getElementById('edit-rec-airport-list');
+    if (editList) editList.innerHTML = html;
+
+    attachDatalistAutoOpen('e-airport');
+    attachDatalistAutoOpen('edit-rec-airport');
+}
+
+const DEFAULT_HAJI_PARTIES = [
+    'القریشی ٹورز',
+    'الرحمان ٹریولز',
+    'الحرمین ٹورز اینڈ ٹریولز',
+    'ضیوف الرحمن گروپ',
+    'المروہ ٹریولز',
+    'الصفا عمرہ گروپ',
+    'کاروان فیصل',
+    'کاروان مدینہ',
+    'لبیک ٹورز اینڈ ٹریولز',
+    'باب الحرم ٹریولز',
+    'نور الہدیٰ ٹورز',
+    'قافلہ حرمین'
+];
+
+function fillHajiPartyDatalist() {
+    let allHp = Array.isArray(DEFAULT_HAJI_PARTIES) ? [...DEFAULT_HAJI_PARTIES] : [];
+    if (typeof hajiParties !== 'undefined' && Array.isArray(hajiParties)) {
+        allHp.push(...hajiParties);
+    }
+    if (typeof records !== 'undefined' && Array.isArray(records)) {
+        records.forEach(r => {
+            if (r && r.newParty) {
+                r.newParty.split(',').map(s => s.trim()).filter(Boolean).forEach(s => allHp.push(s));
+            }
+        });
+    }
+    if (typeof deletedRecords !== 'undefined' && Array.isArray(deletedRecords)) {
+        deletedRecords.forEach(r => {
+            if (r && r.newParty) {
+                r.newParty.split(',').map(s => s.trim()).filter(Boolean).forEach(s => allHp.push(s));
+            }
+        });
+    }
+    const uniqueHp = [...new Set(allHp.map(h => (h || '').trim()).filter(Boolean))];
+    uniqueHp.sort((a, b) => a.localeCompare(b, 'ur'));
+
+    const selEl = document.getElementById('edit-rec-new-party');
+    if (selEl && selEl.tagName === 'SELECT') {
+        const curVal = selEl.value;
+        selEl.innerHTML = '<option value="">-- منتخب کریں --</option>' +
+            uniqueHp.map(hp => `<option value="${hp}" ${hp === curVal ? 'selected' : ''}>${hp}</option>`).join('') +
+            '<option value="__custom__">➕ نیا درج کریں... (Add New)</option>';
+        if (curVal && curVal !== '__custom__') selEl.value = curVal;
+    }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -120,7 +243,10 @@ function fillHajiPartyDropdown(query = '') {
     const currentSelected = hiddenInp ? hiddenInp.value : '';
     
     const q = query.toLowerCase().trim();
-    const filtered = hajiParties.filter(hp => !q || hp.toLowerCase().includes(q));
+    const baseList = (typeof hajiParties !== 'undefined' && Array.isArray(hajiParties) && hajiParties.length)
+        ? hajiParties
+        : (Array.isArray(DEFAULT_HAJI_PARTIES) ? DEFAULT_HAJI_PARTIES : []);
+    const filtered = baseList.filter(hp => !q || hp.toLowerCase().includes(q));
     
     if (filtered.length === 0) {
         listEl.innerHTML = `<div class="cms-label no-result">کوئی نتیجہ نہیں</div>`; // Replaced inline style
@@ -191,3 +317,9 @@ document.addEventListener('click', function(e) {
         dnrTransDd.style.display = 'none';
     }
 });
+window.fillShirkaDatalist = fillShirkaDatalist;
+window.fillAirportDatalist = fillAirportDatalist;
+window.DEFAULT_SHIRKAS = DEFAULT_SHIRKAS;
+window.DEFAULT_AIRPORTS = DEFAULT_AIRPORTS;
+window.fillHajiPartyDatalist = fillHajiPartyDatalist;
+window.DEFAULT_HAJI_PARTIES = DEFAULT_HAJI_PARTIES;

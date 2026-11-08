@@ -305,6 +305,9 @@ function addEntry() {
     }
 
     if (typeof svR === 'function') svR();
+    if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
+    if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
+    if (typeof fillHajiPartyDatalist === 'function') fillHajiPartyDatalist();
     clearEntryForm();
     todayStats();
 }

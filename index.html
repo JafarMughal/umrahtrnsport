@@ -304,8 +304,9 @@
                     <div class="grid edit-modal-grid-3" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:12px;margin-bottom:12px;">
                         <div class="fg">
                             <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">حاجی پارٹی</label>
-                            <input type="text" id="edit-rec-new-party" list="edit-rec-haji-party-list" placeholder="ہاجی پارٹی درج یا منتخب کریں" style="width:100%;box-sizing:border-box;" />
-                            <datalist id="edit-rec-haji-party-list"></datalist>
+                            <select id="edit-rec-new-party" onchange="onEditRecHajiPartyChange()" style="width:100%;box-sizing:border-box;">
+                                <option value="">-- منتخب کریں --</option>
+                            </select>
                         </div>
                         <div class="fg">
                             <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">سیکٹر</label>
@@ -359,10 +360,19 @@
                             </div>
                             <div class="fg">
                                 <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">ائیرپورٹ (Airport)</label>
-                                <input type="text" id="edit-rec-airport" list="edit-rec-airport-list" style="width:100%;box-sizing:border-box;" />
+                                <input type="text" id="edit-rec-airport" list="edit-rec-airport-list" autocomplete="off" placeholder="ائیرپورٹ منتخب کریں یا لکھیں..." style="width:100%;box-sizing:border-box;" />
                                 <datalist id="edit-rec-airport-list">
+                                    <option value="Jeddah Airport - Terminal 1 (KAIA T1)"></option>
+                                    <option value="Jeddah Airport - North Terminal (شمالی ٹرمینل)"></option>
+                                    <option value="Jeddah Airport - South Terminal (جنوبی ٹرمینل)"></option>
+                                    <option value="Jeddah Airport - Hajj Terminal (حج ٹرمینل)"></option>
                                     <option value="Jeddah Airport (KAIA)"></option>
                                     <option value="Madinah Airport (AMAA)"></option>
+                                    <option value="Madinah Airport - International Terminal"></option>
+                                    <option value="Madinah Airport - Hajj Terminal"></option>
+                                    <option value="Taif Airport (TIF)"></option>
+                                    <option value="Yanbu Airport (YNB)"></option>
+                                    <option value="Riyadh Airport (KKIA)"></option>
                                 </datalist>
                             </div>
                         </div>
@@ -374,8 +384,26 @@
                             </div>
                             <div class="fg">
                                 <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">شرکہ (Shirka)</label>
-                                <input type="text" id="edit-rec-shirka" list="edit-rec-shirka-list" style="width:100%;box-sizing:border-box;" />
-                                <datalist id="edit-rec-shirka-list"></datalist>
+                                <input type="text" id="edit-rec-shirka" list="edit-rec-shirka-list" autocomplete="off" placeholder="شرکہ منتخب کریں یا لکھیں..." style="width:100%;box-sizing:border-box;" />
+                                <datalist id="edit-rec-shirka-list">
+                                    <option value="الرواد"></option>
+                                    <option value="الشہداء"></option>
+                                    <option value="المختار"></option>
+                                    <option value="الدولية"></option>
+                                    <option value="ضيوف الرحمن"></option>
+                                    <option value="العالمية"></option>
+                                    <option value="رواحل"></option>
+                                    <option value="سماء المشاعر"></option>
+                                    <option value="قافلة الإيمان"></option>
+                                    <option value="دلہ"></option>
+                                    <option value="سدرہ"></option>
+                                    <option value="مواسم"></option>
+                                    <option value="انوار الحرمین"></option>
+                                    <option value="فنادق الہدایہ"></option>
+                                    <option value="دار الایمان"></option>
+                                    <option value="الماسیہ"></option>
+                                    <option value="باب السلام"></option>
+                                </datalist>
                             </div>
                             <div class="fg">
                                 <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">گروپ نمبر (Group No)</label>

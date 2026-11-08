@@ -563,13 +563,27 @@ function openEditRecordModal(id) {
             allP.map(p => `<option value="${p}" ${p === r.party ? 'selected' : ''}>${p}</option>`).join('');
     }
 
-    // Haji Party
+    // Haji Party select
     const newPartyEl = document.getElementById('edit-rec-new-party');
-    if (newPartyEl) newPartyEl.value = r.newParty || '';
-    const hpDatalist = document.getElementById('edit-rec-haji-party-list');
-    if (hpDatalist) {
-        const allHp = Array.from(new Set([...(typeof hajiParties !== 'undefined' ? hajiParties : []), ...(typeof records !== 'undefined' ? records.map(x => x.newParty) : [])].filter(Boolean)));
-        hpDatalist.innerHTML = allHp.map(hp => `<option value="${hp}">`).join('');
+    if (newPartyEl) {
+        const baseList = (typeof DEFAULT_HAJI_PARTIES !== 'undefined' && Array.isArray(DEFAULT_HAJI_PARTIES)) ? DEFAULT_HAJI_PARTIES : [
+            'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+            'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+            'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+        ];
+        const allHp = Array.from(new Set([
+            ...baseList,
+            ...(typeof hajiParties !== 'undefined' ? hajiParties : []),
+            ...(typeof records !== 'undefined' ? records.map(x => x.newParty) : []),
+            ...(typeof deletedRecords !== 'undefined' ? deletedRecords.map(x => x.newParty) : []),
+            r.newParty
+        ].filter(Boolean)));
+        allHp.sort((a, b) => a.localeCompare(b, 'ur'));
+
+        newPartyEl.innerHTML = '<option value="">-- منتخب کریں --</option>' + 
+            allHp.map(hp => `<option value="${hp}" ${hp === (r.newParty || '') ? 'selected' : ''}>${hp}</option>`).join('') +
+            '<option value="__custom__">➕ نیا درج کریں... (Add New)</option>';
+        newPartyEl.value = r.newParty || '';
     }
 
     // Sector select
@@ -614,14 +628,12 @@ function openEditRecordModal(id) {
             allNatures.map(n => `<option value="${n}" ${n === r.transportNature ? 'selected' : ''}>${n}</option>`).join('');
     }
 
+    if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
+    if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
+
     // Shirka
     const shEl = document.getElementById('edit-rec-shirka');
     if (shEl) shEl.value = r.shirka || '';
-    const shDatalist = document.getElementById('edit-rec-shirka-list');
-    if (shDatalist) {
-        const allShirkas = Array.from(new Set([...(typeof shirkas !== 'undefined' ? shirkas : []), ...(typeof records !== 'undefined' ? records.map(x => x.shirka) : [])].filter(Boolean)));
-        shDatalist.innerHTML = allShirkas.map(s => `<option value="${s}">`).join('');
-    }
 
     const grEl = document.getElementById('edit-rec-group');
     if (grEl) grEl.value = r.group || '';
@@ -714,7 +726,8 @@ function saveRecordEditModal() {
     const date = document.getElementById('edit-rec-date')?.value || '';
     const voucher = document.getElementById('edit-rec-voucher')?.value?.trim() || '';
     const party = document.getElementById('edit-rec-party')?.value || '';
-    const newParty = document.getElementById('edit-rec-new-party')?.value?.trim() || '';
+    let newParty = document.getElementById('edit-rec-new-party')?.value?.trim() || '';
+    if (newParty === '__custom__') newParty = '';
     const sector = document.getElementById('edit-rec-sector')?.value || '';
     const transport = document.getElementById('edit-rec-transport')?.value || '';
 
@@ -809,6 +822,12 @@ function saveRecordEditModal() {
         if (typeof svR === 'function') svR();
     }
 
+    if (newParty && typeof hajiParties !== 'undefined' && Array.isArray(hajiParties)) {
+        if (!hajiParties.includes(newParty)) {
+            hajiParties.push(newParty);
+            if (typeof svHP === 'function') svHP();
+        }
+    }
     if (typeof todayStats === 'function') todayStats();
     if (typeof refreshAllDrops === 'function') refreshAllDrops();
 
@@ -1629,3 +1648,25 @@ window.saveAndRestoreRecordEditModal = saveAndRestoreRecordEditModal;
 window.calcEditRecordTotal = calcEditRecordTotal;
 window.toggleEditFlightDetails = toggleEditFlightDetails;
 window.editRecord = openEditRecordModal;
+function onEditRecHajiPartyChange() {
+    const sel = document.getElementById('edit-rec-new-party');
+    if (!sel) return;
+    if (sel.value === '__custom__') {
+        const customName = prompt('نئی حاجی پارٹی کا نام درج کریں:');
+        if (customName && customName.trim()) {
+            const trimmed = customName.trim();
+            if (typeof hajiParties !== 'undefined' && Array.isArray(hajiParties) && !hajiParties.includes(trimmed)) {
+                hajiParties.push(trimmed);
+                if (typeof svHP === 'function') svHP();
+            }
+            const opt = document.createElement('option');
+            opt.value = trimmed;
+            opt.textContent = trimmed;
+            sel.insertBefore(opt, sel.lastElementChild);
+            sel.value = trimmed;
+        } else {
+            sel.value = '';
+        }
+    }
+}
+window.onEditRecHajiPartyChange = onEditRecHajiPartyChange;

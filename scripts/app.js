@@ -43,17 +43,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 transportNatures = Array.from(new Set([...defaultNatures, ...saved]));
                 svTN();
             }
+            if (!shirkas.length) {
+                const defaultShirkas = (typeof DEFAULT_SHIRKAS !== 'undefined' && Array.isArray(DEFAULT_SHIRKAS)) ? DEFAULT_SHIRKAS : [
+                    'الرواد', 'الشہداء', 'المختار', 'الدولية', 'ضيوف الرحمن',
+                    'العالمية', 'رواحل', 'سماء المشاعر', 'قافلة الإيمان', 'دلہ',
+                    'سدرہ', 'مواسم', 'انوار الحرمین', 'فنادق الہدایہ', 'دار الایمان'
+                ];
+                const saved = (records || []).map(r => r.shirka).filter(Boolean);
+                shirkas = Array.from(new Set([...defaultShirkas, ...saved]));
+                if (typeof svSh === 'function') svSh();
+            }
             parties.forEach(p => getCode(p));
 
-            if (!hajiParties.length && records.length > 0) {
-                const hSet = new Set();
-                records.forEach(r => {
-                    if (r.newParty) {
-                        r.newParty.split(',').map(s => s.trim()).filter(s => s).forEach(s => hSet.add(s));
+            if (!hajiParties.length) {
+                const defaultHp = (typeof DEFAULT_HAJI_PARTIES !== 'undefined' && Array.isArray(DEFAULT_HAJI_PARTIES)) ? DEFAULT_HAJI_PARTIES : [
+                    'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+                    'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+                    'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+                ];
+                const saved = [];
+                (records || []).forEach(r => {
+                    if (r && r.newParty) {
+                        r.newParty.split(',').map(s => s.trim()).filter(Boolean).forEach(s => saved.push(s));
                     }
                 });
-                hajiParties = Array.from(hSet);
-                if (hajiParties.length) svHP();
+                hajiParties = Array.from(new Set([...defaultHp, ...saved]));
+                if (typeof svHP === 'function') svHP();
             }
 
             initUsers().then(() => {
@@ -81,7 +96,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
             parties = getLocal('parties') || (T[lang] || T.ur).defaultParties.slice();
             sectors = getLocal('sectors') || (T[lang] || T.ur).defaultSectors.slice();
-            shirkas = getLocal('shirkas') || [];
+            shirkas = getLocal('shirkas');
+            if (!shirkas || !shirkas.length) {
+                shirkas = (typeof DEFAULT_SHIRKAS !== 'undefined' && Array.isArray(DEFAULT_SHIRKAS)) ? [...DEFAULT_SHIRKAS] : [
+                    'الرواد', 'الشہداء', 'المختار', 'الدولية', 'ضيوف الرحمن',
+                    'العالمية', 'رواحل', 'سماء المشاعر', 'قافلة الإيمان', 'دلہ',
+                    'سدرہ', 'مواسم', 'انوار الحرمین', 'فنادق الہدایہ', 'دار الایمان'
+                ];
+            }
             transports = getLocal('transports') || ['بس', 'وین', 'کار', 'کوچ'];
             vehicleRates = getLocal('vehicleRates') || [];
             transportNatures = getLocal('transportNatures');
@@ -96,7 +118,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             payments = getLocal('payments') || [];
             partyCodes = getLocal('partyCodes') || {};
             dailyNotes = getLocal('dailyNotes') || [];
-            hajiParties = getLocal('hajiParties') || [];
+            hajiParties = getLocal('hajiParties');
+            if (!hajiParties || !hajiParties.length) {
+                hajiParties = (typeof DEFAULT_HAJI_PARTIES !== 'undefined' && Array.isArray(DEFAULT_HAJI_PARTIES)) ? [...DEFAULT_HAJI_PARTIES] : [
+                    'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+                    'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+                    'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+                ];
+            }
             parties.forEach(p => {
                 if (typeof getCode === 'function') getCode(p);
             });

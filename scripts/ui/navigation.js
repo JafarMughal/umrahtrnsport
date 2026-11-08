@@ -170,6 +170,7 @@ function _executeShowPageLogic(p) {
         if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
         if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
         if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
+        if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
         todayStats(); 
     }
     if (p === 'payment') { 
