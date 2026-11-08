@@ -566,18 +566,17 @@ function openEditRecordModal(id) {
     // Haji Party select
     const newPartyEl = document.getElementById('edit-rec-new-party');
     if (newPartyEl) {
-        const baseList = (typeof DEFAULT_HAJI_PARTIES !== 'undefined' && Array.isArray(DEFAULT_HAJI_PARTIES)) ? DEFAULT_HAJI_PARTIES : [
+        const defaultNamesToRemove = new Set([
             'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
             'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
             'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
-        ];
+        ]);
         const allHp = Array.from(new Set([
-            ...baseList,
             ...(typeof hajiParties !== 'undefined' ? hajiParties : []),
             ...(typeof records !== 'undefined' ? records.map(x => x.newParty) : []),
             ...(typeof deletedRecords !== 'undefined' ? deletedRecords.map(x => x.newParty) : []),
             r.newParty
-        ].filter(Boolean)));
+        ].filter(hp => hp && !defaultNamesToRemove.has(hp))));
         allHp.sort((a, b) => a.localeCompare(b, 'ur'));
 
         newPartyEl.innerHTML = '<option value="">-- منتخب کریں --</option>' + 

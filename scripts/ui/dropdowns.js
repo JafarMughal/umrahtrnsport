@@ -185,23 +185,8 @@ function fillAirportDatalist() {
     attachDatalistAutoOpen('edit-rec-airport');
 }
 
-const DEFAULT_HAJI_PARTIES = [
-    'القریشی ٹورز',
-    'الرحمان ٹریولز',
-    'الحرمین ٹورز اینڈ ٹریولز',
-    'ضیوف الرحمن گروپ',
-    'المروہ ٹریولز',
-    'الصفا عمرہ گروپ',
-    'کاروان فیصل',
-    'کاروان مدینہ',
-    'لبیک ٹورز اینڈ ٹریولز',
-    'باب الحرم ٹریولز',
-    'نور الہدیٰ ٹورز',
-    'قافلہ حرمین'
-];
-
 function fillHajiPartyDatalist() {
-    let allHp = Array.isArray(DEFAULT_HAJI_PARTIES) ? [...DEFAULT_HAJI_PARTIES] : [];
+    let allHp = [];
     if (typeof hajiParties !== 'undefined' && Array.isArray(hajiParties)) {
         allHp.push(...hajiParties);
     }
@@ -219,7 +204,12 @@ function fillHajiPartyDatalist() {
             }
         });
     }
-    const uniqueHp = [...new Set(allHp.map(h => (h || '').trim()).filter(Boolean))];
+    const defaultNamesToRemove = new Set([
+        'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+        'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+        'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+    ]);
+    const uniqueHp = [...new Set(allHp.map(h => (h || '').trim()).filter(h => h && !defaultNamesToRemove.has(h)))];
     uniqueHp.sort((a, b) => a.localeCompare(b, 'ur'));
 
     const selEl = document.getElementById('edit-rec-new-party');
@@ -243,9 +233,14 @@ function fillHajiPartyDropdown(query = '') {
     const currentSelected = hiddenInp ? hiddenInp.value : '';
     
     const q = query.toLowerCase().trim();
-    const baseList = (typeof hajiParties !== 'undefined' && Array.isArray(hajiParties) && hajiParties.length)
-        ? hajiParties
-        : (Array.isArray(DEFAULT_HAJI_PARTIES) ? DEFAULT_HAJI_PARTIES : []);
+    const defaultNamesToRemove = new Set([
+        'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+        'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+        'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+    ]);
+    const baseList = (typeof hajiParties !== 'undefined' && Array.isArray(hajiParties))
+        ? hajiParties.filter(hp => !defaultNamesToRemove.has(hp))
+        : [];
     const filtered = baseList.filter(hp => !q || hp.toLowerCase().includes(q));
     
     if (filtered.length === 0) {
@@ -322,4 +317,3 @@ window.fillAirportDatalist = fillAirportDatalist;
 window.DEFAULT_SHIRKAS = DEFAULT_SHIRKAS;
 window.DEFAULT_AIRPORTS = DEFAULT_AIRPORTS;
 window.fillHajiPartyDatalist = fillHajiPartyDatalist;
-window.DEFAULT_HAJI_PARTIES = DEFAULT_HAJI_PARTIES;

@@ -55,20 +55,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             parties.forEach(p => getCode(p));
 
-            if (!hajiParties.length) {
-                const defaultHp = (typeof DEFAULT_HAJI_PARTIES !== 'undefined' && Array.isArray(DEFAULT_HAJI_PARTIES)) ? DEFAULT_HAJI_PARTIES : [
-                    'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
-                    'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
-                    'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
-                ];
-                const saved = [];
-                (records || []).forEach(r => {
+            const defaultNamesToRemove = new Set([
+                'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+                'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+                'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+            ]);
+            let cleanedHp = (hajiParties || []).filter(hp => !defaultNamesToRemove.has(hp));
+            if (cleanedHp.length !== hajiParties.length) {
+                hajiParties = cleanedHp;
+                if (typeof svHP === 'function') svHP();
+            } else if (!hajiParties.length && records.length > 0) {
+                const hSet = new Set();
+                records.forEach(r => {
                     if (r && r.newParty) {
-                        r.newParty.split(',').map(s => s.trim()).filter(Boolean).forEach(s => saved.push(s));
+                        r.newParty.split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
+                            if (!defaultNamesToRemove.has(s)) hSet.add(s);
+                        });
                     }
                 });
-                hajiParties = Array.from(new Set([...defaultHp, ...saved]));
-                if (typeof svHP === 'function') svHP();
+                hajiParties = Array.from(hSet);
+                if (hajiParties.length) svHP();
             }
 
             initUsers().then(() => {
@@ -118,14 +124,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             payments = getLocal('payments') || [];
             partyCodes = getLocal('partyCodes') || {};
             dailyNotes = getLocal('dailyNotes') || [];
-            hajiParties = getLocal('hajiParties');
-            if (!hajiParties || !hajiParties.length) {
-                hajiParties = (typeof DEFAULT_HAJI_PARTIES !== 'undefined' && Array.isArray(DEFAULT_HAJI_PARTIES)) ? [...DEFAULT_HAJI_PARTIES] : [
-                    'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
-                    'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
-                    'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
-                ];
-            }
+            hajiParties = getLocal('hajiParties') || [];
+            const defaultNamesToRemoveOffline = new Set([
+                'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+                'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+                'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+            ]);
+            hajiParties = hajiParties.filter(hp => !defaultNamesToRemoveOffline.has(hp));
             parties.forEach(p => {
                 if (typeof getCode === 'function') getCode(p);
             });
