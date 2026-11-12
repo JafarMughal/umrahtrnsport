@@ -1,272 +1,597 @@
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  FIREBASE INIT - FINAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  FIREBASE INIT & SMART QUOTA-SAVER SYNC ENGINE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const _LEGACY_HAJI_NAMES = new Set([
+    'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
+    'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
+    'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
+]);
+
+let _loadDataPromise = null;
+let _appBootDone = false;
+let _metaListenerRef = null;
+let _metaListenerHandler = null;
+
+function _toFbArray(v) {
+    return Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
+}
+
+function _hasStorageNode(node) {
+    try {
+        return typeof localStorage !== 'undefined' && localStorage.getItem('uts_' + node) !== null;
+    } catch (e) {
+        return false;
+    }
+}
+
+function _defaultShirkasList() {
+    if (typeof DEFAULT_SHIRKAS !== 'undefined' && Array.isArray(DEFAULT_SHIRKAS)) {
+        return [...DEFAULT_SHIRKAS];
+    }
+    return [
+        'الرواد', 'الشہداء', 'المختار', 'الدولية', 'ضيوف الرحمن',
+        'العالمية', 'رواحل', 'سماء المشاعر', 'قافلة الإيمان', 'دلہ',
+        'سدرہ', 'مواسم', 'انوار الحرمین', 'فنادق الہدایہ', 'دار الایمان'
+    ];
+}
+
+function _defaultNaturesList() {
+    return ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+}
+
+function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, mergeRecords = false } = {}) {
+    let normalizedVal = rawVal;
+
+    switch (node) {
+        case 'records': {
+            const incoming = _toFbArray(rawVal);
+            if (mergeRecords && Array.isArray(records) && records.length && typeof isFbNodeDirty === 'function' && isFbNodeDirty('records')) {
+                const fbIds = new Set(incoming.map(r => r && r.id));
+                const localOnly = records.filter(r => r && !fbIds.has(r.id));
+                records = localOnly.length ? [...incoming, ...localOnly] : incoming;
+            } else {
+                records = incoming;
+            }
+            normalizedVal = records;
+            break;
+        }
+        case 'deletedRecords':
+            deletedRecords = _toFbArray(rawVal);
+            normalizedVal = deletedRecords;
+            break;
+        case 'payments':
+            payments = _toFbArray(rawVal);
+            normalizedVal = payments;
+            break;
+        case 'parties':
+            parties = _toFbArray(rawVal);
+            normalizedVal = parties;
+            break;
+        case 'sectors':
+            sectors = _toFbArray(rawVal);
+            normalizedVal = sectors;
+            break;
+        case 'shirkas':
+            shirkas = _toFbArray(rawVal);
+            normalizedVal = shirkas;
+            break;
+        case 'transports':
+            transports = _toFbArray(rawVal);
+            normalizedVal = transports;
+            break;
+        case 'vehicleRates':
+            vehicleRates = _toFbArray(rawVal);
+            normalizedVal = vehicleRates;
+            break;
+        case 'transportNatures':
+            transportNatures = _toFbArray(rawVal);
+            normalizedVal = transportNatures;
+            break;
+        case 'partyCodes':
+            partyCodes = (rawVal && typeof rawVal === 'object' && !Array.isArray(rawVal)) ? rawVal : {};
+            normalizedVal = partyCodes;
+            break;
+        case 'users': {
+            const nextUsers = _toFbArray(rawVal);
+            users = nextUsers.length
+                ? nextUsers
+                : [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
+            normalizedVal = users;
+            break;
+        }
+        case 'dailyNotes':
+            dailyNotes = _toFbArray(rawVal);
+            normalizedVal = dailyNotes;
+            break;
+        case 'hajiParties':
+            hajiParties = _toFbArray(rawVal);
+            normalizedVal = hajiParties;
+            break;
+        case 'umrahBookings': {
+            const nextUB = _toFbArray(rawVal);
+            if (!nextUB.length && (rawVal === undefined || rawVal === null)) {
+                try {
+                    const localUB = JSON.parse(localStorage.getItem('uts_umrahBookings') || '[]');
+                    if (Array.isArray(localUB) && localUB.length > 0 && !localStorage.getItem('uts_fb_has_cache')) {
+                        umrahBookings = localUB;
+                        normalizedVal = umrahBookings;
+                        if (typeof svUB === 'function') svUB();
+                        return;
+                    }
+                } catch (e) { }
+            }
+            umrahBookings = nextUB;
+            normalizedVal = umrahBookings;
+            break;
+        }
+        case 'umrahVouchers': {
+            const nextUV = _toFbArray(rawVal);
+            if (!nextUV.length && (rawVal === undefined || rawVal === null)) {
+                try {
+                    const localUV = JSON.parse(localStorage.getItem('uts_umrahVouchers') || '[]');
+                    if (Array.isArray(localUV) && localUV.length > 0 && !localStorage.getItem('uts_fb_has_cache')) {
+                        umrahVouchers = localUV;
+                        normalizedVal = umrahVouchers;
+                        if (typeof svUV === 'function') svUV();
+                        return;
+                    }
+                } catch (e) { }
+            }
+            umrahVouchers = nextUV;
+            normalizedVal = umrahVouchers;
+            break;
+        }
+        case 'rolePermissions':
+            if (rawVal && typeof rawVal === 'object') {
+                if (typeof applyGranularPerms === 'function') applyGranularPerms(rawVal);
+                normalizedVal = rolePermissions;
+            } else {
+                normalizedVal = rolePermissions;
+            }
+            break;
+        case 'settings': {
+            const s = (rawVal && typeof rawVal === 'object') ? rawVal : {};
+            fbLogo = s.logo || null;
+            fbAppName = s.appName || {};
+            fbAppSub = s.appSub || {};
+            normalizedVal = { logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} };
+            break;
+        }
+        default:
+            return;
+    }
+
+    if (isRemote && typeof markFbNodeSynced === 'function') {
+        markFbNodeSynced(node, normalizedVal, serverTs);
+    }
+}
+
+function hydrateAllFromLocalCache() {
+    const nodes = typeof FB_SYNC_NODES !== 'undefined' ? FB_SYNC_NODES : [
+        'records', 'deletedRecords', 'payments', 'parties', 'sectors', 'shirkas',
+        'transports', 'vehicleRates', 'transportNatures', 'partyCodes', 'users',
+        'dailyNotes', 'hajiParties', 'umrahBookings', 'umrahVouchers',
+        'rolePermissions', 'settings'
+    ];
+    let foundAny = false;
+    nodes.forEach(node => {
+        try {
+            const raw = localStorage.getItem('uts_' + node);
+            if (raw !== null) {
+                foundAny = true;
+                const parsed = JSON.parse(raw);
+                _applySingleFbNode(node, parsed, { isRemote: false });
+                if (typeof seedLastSyncedFromCache === 'function') {
+                    seedLastSyncedFromCache(node, raw);
+                }
+            }
+        } catch (e) { }
+    });
+    const explicitlyCached = (() => {
+        try { return localStorage.getItem('uts_fb_has_cache') === '1'; } catch (e) { return false; }
+    })();
+    return explicitlyCached || foundAny;
+}
+
+function _applyDefaultsAndCleanup(allowWrite) {
+    const L = (typeof T !== 'undefined' && (T[lang] || T.ur)) ? (T[lang] || T.ur) : { defaultParties: [], defaultSectors: [] };
+
+    if (!parties || !parties.length) {
+        parties = (L.defaultParties || []).slice();
+        if (allowWrite && typeof svP === 'function') svP();
+    }
+    if (!sectors || !sectors.length) {
+        sectors = (L.defaultSectors || []).slice();
+        if (allowWrite && typeof svS === 'function') svS();
+    }
+    if (!transports || !transports.length) {
+        transports = ['بس', 'وین', 'کار', 'کوچ'];
+        if (allowWrite && typeof svTr === 'function') svTr();
+    }
+    if (!transportNatures || !transportNatures.length) {
+        const saved = (records || []).map(r => r && r.transportNature).filter(Boolean);
+        transportNatures = Array.from(new Set([..._defaultNaturesList(), ...saved]));
+        if (allowWrite && typeof svTN === 'function') svTN();
+    }
+    if (!shirkas || !shirkas.length) {
+        const saved = (records || []).map(r => r && r.shirka).filter(Boolean);
+        shirkas = Array.from(new Set([..._defaultShirkasList(), ...saved]));
+        if (allowWrite && typeof svSh === 'function') svSh();
+    }
+
+    if (typeof getCode === 'function') {
+        parties.forEach(p => getCode(p));
+    }
+
+    const cleanedHp = (hajiParties || []).filter(hp => !_LEGACY_HAJI_NAMES.has(hp));
+    if (cleanedHp.length !== (hajiParties || []).length) {
+        hajiParties = cleanedHp;
+        if (allowWrite && typeof svHP === 'function') svHP();
+    } else if ((!hajiParties || !hajiParties.length) && Array.isArray(records) && records.length > 0) {
+        const hSet = new Set();
+        records.forEach(r => {
+            if (r && r.newParty) {
+                r.newParty.split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
+                    if (!_LEGACY_HAJI_NAMES.has(s)) hSet.add(s);
+                });
+            }
+        });
+        hajiParties = Array.from(hSet);
+        if (hajiParties.length && allowWrite && typeof svHP === 'function') svHP();
+    }
+}
+
+function _refreshUiAfterNodes(changedNodes = null) {
+    const allChanged = !changedNodes || changedNodes.size === 0;
+    const has = (n) => allChanged || changedNodes.has(n);
+
+    if (has('settings')) {
+        if (typeof applyLogo === 'function') applyLogo(fbLogo);
+        if (typeof loadAppName === 'function') loadAppName(lang);
+    }
+    if (has('parties') || has('sectors') || has('transports') || has('shirkas') || has('hajiParties') || has('transportNatures') || has('partyCodes')) {
+        if (typeof refreshAllDrops === 'function') refreshAllDrops();
+    }
+
+    const activePage = typeof document !== 'undefined' ? document.querySelector('.page.active') : null;
+    if (activePage) {
+        if (activePage.id === 'page-home' && typeof renderDashboard === 'function') renderDashboard();
+        if (activePage.id === 'page-entry') {
+            if (typeof todayStats === 'function') todayStats();
+            if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+        }
+        if (activePage.id === 'page-payment' && typeof renderPayments === 'function') renderPayments();
+        if (activePage.id === 'page-ledger' && typeof renderLedger === 'function') renderLedger();
+        if (activePage.id === 'page-records') {
+            if (typeof initRecordsPage === 'function') initRecordsPage();
+            else if (typeof filterRecords === 'function') filterRecords();
+        }
+        if (activePage.id === 'page-dailynote') {
+            if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+            if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
+        }
+        if (activePage.id === 'page-report' && typeof genReport === 'function') genReport();
+        if (activePage.id === 'page-admin' && typeof renderAdminPanel === 'function') renderAdminPanel();
+        if (activePage.id === 'page-umrah') {
+            if (has('umrahBookings') && typeof renderUmrahBookings === 'function') renderUmrahBookings();
+            if ((has('umrahVouchers') || has('umrahBookings')) && typeof renderUmrahVouchers === 'function') renderUmrahVouchers();
+        }
+        if (activePage.id === 'page-settings') {
+            if (typeof renderRateList === 'function') renderRateList();
+            if (typeof renderPartyList === 'function') renderPartyList();
+            if (typeof renderSectorList === 'function') renderSectorList();
+            if (typeof renderTransportList === 'function') renderTransportList();
+            if (typeof renderNatureList === 'function') renderNatureList();
+            if (typeof renderShirkaList === 'function') renderShirkaList();
+            if (typeof renderHajiPartyList === 'function') renderHajiPartyList();
+        }
+        if (activePage.id === 'page-ksa-detail' && typeof onKsaDetailPageShow === 'function') {
+            onKsaDetailPageShow();
+        }
+    }
+
+    if (has('rolePermissions') || has('users')) {
+        if (typeof enforcePermissions === 'function') enforcePermissions();
+    }
+    if (typeof updateFbSyncIndicator === 'function') updateFbSyncIndicator();
+}
+
+function _ensureLoggedInUserInUsersList() {
+    if (!loggedInUser) return;
+    if (!Array.isArray(users)) users = [];
+    const found = users.find(x => x && x.username && x.username.toLowerCase() === loggedInUser.toLowerCase());
+    if (!found) {
+        const isFirstAdmin = (loggedInUser === 'admin' || loggedInUser === 'jafarmughal');
+        users.push({
+            username: loggedInUser,
+            role: isFirstAdmin ? 'superadmin' : 'operator',
+            disabled: false,
+            createdAt: new Date().toISOString().slice(0, 10),
+            createdBy: 'system'
+        });
+        if (typeof svU === 'function') svU();
+    }
+    if (typeof setCurrentUserRole === 'function') setCurrentUserRole(loggedInUser);
+}
+
+async function _finishDataBoot(changedNodes = null) {
+    _ensureLoggedInUserInUsersList();
+    if (!_appBootDone && typeof initUsers === 'function') {
+        await initUsers();
+    }
+    isFirebaseReady = true;
+    const fbLoader = typeof document !== 'undefined' ? document.getElementById('firebase-loader') : null;
+    if (fbLoader) fbLoader.style.display = 'none';
+
+    if (!_appBootDone) {
+        _appBootDone = true;
+        if (typeof applyLogo === 'function') applyLogo(fbLogo);
+        if (typeof setLang === 'function') setLang(lang);
+        if (typeof checkAuth === 'function') checkAuth();
+        if (typeof refreshAllDrops === 'function') refreshAllDrops();
+        if (loggedInUser && typeof showPage === 'function' && typeof currentActiveTab !== 'undefined') {
+            showPage(currentActiveTab);
+        }
+        const eDate = typeof document !== 'undefined' ? document.getElementById('e-date') : null;
+        if (eDate && typeof today === 'function') eDate.value = today();
+        const pDate = typeof document !== 'undefined' ? document.getElementById('p-date') : null;
+        if (pDate && typeof today === 'function') pDate.value = today();
+        if (typeof setNextVoucher === 'function') setNextVoucher();
+        if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
+    } else if (changedNodes && changedNodes.size > 0) {
+        _refreshUiAfterNodes(changedNodes);
+    }
+
+    syncMetaListenerWithMode();
+    if (typeof updateFbSyncIndicator === 'function') updateFbSyncIndicator();
+}
+
+function _withTimeout(promise, ms) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('FIREBASE_TIMEOUT')), ms);
+        promise.then(
+            v => { clearTimeout(timer); resolve(v); },
+            err => { clearTimeout(timer); reject(err); }
+        );
+    });
+}
+
+function detachSmartMetaListener() {
+    if (_metaListenerRef && _metaListenerHandler) {
+        try { _metaListenerRef.off('value', _metaListenerHandler); } catch (e) { }
+    }
+    _metaListenerRef = null;
+    _metaListenerHandler = null;
+}
+
+function attachSmartMetaListener() {
+    detachSmartMetaListener();
+    if (typeof db === 'undefined' || !db || typeof db.ref !== 'function' || !loggedInUser) return;
+    if (typeof getFbSyncMode === 'function' && getFbSyncMode() !== 'live') return;
+
+    _metaListenerRef = db.ref('_meta/nodes');
+    _metaListenerHandler = async (snapshot) => {
+        if (!isFirebaseReady || !snapshot.exists()) return;
+        const remoteMeta = snapshot.val() || {};
+        const localMeta = typeof getLocalFbMeta === 'function' ? getLocalFbMeta() : {};
+        const nodes = typeof FB_SYNC_NODES !== 'undefined' ? FB_SYNC_NODES : [];
+        const dirtySet = new Set(typeof getDirtyFbNodes === 'function' ? getDirtyFbNodes() : []);
+
+        const nodesToFetch = nodes.filter(node => {
+            if (dirtySet.has(node)) return false;
+            const rTs = Number(remoteMeta[node] || 0);
+            const lTs = Number(localMeta[node] || 0);
+            return rTs > lTs;
+        });
+
+        if (!nodesToFetch.length) return;
+
+        try {
+            const snaps = await Promise.all(nodesToFetch.map(n => db.ref(n).once('value')));
+            if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.nodeReads += nodesToFetch.length;
+
+            const updated = new Set();
+            nodesToFetch.forEach((node, idx) => {
+                if (typeof isFbNodeDirty === 'function' && isFbNodeDirty(node)) return;
+                _applySingleFbNode(node, snaps[idx].val(), {
+                    isRemote: true,
+                    serverTs: Number(remoteMeta[node] || Date.now()),
+                    mergeRecords: node === 'records'
+                });
+                updated.add(node);
+            });
+            if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
+            _refreshUiAfterNodes(updated);
+        } catch (e) {
+            console.warn('Smart live delta fetch error:', e);
+        }
+    };
+    _metaListenerRef.on('value', _metaListenerHandler, (err) => {
+        console.warn('Firebase meta listener error:', err);
+    });
+}
+
+function syncMetaListenerWithMode() {
+    const mode = typeof getFbSyncMode === 'function' ? getFbSyncMode() : 'eco';
+    if (mode === 'live' && loggedInUser) {
+        attachSmartMetaListener();
+    } else {
+        detachSmartMetaListener();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (typeof loadComponentPages === 'function') {
         await loadComponentPages();
     }
     if (!users || !users.length) {
-        users = [{ username: 'admin', role: 'admin' }];
+        users = [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
     }
 
-    window.loadData = () => {
-        db.ref('/').once('value').then(snapshot => {
-            const data = snapshot.val() || {};
-            const toArray = (v) => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
-            records = toArray(data.records);
-            deletedRecords = toArray(data.deletedRecords);
-            payments = toArray(data.payments);
-            parties = toArray(data.parties);
-            sectors = toArray(data.sectors);
-            shirkas = toArray(data.shirkas);
-            transports = toArray(data.transports);
-            vehicleRates = toArray(data.vehicleRates);
-            transportNatures = toArray(data.transportNatures);
-            partyCodes = data.partyCodes || {};
-            users = toArray(data.users);
-            if (!users.length) users = [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
-            dailyNotes = toArray(data.dailyNotes);
-            hajiParties = toArray(data.hajiParties);
-            umrahBookings = toArray(data.umrahBookings);
-            if (!umrahBookings || !umrahBookings.length) {
-                try {
-                    const localUB = JSON.parse(localStorage.getItem('uts_umrahBookings') || '[]');
-                    if (localUB && Array.isArray(localUB) && localUB.length > 0) {
-                        umrahBookings = localUB;
-                        if (typeof svUB === 'function') svUB();
-                    }
-                } catch (e) { }
-            }
-            const settings = data.settings || {};
-            fbLogo = settings.logo || null;
-            fbAppName = settings.appName || {};
-            fbAppSub = settings.appSub || {};
-            // Load role permissions from Firebase
-            if (data.rolePermissions) applyGranularPerms(data.rolePermissions);
+    window.loadData = async (options = {}) => {
+        if (typeof options === 'boolean') options = { force: options };
+        const force = Boolean(options && options.force);
+        const forceFull = Boolean(options && options.forceFull);
 
-            if (!parties.length) { parties = (T[lang] || T.ur).defaultParties.slice(); svP(); }
-            if (!sectors.length) { sectors = (T[lang] || T.ur).defaultSectors.slice(); svS(); }
-            if (!transports.length) { transports = ['بس', 'وین', 'کار', 'کوچ']; svTr(); }
-            if (!transportNatures.length) {
-                const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
-                const saved = (records || []).map(r => r.transportNature).filter(Boolean);
-                transportNatures = Array.from(new Set([...defaultNatures, ...saved]));
-                svTN();
-            }
-            if (!shirkas.length) {
-                const defaultShirkas = (typeof DEFAULT_SHIRKAS !== 'undefined' && Array.isArray(DEFAULT_SHIRKAS)) ? DEFAULT_SHIRKAS : [
-                    'الرواد', 'الشہداء', 'المختار', 'الدولية', 'ضيوف الرحمن',
-                    'العالمية', 'رواحل', 'سماء المشاعر', 'قافلة الإيمان', 'دلہ',
-                    'سدرہ', 'مواسم', 'انوار الحرمین', 'فنادق الہدایہ', 'دار الایمان'
-                ];
-                const saved = (records || []).map(r => r.shirka).filter(Boolean);
-                shirkas = Array.from(new Set([...defaultShirkas, ...saved]));
-                if (typeof svSh === 'function') svSh();
-            }
-            parties.forEach(p => getCode(p));
+        if (_loadDataPromise) return _loadDataPromise;
 
-            const defaultNamesToRemove = new Set([
-                'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
-                'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
-                'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
-            ]);
-            let cleanedHp = (hajiParties || []).filter(hp => !defaultNamesToRemove.has(hp));
-            if (cleanedHp.length !== hajiParties.length) {
-                hajiParties = cleanedHp;
-                if (typeof svHP === 'function') svHP();
-            } else if (!hajiParties.length && records.length > 0) {
-                const hSet = new Set();
-                records.forEach(r => {
-                    if (r && r.newParty) {
-                        r.newParty.split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
-                            if (!defaultNamesToRemove.has(s)) hSet.add(s);
+        _loadDataPromise = (async () => {
+            const hasCache = hydrateAllFromLocalCache();
+            const syncMode = typeof getFbSyncMode === 'function' ? getFbSyncMode() : 'eco';
+            const ttlMs = (typeof getFbCacheTtlSec === 'function' ? getFbCacheTtlSec() : 180) * 1000;
+            const lastCheck = typeof getFbLastCheckAt === 'function' ? getFbLastCheckAt() : 0;
+            const cacheFresh = hasCache && ttlMs > 0 && (Date.now() - lastCheck) < ttlMs;
+
+            if (typeof db === 'undefined' || !db || typeof db.ref !== 'function') {
+                _applyDefaultsAndCleanup(false);
+                await _finishDataBoot(null);
+                return;
+            }
+
+            // Eco/Manual cache hit: 0 Firebase reads!
+            if (!force && !forceFull && hasCache && (syncMode === 'manual' || (syncMode === 'eco' && cacheFresh))) {
+                if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.cacheHits++;
+                if (typeof flushPendingFbWrites === 'function') {
+                    flushPendingFbWrites();
+                }
+                _applyDefaultsAndCleanup(true);
+                await _finishDataBoot(null);
+                return;
+            }
+
+            try {
+                // Always push local pending edits BEFORE reading remote data so nothing local is overwritten
+                if (typeof flushPendingFbWrites === 'function') {
+                    await flushPendingFbWrites();
+                }
+
+                const nodes = typeof FB_SYNC_NODES !== 'undefined' ? FB_SYNC_NODES : [];
+                const applyFullRootSnapshot = async (data, remoteMetaMap = null) => {
+                    const seedTs = Date.now();
+                    const initialMeta = {};
+                    const changed = new Set();
+                    nodes.forEach(node => {
+                        const rTs = Number((remoteMetaMap && remoteMetaMap[node]) || seedTs);
+                        _applySingleFbNode(node, data[node], {
+                            isRemote: true,
+                            serverTs: rTs,
+                            mergeRecords: false
                         });
+                        initialMeta[node] = rTs;
+                        changed.add(node);
+                    });
+                    try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
+                    if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
+                    _applyDefaultsAndCleanup(true);
+                    if (!remoteMetaMap) {
+                        db.ref('_meta/nodes').update(initialMeta).catch(() => { });
                     }
-                });
-                hajiParties = Array.from(hSet);
-                if (hajiParties.length) svHP();
+                    await _finishDataBoot(changed);
+                };
+
+                if (forceFull) {
+                    const snap = await db.ref('/').once('value');
+                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.fullReads++;
+                    await applyFullRootSnapshot(snap.val() || {}, null);
+                    return;
+                }
+
+                const metaCheckPromise = db.ref('_meta/nodes').once('value');
+                const metaSnap = hasCache ? await _withTimeout(metaCheckPromise, 6000) : await metaCheckPromise;
+                if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.metaChecks++;
+
+                if (metaSnap.exists() && metaSnap.val()) {
+                    const remoteMeta = metaSnap.val() || {};
+                    const localMeta = typeof getLocalFbMeta === 'function' ? getLocalFbMeta() : {};
+                    const nodesToFetch = nodes.filter(node => {
+                        if (typeof isFbNodeDirty === 'function' && isFbNodeDirty(node)) return false;
+                        const rTs = Number(remoteMeta[node] || 0);
+                        const lTs = Number(localMeta[node] || 0);
+                        return !_hasStorageNode(node) || rTs > lTs;
+                    });
+
+                    if (!nodesToFetch.length) {
+                        try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
+                        if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
+                        if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
+                        _applyDefaultsAndCleanup(true);
+                        await _finishDataBoot(null);
+                        return;
+                    }
+
+                    const fetchPromise = Promise.all(nodesToFetch.map(n => db.ref(n).once('value')));
+                    const snaps = hasCache ? await _withTimeout(fetchPromise, 8000) : await fetchPromise;
+                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.nodeReads += nodesToFetch.length;
+
+                    const updated = new Set();
+                    nodesToFetch.forEach((node, idx) => {
+                        const rTs = Number(remoteMeta[node] || Date.now());
+                        _applySingleFbNode(node, snaps[idx].val(), {
+                            isRemote: true,
+                            serverTs: rTs,
+                            mergeRecords: node === 'records'
+                        });
+                        if (typeof setLocalFbMetaNode === 'function' && rTs === 0) {
+                            setLocalFbMetaNode(node, Date.now());
+                        }
+                        updated.add(node);
+                    });
+
+                    try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
+                    if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
+                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
+                    _applyDefaultsAndCleanup(true);
+                    await _finishDataBoot(updated);
+                } else {
+                    // First-time bootstrap: DB has no _meta/nodes yet — read root ONCE and seed _meta/nodes
+                    const rootPromise = db.ref('/').once('value');
+                    const snap = hasCache ? await _withTimeout(rootPromise, 8000) : await rootPromise;
+                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.fullReads++;
+                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
+                    await applyFullRootSnapshot(snap.val() || {}, null);
+                }
+            } catch (error) {
+                console.error("Firebase Read Error:", error);
+                if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = (error && error.message) || 'Read error';
+                if (!hasCache) {
+                    showFirebaseStatusNotice(error);
+                }
+                _applyDefaultsAndCleanup(false);
+                await _finishDataBoot(null);
             }
-
-            initUsers().then(() => {
-                isFirebaseReady = true;
-                const fbLoader = document.getElementById('firebase-loader');
-                if (fbLoader) fbLoader.style.display = 'none';
-                applyLogo(fbLogo);
-                setLang(lang);
-                checkAuth();
-                refreshAllDrops();
-                if (loggedInUser && typeof showPage === 'function') showPage(currentActiveTab);
-                const eDate = document.getElementById('e-date'); if (eDate) eDate.value = today();
-                const pDate = document.getElementById('p-date'); if (pDate) pDate.value = today();
-                if (typeof setNextVoucher === 'function') setNextVoucher();
-                if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
-            });
-        }).catch(error => {
-            console.error("Firebase Read Error:", error);
-
-            const getLocal = (k) => {
-                try {
-                    const val = localStorage.getItem('uts_' + k);
-                    return val ? JSON.parse(val) : null;
-                } catch (e) { return null; }
-            };
-            parties = getLocal('parties') || (T[lang] || T.ur).defaultParties.slice();
-            sectors = getLocal('sectors') || (T[lang] || T.ur).defaultSectors.slice();
-            shirkas = getLocal('shirkas');
-            if (!shirkas || !shirkas.length) {
-                shirkas = (typeof DEFAULT_SHIRKAS !== 'undefined' && Array.isArray(DEFAULT_SHIRKAS)) ? [...DEFAULT_SHIRKAS] : [
-                    'الرواد', 'الشہداء', 'المختار', 'الدولية', 'ضيوف الرحمن',
-                    'العالمية', 'رواحل', 'سماء المشاعر', 'قافلة الإيمان', 'دلہ',
-                    'سدرہ', 'مواسم', 'انوار الحرمین', 'فنادق الہدایہ', 'دار الایمان'
-                ];
-            }
-            transports = getLocal('transports') || ['بس', 'وین', 'کار', 'کوچ'];
-            vehicleRates = getLocal('vehicleRates') || [];
-            transportNatures = getLocal('transportNatures');
-            if (!transportNatures || !transportNatures.length) {
-                const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
-                const saved = (records || []).map(r => r.transportNature).filter(Boolean);
-                transportNatures = Array.from(new Set([...defaultNatures, ...saved]));
-            }
-            users = getLocal('users') || [{ username: 'admin', role: 'admin' }];
-            records = getLocal('records') || [];
-            deletedRecords = getLocal('deletedRecords') || [];
-            payments = getLocal('payments') || [];
-            partyCodes = getLocal('partyCodes') || {};
-            dailyNotes = getLocal('dailyNotes') || [];
-            hajiParties = getLocal('hajiParties') || [];
-            const defaultNamesToRemoveOffline = new Set([
-                'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
-                'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
-                'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
-            ]);
-            hajiParties = hajiParties.filter(hp => !defaultNamesToRemoveOffline.has(hp));
-            umrahBookings = getLocal('umrahBookings') || [];
-            parties.forEach(p => {
-                if (typeof getCode === 'function') getCode(p);
-            });
-
-            isFirebaseReady = true;
-            const fbLoader = document.getElementById('firebase-loader');
-            if (fbLoader) fbLoader.style.display = 'none';
-            applyLogo(null);
-            setLang(lang);
-            checkAuth();
-            refreshAllDrops();
-            if (loggedInUser && typeof showPage === 'function') showPage(currentActiveTab);
-            const eDate = document.getElementById('e-date'); if (eDate) eDate.value = today();
-            const pDate = document.getElementById('p-date'); if (pDate) pDate.value = today();
-            if (typeof setNextVoucher === 'function') setNextVoucher();
-            if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
-
-            showFirebaseStatusNotice(error);
+        })().finally(() => {
+            _loadDataPromise = null;
         });
+
+        return _loadDataPromise;
     };
-    const loadData = window.loadData;
 
-        // Attach listener only after auth
-        db.ref('/').on('value', snapshot => {
-            if (isFirebaseReady && snapshot.exists()) {
-                const data = snapshot.val() || {};
-                const toArray = (v) => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
-                // Firebase سے آنے والا records merge کریں — local میں موجود IDs کو محفوظ رکھیں
-                const fbRecords = toArray(data.records);
-                const fbIds = new Set(fbRecords.map(r => r.id));
-                const localOnly = records.filter(r => !fbIds.has(r.id));
-                records = localOnly.length > 0 ? [...fbRecords, ...localOnly] : fbRecords;
-                payments = data.payments !== undefined ? toArray(data.payments) : payments;
-                parties = data.parties !== undefined ? toArray(data.parties) : parties;
-                sectors = data.sectors !== undefined ? toArray(data.sectors) : sectors;
-                shirkas = data.shirkas !== undefined ? toArray(data.shirkas) : shirkas;
-                transports = data.transports !== undefined ? toArray(data.transports) : transports;
-                vehicleRates = data.vehicleRates !== undefined ? toArray(data.vehicleRates) : vehicleRates;
-                transportNatures = data.transportNatures !== undefined ? toArray(data.transportNatures) : transportNatures;
-                partyCodes = data.partyCodes || partyCodes;
-                users = data.users !== undefined ? toArray(data.users) : users;
-                dailyNotes = data.dailyNotes !== undefined ? toArray(data.dailyNotes) : dailyNotes;
-                hajiParties = data.hajiParties !== undefined ? toArray(data.hajiParties) : hajiParties;
-                if (data.umrahBookings !== undefined && data.umrahBookings !== null) {
-                    const fbUB = toArray(data.umrahBookings);
-                    if (fbUB.length > 0 || !umrahBookings.length) {
-                        umrahBookings = fbUB;
-                    }
-                } else if (!umrahBookings || !umrahBookings.length) {
-                    try {
-                        const localUB = JSON.parse(localStorage.getItem('uts_umrahBookings') || '[]');
-                        if (localUB && Array.isArray(localUB) && localUB.length > 0) {
-                            umrahBookings = localUB;
-                        }
-                    } catch (e) { }
-                }
-                const settings = data.settings || {};
-                fbLogo = settings.logo || fbLogo;
-                fbAppName = settings.appName || fbAppName;
-                fbAppSub = settings.appSub || fbAppSub;
-
-                applyLogo(fbLogo);
-                loadAppName(lang);
-                refreshAllDrops();
-
-                const activePage = document.querySelector('.page.active');
-                if (activePage) {
-                    if (activePage.id === 'page-home') { if (typeof renderDashboard === 'function') renderDashboard(); }
-                    if (activePage.id === 'page-entry') { todayStats(); fillTransportNatureDropdown(); }
-                    if (activePage.id === 'page-payment') renderPayments();
-                    if (activePage.id === 'page-ledger') renderLedger();
-                    if (activePage.id === 'page-settings') { if (typeof renderRateList === 'function') renderRateList(); }
-
-                    // ← یہاں تبدیلی کی گئی ہے: initRecordsPage() استعمال کریں
-                    if (activePage.id === 'page-records') {
-                        if (typeof initRecordsPage === 'function') {
-                            initRecordsPage();
-                        } else {
-                            filterRecords();
-                        }
-                    }
-
-                    if (activePage.id === 'page-dailynote') { fillTransportNatureDropdown(); renderDailyNoteReport(); }
-                    if (activePage.id === 'page-report') genReport();
-                    if (activePage.id === 'page-admin') renderAdminPanel();
-                    if (activePage.id === 'page-umrah') { if (typeof renderUmrahBookings === 'function') renderUmrahBookings(); }
-                    if (activePage.id === 'page-settings') {
-                        renderPartyList();
-                        renderSectorList();
-                        renderTransportList();
-                        renderNatureList();
-                        renderShirkaList();
-                        renderHajiPartyList();
-                    }
-                    if (activePage.id === 'page-ksa-detail') {
-                        if (typeof onKsaDetailPageShow === 'function') onKsaDetailPageShow();
-                    }
-                }
-                // Always re-apply permissions when Firebase data updates
-                if (data.rolePermissions) applyGranularPerms(data.rolePermissions);
-                else enforcePermissions();
-            }
-        }, (error) => {
-            console.warn("Firebase listener error:", error);
-        });
+    window.syncFirebaseNow = async function syncFirebaseNow(forceFull = false) {
+        if (typeof window.loadData === 'function') {
+            await window.loadData({ force: true, forceFull: Boolean(forceFull) });
+        }
+    };
+    window.attachSmartMetaListener = attachSmartMetaListener;
+    window.detachSmartMetaListener = detachSmartMetaListener;
+    window.syncMetaListenerWithMode = syncMetaListenerWithMode;
+    window.hydrateAllFromLocalCache = hydrateAllFromLocalCache;
 
     auth.onAuthStateChanged(user => {
         if (user) {
             const email = user.email || '';
             loggedInUser = email.split('@')[0] || 'admin';
-            const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
-            if (!found) {
-                const isFirstAdmin = (loggedInUser === 'admin' || loggedInUser === 'jafarmughal');
-                users.push({ username: loggedInUser, role: isFirstAdmin ? 'superadmin' : 'operator', disabled: false, createdAt: new Date().toISOString().slice(0, 10), createdBy: 'system' });
-                svU();
-            }
-            setCurrentUserRole(loggedInUser);
-            loadData();
+            hydrateAllFromLocalCache();
+            if (typeof setCurrentUserRole === 'function') setCurrentUserRole(loggedInUser);
+            if (typeof window.loadData === 'function') window.loadData();
         } else {
             loggedInUser = null;
+            detachSmartMetaListener();
             if (!isFirebaseReady) {
                 isFirebaseReady = true;
-                document.getElementById('firebase-loader').style.display = 'none';
+                const fbLoader = document.getElementById('firebase-loader');
+                if (fbLoader) fbLoader.style.display = 'none';
             }
-            checkAuth();
+            if (typeof checkAuth === 'function') checkAuth();
         }
     });
 });

@@ -6,6 +6,10 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-inline-end:6px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
             <span>Booking (بکنگ و معتمرین)</span>
         </button>
+        <button class="tab-btn" id="umrah-tab-voucher" onclick="switchUmrahTab('voucher')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-inline-end:6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Voucher (عمرہ واؤچر)</span>
+        </button>
     </div>
 
     <!-- Booking Tab Content -->
@@ -27,35 +31,52 @@
                 </div>
             </div>
 
-            <!-- Header Actions -->
+         <!-- Header Actions -->
             <div class="card-header-actions no-print" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <button type="button" class="btn btn-o btn-sm" onclick="exportUmrahBookingsToExcel()" id="btn-nusuk-export" title="Excel میں برآمد کریں" style="display:inline-flex;align-items:center;gap:6px;">
+                <!-- Excel Export Button (صحیح ایکسپورٹ آئیکون کے ساتھ) -->
+                <button type="button" class="btn btn-o btn-sm" onclick="exportUmrahBookingsToExcel()" id="btn-nusuk-export" title="Excel Export" style="display:inline-flex;align-items:center;gap:6px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
-                    <span>Excel برآمد کریں</span>
+                    <span>Excel Export</span>
                 </button>
+                
+                <!-- Nusuk Import Button (صحیح امپورٹ آئیکون کے ساتھ) -->
                 <button type="button" class="btn btn-p btn-sm" id="btn-nusuk-import" onclick="openNusukImportModal()" title="Nusuk Import" style="display:inline-flex;align-items:center;gap:6px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
                     <span>Nusuk Import</span>
                 </button>
-                <button type="button" class="btn btn-o btn-sm" onclick="clearAllUmrahBookings()" id="btn-nusuk-clear" title="تمام بکنگز صاف کریں" style="color:var(--red,#dc2626);border-color:var(--red,#dc2626);display:none;">
-                    <span>ڈیٹا صاف کریں</span>
+                
+                <!-- Delete Button -->
+                <button type="button" class="btn btn-d btn-sm" onclick="handleTopUmrahDelete()" id="btn-nusuk-clear" title="منتخب یا تمام ریکارڈز ڈیلیٹ کریں" style="display:none;align-items:center;gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span id="btn-nusuk-clear-label">ڈیلیٹ کریں</span>
                 </button>
             </div>
         </div>
 
         <!-- Top KPI Cards Strip -->
-        <div class="rec-stats-strip" id="ub-stats-strip" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:18px;">
+        <div class="rec-stats-strip" id="ub-stats-strip" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:12px;margin-bottom:18px;">
             <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
                 <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">کل معتمرین / حجاج</span>
                 <span class="val text-accent" id="ub-kpi-total" style="font-size:20px;font-weight:700;">0</span>
+            </div>
+            <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+                <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">فعال / زیرِ عمرہ</span>
+                <span class="val" id="ub-kpi-active" style="font-size:20px;font-weight:700;color:var(--primary);">0</span>
+            </div>
+            <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+                <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">مکمل شدہ عمرہ (Trip)</span>
+                <span class="val" id="ub-kpi-completed" style="font-size:20px;font-weight:700;color:var(--green,#16a34a);">0</span>
             </div>
             <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
                 <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">کل گروپس</span>
@@ -71,35 +92,56 @@
             </div>
         </div>
 
+        <!-- Active vs Completed Trip Sub-tabs -->
+        <div class="rec-subtabs no-print" id="ub-subtabs" style="margin-bottom:14px; background-color:#243239;">
+            <button type="button" class="rec-subtab-btn active" id="ub-subtab-active" onclick="switchUmrahListTab('active')">
+                <span>فعال / زیرِ عمرہ (Active)</span>
+                <span class="badge" id="ub-count-active" style="font-size:11px;padding:1px 7px;">0</span>
+            </button>
+            <button type="button" class="rec-subtab-btn" id="ub-subtab-completed" onclick="switchUmrahListTab('completed')">
+                <span>مکمل شدہ عمرہ / Trip (Completed)</span>
+                <span class="badge badge-checked" id="ub-count-completed" style="font-size:11px;padding:1px 7px;">0</span>
+            </button>
+            <button type="button" class="rec-subtab-btn" id="ub-subtab-all" onclick="switchUmrahListTab('all')">
+                <span>تمام ریکارڈز (All)</span>
+                <span class="badge" id="ub-count-all" style="font-size:11px;padding:1px 7px;">0</span>
+            </button>
+        </div>
+
         <!-- Filter & Search Toolbar -->
         <div class="records-filter-card no-print" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;align-items:flex-end;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:12px;align-items:flex-end;">
                 <div>
                     <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">تلاش کریں (Search)</label>
-                    <input type="text" id="ub-search-input" placeholder="نام، پاسپورٹ نمبر، موفا، ویزا..." oninput="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);" />
+                    <input type="text" id="ub-search-input" autocomplete="off" placeholder="نام، پاسپورٹ نمبر، موفا، ویزا..." oninput="onUmrahFilterChange()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);" />
                 </div>
                 <div>
                     <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">گروپ فلٹر (Group)</label>
-                    <select id="ub-filter-group" onchange="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);">
+                    <select id="ub-filter-group" onchange="onUmrahFilterChange()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
                         <option value="">تمام گروپس (All Groups)</option>
                     </select>
                 </div>
                 <div>
                     <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">قومیت (Nationality)</label>
-                    <select id="ub-filter-nationality" onchange="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);">
+                    <select id="ub-filter-nationality" onchange="onUmrahFilterChange()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
                         <option value="">تمام قومیتیں (All Nationalities)</option>
                     </select>
                 </div>
                 <div>
                     <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">ویزا اسٹیٹس (Visa Status)</label>
-                    <select id="ub-filter-status" onchange="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);">
+                    <select id="ub-filter-status" onchange="onUmrahFilterChange()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
                         <option value="">تمام اسٹیٹس (All Statuses)</option>
                     </select>
+                </div>
+                <div style="display:flex;align-items:flex-end;">
+                    <button type="button" class="btn btn-o btn-sm" id="btn-ub-reset" onclick="resetUmrahFilters()" style="height:38px;width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;">
+                        <span>فلٹر صاف کریں (Reset)</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Bookings Data Container (Dynamically rendered by filterUmrahBookings) -->
+        <!-- Bookings Data Container -->
         <div id="ub-container">
             <div id="ub-empty-state" style="background:var(--surface-alt, rgba(0,0,0,0.02));border:1px dashed var(--border);border-radius:12px;padding:48px 24px;text-align:center;">
                 <div style="font-size:42px;margin-bottom:12px;">🕋</div>
@@ -122,6 +164,330 @@
                     </button>
                 </div>
             </div>
+
+            <div id="ub-table-section" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <div style="font-size:14px;font-weight:700;color:var(--primary);" id="ub-list-title">فعال / زیرِ عمرہ معتمرین کی فہرست</div>
+                        <button type="button" class="btn btn-sm btn-o no-print" id="btn-ub-select-filtered" onclick="selectAllFilteredUmrahBookings()" style="font-size:12px;">
+                            <span>تمام منتخب کریں</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-o no-print" id="btn-ub-complete-group" onclick="completeSelectedGroupTrips()" style="display:none;font-size:12px;color:#16a34a;border-color:#16a34a;">
+                            <span>اس گروپ کی Trip مکمل کریں ✓</span>
+                        </button>
+                    </div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text);" id="ub-table-count">دکھائے جا رہے ریکارڈز: 0 (مجموعی: 0)</div>
+                </div>
+
+                <!-- Bulk Action Bar -->
+                <div id="ub-bulk-bar" class="no-print" style="display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 14px;margin-bottom:10px;background:var(--surface-alt);border:1px solid var(--accent);border-radius:8px;">
+                    <div style="font-size:13px;font-weight:600;color:var(--text);">منتخب معتمرین: <span id="ub-selected-count" class="text-accent">0</span></div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button type="button" class="btn btn-sm btn-p" id="btn-ub-bulk-voucher" onclick="createUmrahVoucherFromSelection()">منتخب سے واؤچر بنائیں</button>
+                        <button type="button" class="btn btn-sm btn-p" style="background:var(--primary);" id="btn-ub-bulk-complete" onclick="markSelectedUmrahCompleted(true)">منتخب کی Trip مکمل کریں ✓</button>
+                        <button type="button" class="btn btn-sm btn-o" id="btn-ub-bulk-reopen" onclick="markSelectedUmrahCompleted(false)">واپس فعال لسٹ میں بھیجیں</button>
+                        <button type="button" class="btn btn-sm btn-d" id="btn-ub-bulk-delete" onclick="deleteSelectedUmrahBookings()">منتخب ڈیلیٹ کریں</button>
+                        <button type="button" class="btn btn-sm btn-o" onclick="clearUmrahSelection()">انتخاب ختم کریں</button>
+                    </div>
+                </div>
+
+                <div class="tbl-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:1160px;" id="ub-table">
+                        <thead>
+                            <tr>
+                                <th class="no-print" style="padding:10px 10px;text-align:center;width:36px;">
+                                    <input type="checkbox" id="ub-select-all" onchange="toggleAllUmrahSelect(this.checked)" title="اس صفحے کے تمام منتخب کریں" />
+                                </th>
+                                <th style="padding:10px 12px;text-align:center;width:45px;">#</th>
+                                <th style="padding:10px 12px;text-align:start;">معتمر کا نام (Mutamer Name)</th>
+                                <th style="padding:10px 12px;text-align:center;">عمر / نوعیت</th>
+                                <th style="padding:10px 12px;text-align:center;">پاسپورٹ نمبر</th>
+                                <th style="padding:10px 12px;text-align:center;">قومیت</th>
+                                <th style="padding:10px 12px;text-align:start;">گروپ (نمبر و نام)</th>
+                                <th style="padding:10px 12px;text-align:start;">پیکیج (نمبر و نام)</th>
+                                <th style="padding:10px 12px;text-align:center;">ویزا اسٹیٹس</th>
+                                <th style="padding:10px 12px;text-align:center;">ویزا نمبر</th>
+                                <th style="padding:10px 12px;text-align:center;">موفا نمبر</th>
+                                <th style="padding:10px 12px;text-align:center;">بائیو میٹرک</th>
+                                <th style="padding:10px 12px;text-align:center;">دورے (Seq)</th>
+                                <th style="padding:10px 12px;text-align:center;">Trip اسٹیٹس</th>
+                                <th class="no-print" style="padding:10px 12px;text-align:center;width:120px;">ایکشن</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ub-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div id="ub-pagination" class="records-pagination no-print" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voucher Tab Content -->
+    <div id="umrah-content-voucher" class="tab-content card" style="border-radius:12px;padding:24px;">
+        <!-- Header Bar -->
+        <div class="card-header-bar" style="margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div class="card-title-group" style="display:flex;align-items:center;gap:12px;">
+                <div class="card-title-icon" style="background:var(--accent-tint, rgba(20,125,100,0.12));color:var(--accent);padding:10px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </div>
+                <div class="card-title-text">
+                    <h2 class="card-title" style="margin:0 0 4px 0;font-size:18px;">عمرہ واؤچر مینجمنٹ (Umrah Voucher)</h2>
+                    <div class="card-subtitle" style="font-size:12.5px;color:var(--muted);">فعال بکنگ لسٹ (Active Mutamers) سے ڈیٹا امپورٹ کر کے عمرہ واؤچر بنائیں اور پرنٹ کریں</div>
+                </div>
+            </div>
+            <div class="card-header-actions no-print" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <button type="button" class="btn btn-o btn-sm" onclick="exportUmrahVouchersToExcel()" style="display:inline-flex;align-items:center;gap:6px;">
+                       <span>Excel Export</span>
+                </button>
+                <button type="button" class="btn btn-p btn-sm" onclick="clearUmrahVoucherForm()" style="display:inline-flex;align-items:center;gap:6px;">
+                    <span>New Voucher</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="al-umrah-voucher"></div>
+        <input type="hidden" id="uv-id" />
+
+        <!-- Step 1: Import from Active Mutamers List -->
+        <div id="uv-import-box" class="no-print" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                <strong style="font-size:14px;color:var(--primary);">1. فعال بکنگ لسٹ سے معتمرین امپورٹ کریں (Import Active Mutamers)</strong>
+                <span class="badge" id="uv-active-count-badge" style="font-size:11.5px;padding:3px 10px;">دستیاب فعال معتمرین: 0</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:12px;align-items:flex-end;">
+                <div>
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">گروپ منتخب کریں (Active Group)</label>
+                    <select id="uv-import-group" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
+                        <option value="">-- فعال گروپ منتخب کریں --</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-p btn-sm" onclick="importActiveGroupToVoucher()" style="height:38px;padding:0 16px;">پورا گروپ امپورٹ کریں</button>
+                    <button type="button" class="btn btn-o btn-sm" onclick="toggleUvMutamerPicker()" style="height:38px;padding:0 14px;">افراد خود منتخب کریں ▼</button>
+                </div>
+            </div>
+
+            <!-- Individual Active Mutamer Picker -->
+            <div id="uv-mutamer-picker" style="display:none;margin-top:14px;border-top:1px dashed var(--border);padding-top:12px;">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+                    <input type="text" id="uv-picker-search" autocomplete="off" placeholder="نام، پاسپورٹ یا گروپ سے تلاش کریں..." oninput="renderUvMutamerPicker()" style="flex:1;min-width:200px;height:36px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);" />
+                    <button type="button" class="btn btn-p btn-sm" onclick="addCheckedMutamersToVoucher()">منتخب معتمرین واؤچر میں شامل کریں</button>
+                </div>
+                <div id="uv-mutamer-picker-list" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:6px;"></div>
+            </div>
+        </div>
+
+        <!-- Step 2: Voucher Form Fields -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;background:var(--surface);">
+            <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);" id="uv-form-title">2. واؤچر کی تفصیلات (Voucher Details)</div>
+
+            <div class="grid" style="margin-bottom:14px;">
+                <div class="fg">
+                    <label>واؤچر نمبر (Voucher No)</label>
+                    <input type="text" id="uv-voucher-no" class="voucher-input" />
+                </div>
+                <div class="fg">
+                    <label>تاریخ (Date)</label>
+                    <input type="date" id="uv-date" />
+                </div>
+                <div class="fg">
+                    <label>گروپ نمبر (Group No)</label>
+                    <input type="text" id="uv-group-no" placeholder="مثلاً: 251487" />
+                </div>
+                <div class="fg">
+                    <label>گروپ کا نام (Group Name)</label>
+                    <input type="text" id="uv-group-name" placeholder="گروپ نام" />
+                </div>
+                <div class="fg">
+                    <label>پیکیج (Package)</label>
+                    <input type="text" id="uv-package" placeholder="پیکیج نام / نمبر" />
+                </div>
+                <div class="fg">
+                    <label>شرکہ (Shirka)</label>
+                    <input type="text" id="uv-shirka" list="shirka-list" autocomplete="off" placeholder="شرکہ منتخب کریں یا لکھیں..." />
+                </div>
+                <div class="fg">
+                    <label>پارٹی / ایجنٹ (Party / Agent)</label>
+                    <input type="text" id="uv-party" list="uv-party-list" autocomplete="off" placeholder="پارٹی کا نام" />
+                    <datalist id="uv-party-list"></datalist>
+                </div>
+                <div class="fg">
+                    <label>لیڈر / رابطہ نام (Leader Name)</label>
+                    <input type="text" id="uv-leader-name" placeholder="گروپ لیڈر کا نام" />
+                </div>
+                <div class="fg">
+                    <label>رابطہ موبائل (Contact)</label>
+                    <input type="text" id="uv-mobile" class="ltr-input" placeholder="+966 / 03..." />
+                </div>
+            </div>
+
+            <!-- Flights & Transport -->
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin:14px 0 10px;">فلائٹ اور ٹرانسپورٹ تفصیلات (Flights &amp; Transport)</div>
+            <div class="grid" style="margin-bottom:14px;">
+                <div class="fg">
+                    <label>آمد تاریخ (Arrival Date)</label>
+                    <input type="date" id="uv-arr-date" />
+                </div>
+                <div class="fg">
+                    <label>آمد فلائٹ (Arrival Flight)</label>
+                    <input type="text" id="uv-arr-flight" placeholder="مثلاً: SV-737" />
+                </div>
+                <div class="fg">
+                    <label>آمد ائیرپورٹ (Arrival Airport)</label>
+                    <input type="text" id="uv-arr-airport" list="airport-list" autocomplete="off" placeholder="ائیرپورٹ" />
+                </div>
+                <div class="fg">
+                    <label>روانگی تاریخ (Departure Date)</label>
+                    <input type="date" id="uv-dep-date" />
+                </div>
+                <div class="fg">
+                    <label>روانگی فلائٹ (Departure Flight)</label>
+                    <input type="text" id="uv-dep-flight" placeholder="مثلاً: SV-738" />
+                </div>
+                <div class="fg">
+                    <label>روانگی ائیرپورٹ (Departure Airport)</label>
+                    <input type="text" id="uv-dep-airport" list="airport-list" autocomplete="off" placeholder="ائیرپورٹ" />
+                </div>
+                <div class="fg">
+                    <label>ٹرانسپورٹر (Transporter)</label>
+                    <select id="uv-transporter"></select>
+                </div>
+                <div class="fg">
+                    <label>گاڑی (Vehicle)</label>
+                    <select id="uv-vehicle"></select>
+                </div>
+                <div class="fg">
+                    <label>روٹ / سیکٹر (Route / Sector)</label>
+                    <input type="text" id="uv-route" list="uv-route-list" autocomplete="off" placeholder="مثلاً: JED - MAK - MED - JED" />
+                    <datalist id="uv-route-list"></datalist>
+                </div>
+            </div>
+
+            <!-- Hotels -->
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin:14px 0 10px;">ہوٹل تفصیلات (Makkah &amp; Madinah Hotels)</div>
+            <div class="grid" style="margin-bottom:14px;">
+                <div class="fg">
+                    <label>مکہ ہوٹل (Makkah Hotel)</label>
+                    <input type="text" id="uv-makkah-hotel" placeholder="مکہ ہوٹل کا نام" />
+                </div>
+                <div class="fg">
+                    <label>مکہ چیک اِن (Check-In)</label>
+                    <input type="date" id="uv-makkah-in" />
+                </div>
+                <div class="fg">
+                    <label>مکہ چیک آؤٹ (Check-Out)</label>
+                    <input type="date" id="uv-makkah-out" />
+                </div>
+                <div class="fg">
+                    <label>مکہ کمرے / بیڈ (Rooms)</label>
+                    <input type="text" id="uv-makkah-rooms" placeholder="مثلاً: 4 Quad" />
+                </div>
+                <div class="fg">
+                    <label>مدینہ ہوٹل (Madinah Hotel)</label>
+                    <input type="text" id="uv-madinah-hotel" placeholder="مدینہ ہوٹل کا نام" />
+                </div>
+                <div class="fg">
+                    <label>مدینہ چیک اِن (Check-In)</label>
+                    <input type="date" id="uv-madinah-in" />
+                </div>
+                <div class="fg">
+                    <label>مدینہ چیک آؤٹ (Check-Out)</label>
+                    <input type="date" id="uv-madinah-out" />
+                </div>
+                <div class="fg">
+                    <label>مدینہ کمرے / بیڈ (Rooms)</label>
+                    <input type="text" id="uv-madinah-rooms" placeholder="مثلاً: 4 Quad" />
+                </div>
+            </div>
+
+            <div class="fg" style="margin-bottom:16px;">
+                <label>اضافی نوٹس / ہدایات (Notes)</label>
+                <textarea id="uv-notes" rows="2" placeholder="واؤچر سے متعلق خاص ہدایات..."></textarea>
+            </div>
+
+            <!-- Imported Mutamers in Voucher -->
+            <div style="margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                    <strong style="font-size:13.5px;color:var(--primary);">واؤچر میں شامل معتمرین (Attached Mutamers)</strong>
+                    <span id="uv-pax-summary" style="font-size:12.5px;font-weight:700;color:var(--accent);">کل افراد: 0 (0 Adult / 0 Child / 0 Infant)</span>
+                </div>
+                <div class="tbl-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:300px;overflow-y:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:820px;">
+                        <thead>
+                            <tr>
+                                <th style="padding:8px 10px;text-align:center;width:40px;">#</th>
+                                <th style="padding:8px 10px;text-align:start;">معتمر کا نام</th>
+                                <th style="padding:8px 10px;text-align:center;">عمر / نوعیت</th>
+                                <th style="padding:8px 10px;text-align:center;">پاسپورٹ نمبر</th>
+                                <th style="padding:8px 10px;text-align:center;">قومیت</th>
+                                <th style="padding:8px 10px;text-align:center;">گروپ</th>
+                                <th style="padding:8px 10px;text-align:center;">ویزا نمبر</th>
+                                <th style="padding:8px 10px;text-align:center;">موفا نمبر</th>
+                                <th class="no-print" style="padding:8px 10px;text-align:center;width:60px;">ہٹائیں</th>
+                            </tr>
+                        </thead>
+                        <tbody id="uv-selected-mutamers-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Trip Completion Option -->
+            <div class="no-print" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;">
+                <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);">
+                    <input type="checkbox" id="uv-mark-completed" />
+                    <span>واؤچر محفوظ کرتے وقت ان معتمرین کی عمرہ Trip مکمل (Completed) قرار دیں (Booking کی فعال لسٹ سے مکمل والی لسٹ میں منتقل ہو جائیں گے)</span>
+                </label>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="no-print" style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-p" onclick="saveUmrahVoucher(false)">واؤچر محفوظ کریں (Save Voucher)</button>
+                <button type="button" class="btn btn-p" style="background:var(--primary);" onclick="saveUmrahVoucher(true)">محفوظ و پرنٹ کریں (Save &amp; Print)</button>
+                <button type="button" class="btn btn-o" onclick="clearUmrahVoucherForm()">فارم صاف کریں</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Saved Umrah Vouchers Table -->
+        <div id="uv-saved-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                <div style="font-size:14.5px;font-weight:700;color:var(--primary);">محفوظ شدہ عمرہ واؤچرز (Saved Umrah Vouchers)</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;" class="no-print">
+                    <input type="text" id="uv-voucher-search" autocomplete="off" placeholder="واؤچر، گروپ، ہوٹل، نام تلاش..." oninput="onUmrahVoucherFilterChange()" style="height:36px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);min-width:210px;" />
+                    <select id="uv-voucher-status-filter" onchange="onUmrahVoucherFilterChange()" style="height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
+                        <option value="">تمام اسٹیٹس</option>
+                        <option value="active">فعال (Active Trip)</option>
+                        <option value="completed">مکمل (Completed Trip)</option>
+                    </select>
+                    <span id="uv-vouchers-count" style="font-size:12.5px;font-weight:600;color:var(--text-soft);">0 واؤچرز</span>
+                </div>
+            </div>
+
+            <div class="tbl-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;">
+                <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:1000px;" id="uv-vouchers-table">
+                    <thead>
+                        <tr>
+                            <th style="padding:10px 12px;text-align:center;width:45px;">#</th>
+                            <th style="padding:10px 12px;text-align:center;">واؤچر نمبر</th>
+                            <th style="padding:10px 12px;text-align:center;">تاریخ</th>
+                            <th style="padding:10px 12px;text-align:start;">گروپ / لیڈر</th>
+                            <th style="padding:10px 12px;text-align:center;">معتمرین</th>
+                            <th style="padding:10px 12px;text-align:start;">فلائٹ / ہوٹلز</th>
+                            <th style="padding:10px 12px;text-align:start;">ٹرانسپورٹ / روٹ</th>
+                            <th style="padding:10px 12px;text-align:center;">Trip اسٹیٹس</th>
+                            <th class="no-print" style="padding:10px 12px;text-align:center;width:190px;">ایکشن</th>
+                        </tr>
+                    </thead>
+                    <tbody id="uv-vouchers-tbody"></tbody>
+                </table>
+            </div>
+            <div id="uv-pagination" class="records-pagination no-print" style="display:none;"></div>
         </div>
     </div>
 </div>

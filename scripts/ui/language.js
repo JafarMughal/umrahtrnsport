@@ -46,6 +46,11 @@ function setLang(l) {
         const span = umrahBookingNav.querySelector('.nav-text');
         if (span) span.textContent = 'Booking';
     }
+    const umrahVoucherNav = document.getElementById('nav-umrah-voucher');
+    if (umrahVoucherNav) {
+        const span = umrahVoucherNav.querySelector('.nav-text');
+        if (span) span.textContent = 'Voucher';
+    }
 
     const adminNav = document.getElementById('nav-admin-panel');
     if (adminNav) {

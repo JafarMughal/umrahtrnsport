@@ -114,9 +114,13 @@
                         <span class="nav-text">UMRAH</span>
                     </button>
                     <div id="nav-umrah-sub" style="padding-inline-start:20px;display:flex;flex-direction:column;gap:2px;margin-top:1px;margin-bottom:3px;">
-                        <button id="nav-umrah-booking" onclick="showPage('umrah',this)" style="padding:6px 12px;font-size:12.5px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;">
+                        <button id="nav-umrah-booking" class="nav-sub-btn" onclick="openUmrahSection('booking',this)">
                             <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
                             <span class="nav-text">Booking</span>
+                        </button>
+                        <button id="nav-umrah-voucher" class="nav-sub-btn" onclick="openUmrahSection('voucher',this)">
+                            <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <span class="nav-text">Voucher</span>
                         </button>
                     </div>
                     <button id="nav-payment" onclick="showPage('payment',this)">
@@ -218,6 +222,19 @@
     <!-- ===== MODALS ===== -->
     <div class="mo" id="modal"><div class="md"><h3 id="m-title"></h3><input type="text" id="m-input" placeholder="" /><div class="md-btns"><button class="btn btn-p" id="btn-msave" onclick="confirmModal()">شامل کریں</button><button class="btn btn-o" id="btn-mcancel" onclick="closeModal()">منسوخ</button></div></div></div>
     <div class="mo" id="del-modal"><div class="md del-md"><div class="del-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--red);"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 id="del-m-title"></h3><p id="del-m-msg"></p><input type="password" id="del-m-input" placeholder="" /><div class="md-btns" style="justify-content:center;margin-top:20px;"><button class="btn btn-d" id="btn-del-confirm" onclick="confirmDeleteModal()">حذف کریں</button><button class="btn btn-o" id="btn-del-cancel" onclick="closeDeleteModal()">منسوخ</button></div></div></div>
+
+    <!-- ===== UMRAH CUSTOM ALERT / CONFIRM MODAL ===== -->
+    <div class="mo" id="ub-custom-modal" style="z-index:10050;" onclick="if(event.target===this)resolveUmrahDialog(false)">
+        <div class="md" id="ub-cm-box" style="max-width:420px;width:92%;text-align:center;border-top:5px solid var(--red);padding:24px 22px;">
+            <div id="ub-cm-icon" style="width:52px;height:52px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(220,38,38,0.12);color:var(--red,#dc2626);"></div>
+            <h3 id="ub-cm-title" style="margin:0 0 8px 0;font-size:17px;font-weight:700;color:var(--primary);">تصدیق کریں</h3>
+            <p id="ub-cm-msg" style="margin:0 0 18px 0;font-size:13.5px;line-height:1.6;color:var(--text-soft);white-space:pre-line;"></p>
+            <div class="md-btns" style="justify-content:center;gap:10px;">
+                <button type="button" class="btn btn-d" id="ub-cm-confirm" onclick="resolveUmrahDialog(true)">ہاں، تصدیق کریں</button>
+                <button type="button" class="btn btn-o" id="ub-cm-cancel" onclick="resolveUmrahDialog(false)">منسوخ</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== COPY VOUCHER MODAL ===== -->
     <div class="mo" id="copy-modal" onclick="if(event.target===this)closeCopyModal()">
@@ -737,11 +754,11 @@
     </script>
     <script src="scripts/core/loader.js">
     </script>
-    <script src="scripts/core/db-helpers.js">
+    <script src="scripts/core/db-helpers.js?v=20261112g">
     </script>
     <script src="scripts/auth/password-modal.js">
     </script>
-    <script src="scripts/auth/auth.js">
+    <script src="scripts/auth/auth.js?v=20261112g">
     </script>
     <script src="scripts/pages/dashboard.js">
     </script>
@@ -755,13 +772,15 @@
     </script>
     <script src="scripts/pages/report.js">
     </script>
-    <script src="scripts/pages/umrah.js">
+    <script src="scripts/pages/umrah.js?v=20261112d">
+    </script>
+    <script src="scripts/pages/umrah-voucher.js?v=20261112b">
     </script>
     <script src="scripts/pages/daily-note.js">
     </script>
-    <script src="scripts/pages/settings.js">
+    <script src="scripts/pages/settings.js?v=20261112g">
     </script>
-    <script src="scripts/ui/navigation.js">
+    <script src="scripts/ui/navigation.js?v=20261112g">
     </script>
     <script src="scripts/ui/language.js">
     </script>
@@ -779,7 +798,7 @@
     </script>
     <script src="scripts/pages/ksa-detail.js">
     </script>
-    <script src="scripts/app.js">
+    <script src="scripts/app.js?v=20261112g">
     </script>
 
 

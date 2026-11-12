@@ -223,8 +223,15 @@ function _executeShowPageLogic(p) {
         if (typeof onKsaDetailPageShow === 'function') onKsaDetailPageShow();
     }
     if (p === 'umrah') {
-        if (typeof renderUmrahBookings === 'function') renderUmrahBookings();
+        switchUmrahTab(_currentUmrahTab || 'booking');
     }
+}
+
+let _currentUmrahTab = 'booking';
+
+function openUmrahSection(tabId, btn) {
+    _currentUmrahTab = (tabId === 'voucher') ? 'voucher' : 'booking';
+    showPage('umrah', btn);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -244,18 +251,29 @@ window.addEventListener('resize', () => {
         document.body.classList.remove('sidebar-open');
     }
 });
+
 function switchUmrahTab(tabId) {
+    _currentUmrahTab = (tabId === 'voucher') ? 'voucher' : 'booking';
     const tabs = document.querySelectorAll('#umrah-sub-tabs .tab-btn');
     tabs.forEach(btn => btn.classList.remove('active'));
-    const targetBtn = document.getElementById('umrah-tab-' + tabId);
+    const targetBtn = document.getElementById('umrah-tab-' + _currentUmrahTab);
     if (targetBtn) targetBtn.classList.add('active');
 
     const contents = document.querySelectorAll('.umrah-page-wrap .tab-content');
     contents.forEach(c => c.classList.remove('active'));
-    const targetContent = document.getElementById('umrah-content-' + tabId);
+    const targetContent = document.getElementById('umrah-content-' + _currentUmrahTab);
     if (targetContent) targetContent.classList.add('active');
-    if (tabId === 'booking') {
+
+    const subBooking = document.getElementById('nav-umrah-booking');
+    const subVoucher = document.getElementById('nav-umrah-voucher');
+    if (subBooking) subBooking.classList.toggle('active', _currentUmrahTab === 'booking');
+    if (subVoucher) subVoucher.classList.toggle('active', _currentUmrahTab === 'voucher');
+
+    if (_currentUmrahTab === 'booking') {
         if (typeof renderUmrahBookings === 'function') renderUmrahBookings();
+    } else if (_currentUmrahTab === 'voucher') {
+        if (typeof renderUmrahVouchers === 'function') renderUmrahVouchers();
     }
 }
 window.switchUmrahTab = switchUmrahTab;
+window.openUmrahSection = openUmrahSection;

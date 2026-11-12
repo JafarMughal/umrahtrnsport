@@ -93,9 +93,10 @@ async function login() {
             setCurrentUserRole(loggedInUser);
         }
 
-        // Update last login time
-        if (found) {
-            found.lastLogin = new Date().toISOString().slice(0, 10);
+        // Update last login time only when date changes (avoid extra Firebase writes on same-day logins)
+        const todayStr = new Date().toISOString().slice(0, 10);
+        if (found && found.lastLogin !== todayStr) {
+            found.lastLogin = todayStr;
             svU();
         }
 
@@ -153,6 +154,12 @@ async function login() {
 }
 
 async function logout() {
+    if (typeof flushPendingFbWrites === 'function') {
+        await flushPendingFbWrites();
+    }
+    if (typeof detachSmartMetaListener === 'function') {
+        detachSmartMetaListener();
+    }
     try {
         await auth.signOut();
     } catch (e) {
@@ -183,11 +190,16 @@ async function initUsers() {
         if (migrated) svU();
     }
 
+    let adminAlreadyChecked = false;
+    try { adminAlreadyChecked = localStorage.getItem('uts_admin_auth_ok') === '1'; } catch (e) { }
+    if (adminAlreadyChecked) return;
+
     try {
         await secondaryAuth.createUserWithEmailAndPassword(getEmail('admin'), 'admin123');
+        try { localStorage.setItem('uts_admin_auth_ok', '1'); } catch (e) { }
     } catch (e) {
         if (e.code === 'auth/email-already-in-use') {
-            // User already exists
+            try { localStorage.setItem('uts_admin_auth_ok', '1'); } catch (err) { }
         } else if (e.code === 'auth/network-request-failed') {
             console.warn('Network error, using local data only');
         } else {

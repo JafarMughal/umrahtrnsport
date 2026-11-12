@@ -48,8 +48,9 @@ async function loadComponentPages() {
 
     // Trigger render for active page if needed after loading templates
     const activePage = document.querySelector('.page.active');
-    if (activePage && activePage.id === 'page-umrah' && typeof renderUmrahBookings === 'function') {
-        renderUmrahBookings();
+    if (activePage && activePage.id === 'page-umrah') {
+        if (typeof renderUmrahBookings === 'function') renderUmrahBookings();
+        if (typeof renderUmrahVouchers === 'function') renderUmrahVouchers();
     }
 
     if (fileCorsBlocked) {
