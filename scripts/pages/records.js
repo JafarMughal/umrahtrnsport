@@ -55,7 +55,7 @@ function renderRecords(rows) {
         </button>` : '';
 
     const tabsHtml = `
-    <div class="rec-subtabs no-print">
+    <div class="rec-subtabs no-print" style="background-color:#243239;">
         <button onclick="switchRecordsTab('pending')" class="rec-subtab-btn ${currentRecordsTab === 'pending' ? 'active' : ''}">
             ${lang === 'en' ? 'Pending' : lang === 'ar' ? 'قيد الانتظار' : 'زیر التواء'}
         </button>
@@ -345,7 +345,7 @@ function renderTrash() {
     const canEdit = (typeof canDo === 'function') ? canDo('edit') : true;
 
     const trashTabsHtml = `
-    <div class="rec-subtabs no-print">
+    <div class="rec-subtabs no-print"style="background-color:#243239;"> ">
         <button onclick="switchRecordsTab('pending')" class="rec-subtab-btn">${lang === 'en' ? 'Pending' : 'زیر التواء'}</button>
         <button onclick="switchRecordsTab('checked')" class="rec-subtab-btn">${lang === 'en' ? 'Checked' : 'تصدیق شدہ'}</button>
         <button onclick="switchRecordsTab('all')" class="rec-subtab-btn">${lang === 'en' ? 'All Records' : 'تمام ریکارڈ'}</button>
