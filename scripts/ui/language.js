@@ -16,14 +16,36 @@ function setLang(l) {
     document.getElementById('app-sub').textContent = L.appSub;
     document.getElementById('app-sub-login').textContent = L.appSub;
 
-    const navBtns = document.querySelectorAll('#main-nav button');
-    L.nav.forEach((txt, i) => {
-        if (navBtns[i]) {
-            const span = navBtns[i].querySelector('.nav-text');
-            if (span) span.textContent = txt;
-            else navBtns[i].textContent = txt;
+    const navMap = {
+        'nav-home': L.nav[0],
+        'nav-entry': L.nav[1],
+        'nav-payment': L.nav[2],
+        'nav-ledger': L.nav[3],
+        'nav-records': L.nav[4],
+        'nav-report': L.nav[5],
+        'nav-dailynote': L.nav[6],
+        'nav-settings': L.nav[7]
+    };
+    Object.keys(navMap).forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            const span = btn.querySelector('.nav-text');
+            if (span) span.textContent = navMap[id];
+            else btn.textContent = navMap[id];
         }
     });
+
+    const umrahNav = document.getElementById('nav-umrah');
+    if (umrahNav) {
+        const umrahSpan = umrahNav.querySelector('.nav-text');
+        if (umrahSpan) umrahSpan.textContent = 'UMRAH';
+        else umrahNav.textContent = 'UMRAH';
+    }
+    const umrahBookingNav = document.getElementById('nav-umrah-booking');
+    if (umrahBookingNav) {
+        const span = umrahBookingNav.querySelector('.nav-text');
+        if (span) span.textContent = 'Booking';
+    }
 
     const adminNav = document.getElementById('nav-admin-panel');
     if (adminNav) {

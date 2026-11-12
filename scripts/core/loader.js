@@ -6,6 +6,7 @@ async function loadComponentPages() {
     const pages = [
         { id: 'page-home', file: 'pages/home.html' },
         { id: 'page-entry', file: 'pages/entry.html' },
+        { id: 'page-umrah', file: 'pages/umrah.html' },
         { id: 'page-payment', file: 'pages/payment.html' },
         { id: 'page-ledger', file: 'pages/ledger.html' },
         { id: 'page-records', file: 'pages/records.html' },
@@ -44,6 +45,12 @@ async function loadComponentPages() {
             }
         }
     }));
+
+    // Trigger render for active page if needed after loading templates
+    const activePage = document.querySelector('.page.active');
+    if (activePage && activePage.id === 'page-umrah' && typeof renderUmrahBookings === 'function') {
+        renderUmrahBookings();
+    }
 
     if (fileCorsBlocked) {
         showLiveServerNotice();

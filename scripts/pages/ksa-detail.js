@@ -8,17 +8,25 @@
 let ksaDetailCurrentType   = 'jed-arrival';
 let ksaDetailCurrentDate   = null;
 let ksaDetailCurrentSource = 'home';
-let ksaDetailShowAllDates  = false;
+let ksaDetailShowAllDatesFlag = false;
 
 // ─── Movement Type Config ──────────────────────────────────────
 const KSA_TYPE_CONFIG = {
+    'all': {
+        id:       'all',
+        label:    'تمام نقل و حرکت (All Movements)',
+        icon:     '🌐',
+        badge:    'ksd-nature-jed-arrival',
+        rowClass: '',
+        keywords: [],
+    },
     'jed-arrival': {
         id:       'jed-arrival',
         label:    'جدہ آمد (Jeddah Arrival)',
         icon:     '✈',
         badge:    'ksd-nature-jed-arrival',
         rowClass: 'ksd-row-arrival',
-        keywords: ['jed arrival', 'jeddah arrival', 'jed arr', 'جدہ آمد', 'آمد جدہ'],
+        keywords: ['jed arrival', 'jeddah arrival', 'jed arr', 'جدہ آمد', 'آمد جدہ', 'جدہ ➜ مکہ', 'جدہ سے مکہ', 'جدہ تا مکہ', 'جدہ ➜ مدینہ', 'jeddah to makkah', 'jed to mak'],
     },
     'jed-departure': {
         id:       'jed-departure',
@@ -26,7 +34,7 @@ const KSA_TYPE_CONFIG = {
         icon:     '✈',
         badge:    'ksd-nature-jed-departure',
         rowClass: 'ksd-row-departure',
-        keywords: ['jeddah dep', 'jed dep', 'jeddah depture', 'jed depture', 'جدہ روانگی', 'روانگی جدہ'],
+        keywords: ['jeddah dep', 'jed dep', 'jeddah depture', 'jed depture', 'جدہ روانگی', 'روانگی جدہ', 'مکہ ➜ جدہ', 'مکہ سے جدہ', 'مکہ تا جدہ', 'مدینہ ➜ جدہ', 'makkah to jeddah', 'mak to jed'],
     },
     'med-arrival': {
         id:       'med-arrival',
@@ -34,7 +42,7 @@ const KSA_TYPE_CONFIG = {
         icon:     '✈',
         badge:    'ksd-nature-med-arrival',
         rowClass: 'ksd-row-arrival',
-        keywords: ['med arrival', 'madina arrival', 'med arr', 'madinah arrival', 'مدینہ آمد', 'آمد مدینہ'],
+        keywords: ['med arrival', 'madina arrival', 'med arr', 'madinah arrival', 'مدینہ آمد', 'آمد مدینہ', 'مدینہ ائیرپورٹ'],
     },
     'med-departure': {
         id:       'med-departure',
@@ -50,7 +58,7 @@ const KSA_TYPE_CONFIG = {
         icon:     '🕋',
         badge:    'ksd-nature-mak-checkin',
         rowClass: 'ksd-row-checkin',
-        keywords: ['madina to mak', 'madina to makk', 'madina to makkah', 'madina to makha', 'med to mak'],
+        keywords: ['madina to mak', 'madina to makk', 'madina to makkah', 'madina to makha', 'med to mak', 'مدینہ ➜ مکہ', 'مدینہ سے مکہ', 'مدینہ تا مکہ', 'مکہ چیک ان'],
     },
     'mak-checkout': {
         id:       'mak-checkout',
@@ -58,7 +66,7 @@ const KSA_TYPE_CONFIG = {
         icon:     '🕋',
         badge:    'ksd-nature-mak-checkout',
         rowClass: 'ksd-row-checkout',
-        keywords: ['makkah to mad', 'makkah to medina', 'makkah to madina', 'mak to med'],
+        keywords: ['makkah to mad', 'makkah to medina', 'makkah to madina', 'mak to med', 'مکہ ➜ مدینہ', 'مکہ سے مدینہ', 'مکہ تا مدینہ', 'مکہ چیک آؤٹ'],
     },
     'med-checkin': {
         id:       'med-checkin',
@@ -66,7 +74,7 @@ const KSA_TYPE_CONFIG = {
         icon:     '🕌',
         badge:    'ksd-nature-med-arrival',
         rowClass: 'ksd-row-checkin',
-        keywords: ['makkah to mad', 'makkah to medina', 'makkah to madina', 'mak to med'],
+        keywords: ['makkah to mad', 'makkah to medina', 'makkah to madina', 'mak to med', 'مکہ ➜ مدینہ', 'مکہ سے مدینہ', 'مکہ تا مدینہ', 'مدینہ چیک ان'],
     },
     'med-checkout': {
         id:       'med-checkout',
@@ -74,7 +82,23 @@ const KSA_TYPE_CONFIG = {
         icon:     '🕌',
         badge:    'ksd-nature-jed-departure',
         rowClass: 'ksd-row-checkout',
-        keywords: ['madina to mak', 'madina to makk', 'madina to makkah', 'madina to makha', 'med to mak'],
+        keywords: ['madina to mak', 'madina to makk', 'madina to makkah', 'madina to makha', 'med to mak', 'مدینہ ➜ مکہ', 'مدینہ سے مکہ', 'مدینہ تا مکہ', 'مدینہ چیک آؤٹ'],
+    },
+    'mak-present': {
+        id:       'mak-present',
+        label:    'مکہ میں موجود حجاج (Present in Makkah)',
+        icon:     '🕋',
+        badge:    'ksd-nature-mak-checkin',
+        rowClass: 'ksd-row-checkin',
+        keywords: ['madina to mak', 'jed arrival', 'jeddah arrival'],
+    },
+    'med-present': {
+        id:       'med-present',
+        label:    'مدینہ میں موجود حجاج (Present in Madinah)',
+        icon:     '🕌',
+        badge:    'ksd-nature-med-arrival',
+        rowClass: 'ksd-row-arrival',
+        keywords: ['makkah to mad', 'med arrival', 'madina arrival'],
     },
 };
 
@@ -167,23 +191,29 @@ function safeFormatTime(t) {
 // ─── Robust Movement Matching ──────────────────────────────────
 function matchesMovement(r, cfg) {
     if (!r) return false;
+    const type = cfg ? cfg.id : ksaDetailCurrentType;
+    if (typeof recordMatchesKsaType === 'function') {
+        return recordMatchesKsaType(r, type);
+    }
+
     const tn  = String(r.transportNature || '').toLowerCase().trim();
     const sec = String(r.sector || '').toLowerCase().trim();
     const ap  = String(r.airport || '').toLowerCase().trim();
 
-    // 1. Direct keywords match against transportNature
-    if (cfg && cfg.keywords && cfg.keywords.some(kw => tn.includes(kw))) {
+    // 1. Direct keywords match against transportNature or sector
+    if (cfg && cfg.keywords && cfg.keywords.some(kw => tn.includes(kw) || sec.includes(kw))) {
         return true;
     }
-
-    const type = cfg ? cfg.id : ksaDetailCurrentType;
 
     // 2. Extra intelligent fallbacks for Jed Arrival
     if (type === 'jed-arrival') {
         if (tn === 'jeddah' || tn.includes('jed arr') || tn.includes('jeddah arr') || tn.includes('جدہ آمد') || tn.includes('آمد جدہ')) {
             return true;
         }
-        // If transportNature is empty, check airport or sector
+        if (sec.includes('جدہ ➜ مکہ') || sec.includes('جدہ سے مکہ') || sec.includes('جدہ تا مکہ') || 
+            sec.includes('جدہ ➜ مدینہ') || sec.includes('جدہ سے مدینہ') || sec.includes('jeddah to mak') || sec.includes('jed to mak')) {
+            return true;
+        }
         if (!tn && (ap.includes('jed') || (sec.includes('jed') && sec.includes('mak') && !sec.includes('to jed')))) {
             return true;
         }
@@ -194,6 +224,10 @@ function matchesMovement(r, cfg) {
         if (tn.includes('jed dep') || tn.includes('jeddah dep') || tn.includes('جدہ روانگی') || tn.includes('روانگی جدہ')) {
             return true;
         }
+        if (sec.includes('مکہ ➜ جدہ') || sec.includes('مکہ سے جدہ') || sec.includes('مدینہ ➜ جدہ') || sec.includes('مدینہ سے جدہ') ||
+            sec.includes('mak to jed') || sec.includes('makkah to jed') || sec.includes('to jed') || sec.includes('➜ جدہ')) {
+            return true;
+        }
         if (!tn && (sec.includes('mak to jed') || sec.includes('med to jed') || (sec.includes('to jed') && ap.includes('jed')))) {
             return true;
         }
@@ -201,24 +235,30 @@ function matchesMovement(r, cfg) {
 
     // 4. Extra fallbacks for Med Arrival
     if (type === 'med-arrival') {
-        if (tn.includes('med arr') || tn.includes('madina arr') || tn.includes('madinah arr') || tn.includes('مدینہ آمد')) {
+        if (tn.includes('med arr') || tn.includes('madina arrival') || tn.includes('madinah arrival') || tn.includes('مدینہ آمد') || tn.includes('آمد مدینہ')) {
+            return true;
+        }
+        if (sec.includes('مدینہ ائیرپورٹ ➜') || sec.includes('med airport to')) {
             return true;
         }
     }
 
     // 5. Extra fallbacks for Med Departure
     if (type === 'med-departure') {
-        if (tn.includes('med dep') || tn.includes('madina dep') || tn.includes('madinah dep') || tn.includes('مدینہ روانگی')) {
+        if (tn.includes('med dep') || tn.includes('madina dep') || tn.includes('madinah dep') || tn.includes('مدینہ روانگی') || tn.includes('روانگی مدینہ')) {
+            return true;
+        }
+        if (sec.includes('➜ مدینہ ائیرپورٹ') || sec.includes('to med airport')) {
             return true;
         }
     }
 
     // 6. Check-in / out fallbacks
     if (type === 'mak-checkin' || type === 'med-checkout') {
-        if (tn.includes('madina to mak') || tn.includes('med to mak') || sec.includes('madina to mak') || sec.includes('med to mak')) return true;
+        if (tn.includes('madina to mak') || tn.includes('med to mak') || sec.includes('مدینہ ➜ مکہ') || sec.includes('مدینہ سے مکہ') || sec.includes('madina to mak')) return true;
     }
     if (type === 'mak-checkout' || type === 'med-checkin') {
-        if (tn.includes('makkah to mad') || tn.includes('mak to med') || sec.includes('makkah to mad') || sec.includes('mak to med')) return true;
+        if (tn.includes('makkah to mad') || tn.includes('mak to med') || sec.includes('مکہ ➜ مدینہ') || sec.includes('مکہ سے مدینہ') || sec.includes('makkah to mad')) return true;
     }
 
     return false;
@@ -226,7 +266,7 @@ function matchesMovement(r, cfg) {
 
 // ─── Entry Point — Called from KSA Status Panel or Navigation ─
 async function openKsaDetail(type, date) {
-    ksaDetailShowAllDates = false;
+    ksaDetailShowAllDatesFlag = false;
     const allDatesCb = document.getElementById('ksd-all-dates-cb');
     if (allDatesCb) allDatesCb.checked = false;
 
@@ -236,9 +276,15 @@ async function openKsaDetail(type, date) {
     const partySel = document.getElementById('ksd-party-filter');
     if (partySel) partySel.value = '';
 
+    // If opening cumulative present pilgrims or all movements, automatically enable all dates
+    if (type === 'mak-present' || type === 'med-present' || type === 'all') {
+        ksaDetailShowAllDatesFlag = true;
+        if (allDatesCb) allDatesCb.checked = true;
+    }
+
     // Determine target date
     const dashDateEl = document.getElementById('ksa-date-display');
-    const dashDate = dashDateEl ? dashDateEl.textContent.trim() : null;
+    const dashDate = dashDateEl ? (dashDateEl.value || dashDateEl.textContent || '').trim() : null;
 
     let targetDate = (date && date !== '—')
         ? date
@@ -248,13 +294,13 @@ async function openKsaDetail(type, date) {
                 ? window.ksaStatusDate
                 : (typeof today === 'function' ? today() : new Date().toISOString().split('T')[0]);
 
-    ksaDetailCurrentType   = type || 'jed-arrival';
-    ksaDetailCurrentDate   = targetDate;
+    ksaDetailCurrentType   = (type && KSA_TYPE_CONFIG[type]) ? type : 'jed-arrival';
+    ksaDetailCurrentDate   = normalizeDateStr(targetDate);
     ksaDetailCurrentSource = 'home';
 
     // Lazy load the HTML if not already loaded into #page-ksa-detail
     const pageEl = document.getElementById('page-ksa-detail');
-    if (pageEl && !pageEl.innerHTML.trim()) {
+    if (pageEl && !(pageEl.innerHTML || '').trim()) {
         try {
             const res = await fetch('pages/ksa-detail.html', { cache: 'no-store' });
             if (res.ok) {
@@ -285,7 +331,7 @@ function ksaDetailGoBack() {
 
 // ─── Date Navigation ────────────────────────────────────────────
 function ksaDetailChangeDate(delta) {
-    ksaDetailShowAllDates = false;
+    ksaDetailShowAllDatesFlag = false;
     const allDatesCb = document.getElementById('ksd-all-dates-cb');
     if (allDatesCb) allDatesCb.checked = false;
 
@@ -298,7 +344,7 @@ function ksaDetailChangeDate(delta) {
 
 function ksaDetailSetDate(val) {
     if (!val) return;
-    ksaDetailShowAllDates = false;
+    ksaDetailShowAllDatesFlag = false;
     const allDatesCb = document.getElementById('ksd-all-dates-cb');
     if (allDatesCb) allDatesCb.checked = false;
 
@@ -307,7 +353,7 @@ function ksaDetailSetDate(val) {
 }
 
 function ksaDetailSetToday() {
-    ksaDetailShowAllDates = false;
+    ksaDetailShowAllDatesFlag = false;
     const allDatesCb = document.getElementById('ksd-all-dates-cb');
     if (allDatesCb) allDatesCb.checked = false;
 
@@ -317,12 +363,12 @@ function ksaDetailSetToday() {
 
 // ─── Toggle All Dates ──────────────────────────────────────────
 function ksaDetailToggleAllDates(checked) {
-    ksaDetailShowAllDates = !!checked;
+    ksaDetailShowAllDatesFlag = !!checked;
     renderKsaDetailTable();
 }
 
 function ksaDetailShowAllDates() {
-    ksaDetailShowAllDates = true;
+    ksaDetailShowAllDatesFlag = true;
     const allDatesCb = document.getElementById('ksd-all-dates-cb');
     if (allDatesCb) allDatesCb.checked = true;
     renderKsaDetailTable();
@@ -356,7 +402,7 @@ function initKsaDetailPage() {
     const typeSelect = document.getElementById('ksd-type-select');
 
     if (titleEl)    titleEl.textContent    = cfg.label;
-    if (subtitleEl) subtitleEl.textContent = ksaDetailShowAllDates ? `تمام تاریخیں — مکمل ریکارڈز` : `${curDate} — تاریخ کے مطابق ریکارڈز`;
+    if (subtitleEl) subtitleEl.textContent = ksaDetailShowAllDatesFlag ? `تمام تاریخیں — مکمل ریکارڈز` : `${curDate} — تاریخ کے مطابق ریکارڈز`;
     if (badgeEl)    badgeEl.textContent    = cfg.icon;
     if (dateInput)  dateInput.value         = curDate;
     if (typeSelect) typeSelect.value        = ksaDetailCurrentType;
@@ -365,7 +411,7 @@ function initKsaDetailPage() {
     const printTitle = document.getElementById('ksd-print-title');
     const printDate  = document.getElementById('ksd-print-date');
     if (printTitle) printTitle.textContent = cfg.label;
-    if (printDate)  printDate.textContent  = ksaDetailShowAllDates ? `تمام تاریخیں` : `تاریخ: ${curDate}`;
+    if (printDate)  printDate.textContent  = ksaDetailShowAllDatesFlag ? `تمام تاریخیں` : `تاریخ: ${curDate}`;
 
     // Fill party filter dropdown
     ksaDetailFillPartyFilter(curDate, cfg);
@@ -381,7 +427,7 @@ function ksaDetailFillPartyFilter(curDate, cfg) {
 
     const allRecs = getKsaAllRecords();
     const dayRecs = allRecs.filter(r => {
-        if (!ksaDetailShowAllDates && !datesMatch(r.date, curDate)) return false;
+        if (!ksaDetailShowAllDatesFlag && !datesMatch(r.date, curDate)) return false;
         return matchesMovement(r, cfg);
     });
 
@@ -400,22 +446,39 @@ function renderKsaDetailTable() {
     const search = (document.getElementById('ksd-search')?.value || '').toLowerCase().trim();
     const partyFilt = (document.getElementById('ksd-party-filter')?.value || '').trim();
 
+    // Alert element
+    const dateAlertEl = document.getElementById('ksd-date-alert');
+    const dateAlertTxt = document.getElementById('ksd-date-alert-text');
+    if (dateAlertEl) dateAlertEl.style.display = 'none';
+
     // Matching records for this type across all records
     const allTypeMatches = allRecs.filter(r => matchesMovement(r, cfg));
 
     // Filter by date unless All Dates is checked
     let filtered = allTypeMatches;
-    if (!ksaDetailShowAllDates) {
-        filtered = filtered.filter(r => datesMatch(r.date, curDate));
+    let showingFallbackDates = false;
+
+    if (!ksaDetailShowAllDatesFlag) {
+        filtered = allTypeMatches.filter(r => datesMatch(r.date, curDate));
+
+        // If no records found for this specific date, but there ARE records in other dates:
+        if (filtered.length === 0 && allTypeMatches.length > 0) {
+            filtered = allTypeMatches; // show all so the user sees the data!
+            showingFallbackDates = true;
+            if (dateAlertEl && dateAlertTxt) {
+                dateAlertTxt.innerHTML = `<span>⚠️ منتخب تاریخ (<strong>${curDate}</strong>) پر کوئی واؤچر نہیں ملا۔ نیچے اس موومنٹ کے دیگر تاریخوں کے تمام <strong>${allTypeMatches.length}</strong> واؤچرز دکھائے جا رہے ہیں:</span>`;
+                dateAlertEl.style.display = 'flex';
+            }
+        }
     }
 
-    // Search filter
+    // Search filter (including voucher, name, party, newParty, sector, group, mobile, shirka, flightNo)
     if (search) {
         filtered = filtered.filter(r => {
             const haystack = [
                 r.voucher, r.party, r.newParty, r.sector,
                 r.transport, r.flightNo, r.airport, r.transportNature,
-                r.notes, r.name, r.date
+                r.notes, r.name, r.group, r.mobile, r.shirka, r.date
             ].join(' ').toLowerCase();
             return haystack.includes(search);
         });
@@ -446,7 +509,11 @@ function renderKsaDetailTable() {
     // Update subtitle text to reflect all dates vs specific date
     const subtitleEl = document.getElementById('ksa-detail-subtitle');
     if (subtitleEl) {
-        subtitleEl.textContent = ksaDetailShowAllDates ? `تمام تاریخیں — ${filtered.length} ریکارڈز` : `${curDate} — تاریخ کے مطابق ریکارڈز`;
+        if (ksaDetailShowAllDatesFlag || showingFallbackDates) {
+            subtitleEl.textContent = `تمام تاریخیں — ${filtered.length} واؤچرز (${totalPilgrims} حجاج)`;
+        } else {
+            subtitleEl.textContent = `${curDate} — تاریخ کے مطابق ${filtered.length} واؤچرز (${totalPilgrims} حجاج)`;
+        }
     }
 
     if (filtered.length === 0) {
@@ -454,16 +521,8 @@ function renderKsaDetailTable() {
         if (tableCard) tableCard.style.display = 'none';
         if (emptyEl) {
             emptyEl.style.display = 'block';
-            if (!ksaDetailShowAllDates && allTypeMatches.length > 0) {
-                const totalAllPilgrims = allTypeMatches.reduce((s, r) => s + (parseInt(r.count) || 0), 0);
-                if (emptyHint) {
-                    emptyHint.innerHTML = `<span style="color:var(--accent);font-weight:600;">اس تاریخ (${curDate}) پر کوئی ریکارڈ نہیں ملا۔ لیکن دیگر تاریخوں میں کل <strong>${allTypeMatches.length} ریکارڈز (${totalAllPilgrims} حجاج)</strong> موجود ہیں۔</span>`;
-                }
-                if (btnShowAll) btnShowAll.style.display = 'inline-block';
-            } else {
-                if (emptyHint) emptyHint.textContent = 'اس قسم کی نقل و حرکت کا کوئی ریکارڈ موجود نہیں ہے۔';
-                if (btnShowAll) btnShowAll.style.display = 'none';
-            }
+            if (emptyHint) emptyHint.textContent = 'اس کیٹیگری کا کوئی ریکارڈ یا واؤچر موجود نہیں ہے۔';
+            if (btnShowAll) btnShowAll.style.display = 'none';
         }
         return;
     }
@@ -484,28 +543,186 @@ function renderKsaDetailTable() {
         const countVal = parseInt(r.count) || 0;
         const safeId   = String(r.id || '').replace(/'/g, "\\'");
 
+        const hajiDisplayName = r.name || r.newParty || 'معتمر / حاجی';
+        const groupBadge = r.group ? `<span style="font-size:11px;background:var(--surface-alt);border:1px solid var(--border);padding:1px 6px;border-radius:4px;color:var(--text);">گروپ: <strong>${r.group}</strong></span>` : '';
+        const mobileBadge = r.mobile ? `<span dir="ltr" style="font-size:11px;color:var(--primary);font-family:monospace;font-weight:600;">📞 ${r.mobile}</span>` : '';
+
         return `
-            <tr class="${cfg.rowClass}" onclick="if(typeof editRecord==='function') editRecord('${safeId}')" title="کلک کریں — ریکارڈ ایڈٹ / تفصیل">
-                <td style="color:var(--muted);font-weight:600;">${idx + 1}</td>
-                <td><strong class="text-primary" style="color:var(--primary);">${r.voucher || '—'}</strong></td>
-                <td>${dt}</td>
+            <tr class="${cfg.rowClass}" onclick="openKsdVoucherModal('${safeId}')" title="کلک کریں: اس واؤچر کے حجاج کی مکمل تفصیل دیکھیں" style="cursor:pointer;">
+                <td style="color:var(--muted);font-weight:600;text-align:center;">${idx + 1}</td>
+                <td>
+                    <span class="voucher-tag" style="background:rgba(20,43,74,0.08);color:var(--primary);font-weight:700;font-family:monospace;padding:3px 8px;border-radius:6px;border:1px solid rgba(20,43,74,0.15);font-size:12.5px;display:inline-block;">
+                        ${r.voucher || '—'}
+                    </span>
+                </td>
+                <td>
+                    <div style="font-weight:700;font-size:13px;color:var(--text);">${hajiDisplayName}</div>
+                    <div style="font-size:11.5px;color:var(--text-soft);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        ${groupBadge}
+                        ${mobileBadge}
+                    </div>
+                </td>
+                <td style="white-space:nowrap;">${dt}</td>
                 <td><strong>${r.party || '—'}</strong></td>
-                <td>${r.newParty || '—'}</td>
+                <td>
+                    <div style="font-weight:600;">${r.newParty || '—'}</div>
+                    ${r.shirka ? `<div style="font-size:11px;color:var(--text-soft);margin-top:1px;">شرکہ: ${r.shirka}</div>` : ''}
+                </td>
                 <td><span class="sector-tag">${r.sector || '—'}</span></td>
                 <td style="font-size:12px;">${r.transport || '—'}</td>
-                <td><strong style="font-size:16px;color:var(--primary);">${countVal}</strong></td>
-                <td style="font-size:12px;">${r.flightNo || '—'}</td>
-                <td style="font-size:12px;">${time}</td>
-                <td><strong>SAR ${total}</strong></td>
+                <td style="text-align:center;">
+                    <span style="font-weight:800;font-size:15px;color:var(--primary);background:rgba(20,43,74,0.08);padding:3px 10px;border-radius:6px;display:inline-block;min-width:36px;">
+                        ${countVal}
+                    </span>
+                </td>
+                <td style="font-size:12px;">
+                    ${r.flightNo ? `<strong style="font-family:monospace;color:var(--primary);">✈ ${r.flightNo}</strong>` : ''}
+                    <div style="font-size:11px;color:var(--text-soft);">${time} ${r.airport ? `| ${r.airport}` : ''}</div>
+                </td>
+                <td style="font-weight:700;white-space:nowrap;">SAR ${total}</td>
                 <td>${statusBadge}</td>
-                <td class="no-print">
-                    <button type="button" class="btn btn-sm btn-o" onclick="event.stopPropagation();if(typeof editRecord==='function') editRecord('${safeId}')" title="ترمیم">
+                <td class="no-print" style="text-align:center;white-space:nowrap;">
+                    <button type="button" class="btn btn-sm btn-o" onclick="event.stopPropagation();openKsdVoucherModal('${safeId}')" title="حجاج کی مکمل تفصیل دیکھیں" style="padding:3px 8px;font-size:12px;margin-inline-end:4px;">
+                        👁️ تفصیل
+                    </button>
+                    <button type="button" class="btn btn-sm btn-o" onclick="event.stopPropagation();if(typeof editRecord==='function') editRecord('${safeId}')" title="ترمیم" style="padding:3px 7px;font-size:12px;">
                         ✏️
                     </button>
                 </td>
             </tr>
         `;
     }).join('');
+}
+
+// ─── Modal: View Voucher & Pilgrims Details ────────────────────
+function openKsdVoucherModal(id) {
+    const allRecs = getKsaAllRecords();
+    const r = allRecs.find(x => String(x.id) === String(id));
+    if (!r) return;
+
+    const modal = document.getElementById('ksd-voucher-modal');
+    const titleEl = document.getElementById('ksd-modal-vch-title');
+    const subEl = document.getElementById('ksd-modal-vch-sub');
+    const bodyEl = document.getElementById('ksd-modal-vch-body');
+    const actionsEl = document.getElementById('ksd-modal-actions');
+    if (!modal || !bodyEl) return;
+
+    const vch = r.voucher || '—';
+    if (titleEl) titleEl.textContent = `واؤچر نمبر: ${vch}`;
+    if (subEl) subEl.textContent = `تاریخ: ${safeFd(r.date)} | ٹرانسپورٹر: ${r.party || '—'} | سیکٹر: ${r.sector || '—'}`;
+
+    // Check if there are matching Nusuk pilgrims for this group or party
+    let nusukMatches = [];
+    const bList = (typeof umrahBookings !== 'undefined' && Array.isArray(umrahBookings)) ? umrahBookings : [];
+    if (bList.length > 0) {
+        const grp = String(r.group || '').trim().toLowerCase();
+        const vchKey = String(r.voucher || '').trim().toLowerCase();
+        const nameKey = String(r.name || '').trim().toLowerCase();
+        if (grp) {
+            nusukMatches = bList.filter(b => String(b.groupNo || '').toLowerCase() === grp);
+        }
+        if (!nusukMatches.length && vchKey) {
+            nusukMatches = bList.filter(b => String(b.groupNo || '').toLowerCase() === vchKey);
+        }
+        if (!nusukMatches.length && nameKey && nameKey.length > 3) {
+            nusukMatches = bList.filter(b => String(b.name || '').toLowerCase().includes(nameKey));
+        }
+    }
+
+    let nusukHtml = '';
+    if (nusukMatches.length > 0) {
+        nusukHtml = `
+            <div style="margin-top:18px;border-top:1px dashed var(--border);padding-top:14px;">
+                <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                    <span>🕋</span>
+                    <span>Nusuk امپورٹ ڈیٹا سے منسلک معتمرین (${nusukMatches.length} افراد):</span>
+                </div>
+                <div style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead>
+                            <tr style="background:var(--surface-alt);border-bottom:1px solid var(--border);text-align:start;">
+                                <th style="padding:6px 8px;text-align:center;">#</th>
+                                <th style="padding:6px 8px;">معتمر کا نام</th>
+                                <th style="padding:6px 8px;text-align:center;">پاسپورٹ نمبر</th>
+                                <th style="padding:6px 8px;text-align:center;">عمر / نوعیت</th>
+                                <th style="padding:6px 8px;text-align:center;">ویزا نمبر</th>
+                                <th style="padding:6px 8px;text-align:center;">ویزا اسٹیٹس</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${nusukMatches.map((m, mi) => `
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <td style="padding:6px 8px;text-align:center;color:var(--text-soft);">${mi + 1}</td>
+                                    <td style="padding:6px 8px;font-weight:600;">${m.name}</td>
+                                    <td style="padding:6px 8px;text-align:center;font-family:monospace;font-weight:600;color:var(--primary);">${m.passport}</td>
+                                    <td style="padding:6px 8px;text-align:center;">${m.age || '—'} (${m.mutamerType || 'Adult'})</td>
+                                    <td style="padding:6px 8px;text-align:center;font-family:monospace;">${m.visaNo || '—'}</td>
+                                    <td style="padding:6px 8px;text-align:center;"><span style="background:rgba(34,197,94,0.12);color:#16a34a;padding:2px 6px;border-radius:10px;font-size:11px;">${m.visaStatus || 'Issued'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+    bodyEl.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;background:var(--bg-page);padding:14px;border-radius:var(--radius-lg);border:1px solid var(--border);margin-bottom:14px;">
+            <div><span style="font-size:11px;color:var(--muted);">واؤچر نمبر:</span> <strong style="font-family:monospace;font-size:14.5px;color:var(--primary);">${r.voucher || '—'}</strong></div>
+            <div><span style="font-size:11px;color:var(--muted);">تاریخ:</span> <strong>${safeFd(r.date)}</strong></div>
+            <div><span style="font-size:11px;color:var(--muted);">حجاج کی تعداد:</span> <strong style="color:var(--accent);font-size:15px;">${r.count || 0} افراد</strong></div>
+            <div><span style="font-size:11px;color:var(--muted);">ٹرانسپورٹر:</span> <strong>${r.party || '—'}</strong></div>
+            <div><span style="font-size:11px;color:var(--muted);">حاجی پارٹی:</span> <strong>${r.newParty || '—'}</strong></div>
+            <div><span style="font-size:11px;color:var(--muted);">سیکٹر:</span> <span class="sector-tag">${r.sector || '—'}</span></div>
+            <div><span style="font-size:11px;color:var(--muted);">گاڑی:</span> <strong>${r.transport || '—'}</strong></div>
+            <div><span style="font-size:11px;color:var(--muted);">کل بلنگ رقم:</span> <strong style="color:var(--gold-dark);">SAR ${safeSar(r.total)}</strong></div>
+        </div>
+
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px;display:flex;align-items:center;gap:6px;">
+                <span>👤</span>
+                <span>معتمر / حاجی و رابطہ معلومات</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:12.5px;">
+                <div><span style="color:var(--muted);">حاجی / لیڈر کا نام:</span> <strong style="color:var(--text);font-size:13.5px;">${r.name || r.newParty || 'درج نہیں'}</strong></div>
+                <div><span style="color:var(--muted);">گروپ نمبر:</span> <strong style="font-family:monospace;color:var(--primary);">${r.group || 'درج نہیں'}</strong></div>
+                <div><span style="color:var(--muted);">رابطہ موبائل:</span> <strong dir="ltr" style="font-family:monospace;color:var(--primary);">${r.mobile || 'درج نہیں'}</strong></div>
+                <div><span style="color:var(--muted);">شرکہ:</span> <strong>${r.shirka || 'درج نہیں'}</strong></div>
+            </div>
+        </div>
+
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;">
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px;display:flex;align-items:center;gap:6px;">
+                <span>✈</span>
+                <span>فلائیٹ و ائیرپورٹ تفصیلات</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:12.5px;">
+                <div><span style="color:var(--muted);">فلائیٹ نمبر:</span> <strong style="font-family:monospace;color:var(--primary);">${r.flightNo || '—'}</strong></div>
+                <div><span style="color:var(--muted);">فلائیٹ وقت:</span> <strong>${safeFormatTime(r.flightTime)}</strong></div>
+                <div><span style="color:var(--muted);">ائیرپورٹ / ٹرمینل:</span> <strong>${r.airport || '—'}</strong></div>
+                <div><span style="color:var(--muted);">ٹرانسپورٹ نوعیت:</span> <strong>${r.transportNature || '—'}</strong></div>
+            </div>
+            ${r.notes ? `<div style="margin-top:10px;font-size:12px;background:var(--bg-page);padding:8px 12px;border-radius:6px;border:1px dashed var(--border);"><strong>نوٹس:</strong> ${r.notes}</div>` : ''}
+        </div>
+
+        ${nusukHtml}
+    `;
+
+    if (actionsEl) {
+        actionsEl.innerHTML = `
+            <button type="button" class="btn btn-p btn-sm" onclick="closeKsdVoucherModal();if(typeof editRecord==='function')editRecord('${r.id}')">
+                ✏️ واؤچر ایڈٹ کریں
+            </button>
+        `;
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeKsdVoucherModal() {
+    const modal = document.getElementById('ksd-voucher-modal');
+    if (modal) modal.style.display = 'none';
 }
 
 // ─── Export Excel ───────────────────────────────────────────────
@@ -523,7 +740,7 @@ function exportKsaDetailExcel() {
 
     let filtered = allRecs.filter(r => matchesMovement(r, cfg));
 
-    if (!ksaDetailShowAllDates) {
+    if (!ksaDetailShowAllDatesFlag) {
         filtered = filtered.filter(r => datesMatch(r.date, curDate));
     }
 
@@ -543,7 +760,7 @@ function exportKsaDetailExcel() {
         return;
     }
 
-    const dateHeader = ksaDetailShowAllDates ? 'تمام تاریخیں' : `تاریخ: ${curDate}`;
+    const dateHeader = ksaDetailShowAllDatesFlag ? 'تمام تاریخیں' : `تاریخ: ${curDate}`;
     const data = [
         ['Umrah Transport Management System'],
         [cfg.label, dateHeader],
@@ -589,7 +806,7 @@ function exportKsaDetailExcel() {
     XLSX.utils.book_append_sheet(wb, ws, 'KSA Detail');
 
     const safeName = (cfg.label || 'KSA_Report').replace(/[\s\(\)\/]/g, '_');
-    XLSX.writeFile(wb, `${safeName}_${ksaDetailShowAllDates ? 'AllDates' : curDate}.xlsx`);
+    XLSX.writeFile(wb, `${safeName}_${ksaDetailShowAllDatesFlag ? 'AllDates' : curDate}.xlsx`);
 }
 
 // ─── Hook: called when page-ksa-detail becomes active ──────────
@@ -609,3 +826,5 @@ window.ksaDetailChangeType    = ksaDetailChangeType;
 window.renderKsaDetailTable   = renderKsaDetailTable;
 window.exportKsaDetailExcel   = exportKsaDetailExcel;
 window.onKsaDetailPageShow    = onKsaDetailPageShow;
+window.openKsdVoucherModal     = openKsdVoucherModal;
+window.closeKsdVoucherModal    = closeKsdVoucherModal;

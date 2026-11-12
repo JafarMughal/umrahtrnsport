@@ -27,6 +27,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!users.length) users = [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: '2024-01-01', createdBy: 'system' }];
             dailyNotes = toArray(data.dailyNotes);
             hajiParties = toArray(data.hajiParties);
+            umrahBookings = toArray(data.umrahBookings);
+            if (!umrahBookings || !umrahBookings.length) {
+                try {
+                    const localUB = JSON.parse(localStorage.getItem('uts_umrahBookings') || '[]');
+                    if (localUB && Array.isArray(localUB) && localUB.length > 0) {
+                        umrahBookings = localUB;
+                        if (typeof svUB === 'function') svUB();
+                    }
+                } catch (e) { }
+            }
             const settings = data.settings || {};
             fbLogo = settings.logo || null;
             fbAppName = settings.appName || {};
@@ -131,6 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
             ]);
             hajiParties = hajiParties.filter(hp => !defaultNamesToRemoveOffline.has(hp));
+            umrahBookings = getLocal('umrahBookings') || [];
             parties.forEach(p => {
                 if (typeof getCode === 'function') getCode(p);
             });
@@ -174,6 +185,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 users = data.users !== undefined ? toArray(data.users) : users;
                 dailyNotes = data.dailyNotes !== undefined ? toArray(data.dailyNotes) : dailyNotes;
                 hajiParties = data.hajiParties !== undefined ? toArray(data.hajiParties) : hajiParties;
+                if (data.umrahBookings !== undefined && data.umrahBookings !== null) {
+                    const fbUB = toArray(data.umrahBookings);
+                    if (fbUB.length > 0 || !umrahBookings.length) {
+                        umrahBookings = fbUB;
+                    }
+                } else if (!umrahBookings || !umrahBookings.length) {
+                    try {
+                        const localUB = JSON.parse(localStorage.getItem('uts_umrahBookings') || '[]');
+                        if (localUB && Array.isArray(localUB) && localUB.length > 0) {
+                            umrahBookings = localUB;
+                        }
+                    } catch (e) { }
+                }
                 const settings = data.settings || {};
                 fbLogo = settings.logo || fbLogo;
                 fbAppName = settings.appName || fbAppName;
@@ -203,6 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (activePage.id === 'page-dailynote') { fillTransportNatureDropdown(); renderDailyNoteReport(); }
                     if (activePage.id === 'page-report') genReport();
                     if (activePage.id === 'page-admin') renderAdminPanel();
+                    if (activePage.id === 'page-umrah') { if (typeof renderUmrahBookings === 'function') renderUmrahBookings(); }
                     if (activePage.id === 'page-settings') {
                         renderPartyList();
                         renderSectorList();

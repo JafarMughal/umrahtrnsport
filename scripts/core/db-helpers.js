@@ -30,6 +30,7 @@ function svU() { _safeFbSet('users', users); }
 function svHP() { _safeFbSet('hajiParties', hajiParties); }
 function svDN() { _safeFbSet('dailyNotes', dailyNotes); }
 function svRP() { _safeFbSet('rolePermissions', rolePermissions); }
+function svUB() { _safeFbSet('umrahBookings', umrahBookings); }
 
 function saveAppSettingsToFb() {
     _safeFbSet('settings', { logo: fbLogo || null, appName: fbAppName || {}, appSub: fbAppSub || {} });

@@ -7,6 +7,7 @@ let currentActiveTab = 'home';
 const tabNames = {
     'home': 'ڈیش بورڈ',
     'entry': 'نئی انٹری',
+    'umrah': 'UMRAH',
     'payment': 'ادائیگی',
     'ledger': 'لیجر',
     'records': 'ریکارڈز',
@@ -73,6 +74,10 @@ function updateTopbarTitle(p) {
 
     if (p === 'home') {
         el.textContent = currentLang === 'en' ? 'Dashboard' : currentLang === 'ar' ? 'لوحة التحكم' : 'ڈیش بورڈ';
+        return;
+    }
+    if (p === 'umrah') {
+        el.textContent = 'UMRAH';
         return;
     }
 
@@ -217,6 +222,9 @@ function _executeShowPageLogic(p) {
     if (p === 'ksa-detail') {
         if (typeof onKsaDetailPageShow === 'function') onKsaDetailPageShow();
     }
+    if (p === 'umrah') {
+        if (typeof renderUmrahBookings === 'function') renderUmrahBookings();
+    }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -236,3 +244,18 @@ window.addEventListener('resize', () => {
         document.body.classList.remove('sidebar-open');
     }
 });
+function switchUmrahTab(tabId) {
+    const tabs = document.querySelectorAll('#umrah-sub-tabs .tab-btn');
+    tabs.forEach(btn => btn.classList.remove('active'));
+    const targetBtn = document.getElementById('umrah-tab-' + tabId);
+    if (targetBtn) targetBtn.classList.add('active');
+
+    const contents = document.querySelectorAll('.umrah-page-wrap .tab-content');
+    contents.forEach(c => c.classList.remove('active'));
+    const targetContent = document.getElementById('umrah-content-' + tabId);
+    if (targetContent) targetContent.classList.add('active');
+    if (tabId === 'booking') {
+        if (typeof renderUmrahBookings === 'function') renderUmrahBookings();
+    }
+}
+window.switchUmrahTab = switchUmrahTab;

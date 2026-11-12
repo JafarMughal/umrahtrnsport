@@ -2687,13 +2687,45 @@ body.lang-en .sd-dropdown { right: auto; }
   font-size: 13px;
   font-weight: 700;
   color: var(--gold);
-  background: rgba(0,0,0,0.25);
+  background: rgba(0,0,0,0.3);
   border-radius: var(--radius-md);
-  padding: 5px 14px;
+  padding: 5px 12px;
   letter-spacing: 0.5px;
-  min-width: 110px;
+  min-width: 130px;
   text-align: center;
-  border: 1px solid rgba(201,168,76,0.4);
+  border: 1px solid rgba(201,168,76,0.45);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  color-scheme: dark;
+}
+
+.ksa-date-display:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.25);
+}
+
+.ksa-today-btn {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+.ksa-today-btn:hover {
+  background: rgba(255,255,255,0.32);
+  transform: translateY(-1px);
+}
+
+.ksa-today-btn:active {
+  transform: translateY(0);
 }
 
 .ksa-status-body {

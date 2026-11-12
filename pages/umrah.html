@@ -1,0 +1,133 @@
+<!-- ===== UMRAH MODULE ===== -->
+<div class="umrah-page-wrap">
+    <!-- Sub-tabs bar -->
+    <div class="settings-tabs no-print" style="margin-bottom:16px;" id="umrah-sub-tabs">
+        <button class="tab-btn active" id="umrah-tab-booking" onclick="switchUmrahTab('booking')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-inline-end:6px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            <span>Booking (بکنگ و معتمرین)</span>
+        </button>
+    </div>
+
+    <!-- Booking Tab Content -->
+    <div id="umrah-content-booking" class="tab-content active card" style="border-radius:12px;padding:24px;">
+        <!-- Header Bar -->
+        <div class="card-header-bar" style="margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div class="card-title-group" style="display:flex;align-items:center;gap:12px;">
+                <div class="card-title-icon" style="background:var(--accent-tint, rgba(20,125,100,0.12));color:var(--accent);padding:10px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                        <path d="M9 12h6"/>
+                        <path d="M9 16h6"/>
+                    </svg>
+                </div>
+                <div class="card-title-text">
+                    <h2 class="card-title" style="margin:0 0 4px 0;font-size:18px;">عمرہ بکنگ و نسک ڈیٹا (Umrah Booking)</h2>
+                    <div class="card-subtitle" style="font-size:12.5px;color:var(--muted);">Nusuk پورٹل سے حجاج کا ڈیٹا امپورٹ اور معتمرین ریکارڈز مینجمنٹ</div>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="card-header-actions no-print" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <button type="button" class="btn btn-o btn-sm" onclick="exportUmrahBookingsToExcel()" id="btn-nusuk-export" title="Excel میں برآمد کریں" style="display:inline-flex;align-items:center;gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Excel برآمد کریں</span>
+                </button>
+                <button type="button" class="btn btn-p btn-sm" id="btn-nusuk-import" onclick="openNusukImportModal()" title="Nusuk Import" style="display:inline-flex;align-items:center;gap:6px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <span>Nusuk Import</span>
+                </button>
+                <button type="button" class="btn btn-o btn-sm" onclick="clearAllUmrahBookings()" id="btn-nusuk-clear" title="تمام بکنگز صاف کریں" style="color:var(--red,#dc2626);border-color:var(--red,#dc2626);display:none;">
+                    <span>ڈیٹا صاف کریں</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Top KPI Cards Strip -->
+        <div class="rec-stats-strip" id="ub-stats-strip" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:18px;">
+            <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+                <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">کل معتمرین / حجاج</span>
+                <span class="val text-accent" id="ub-kpi-total" style="font-size:20px;font-weight:700;">0</span>
+            </div>
+            <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+                <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">کل گروپس</span>
+                <span class="val" id="ub-kpi-groups" style="font-size:20px;font-weight:700;">0</span>
+            </div>
+            <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+                <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">ویزا جاری شدہ</span>
+                <span class="val" id="ub-kpi-visas" style="font-size:20px;font-weight:700;color:var(--green,#22c55e);">0</span>
+            </div>
+            <div class="rec-stat-item" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+                <span class="lbl" style="font-size:11.5px;color:var(--text-soft);display:block;margin-bottom:4px;">افراد کی نوعیت (Adult / Child / Infant)</span>
+                <span class="val" id="ub-kpi-pax" style="font-size:15px;font-weight:700;">0 / 0 / 0</span>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="records-filter-card no-print" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;align-items:flex-end;">
+                <div>
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">تلاش کریں (Search)</label>
+                    <input type="text" id="ub-search-input" placeholder="نام، پاسپورٹ نمبر، موفا، ویزا..." oninput="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);" />
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">گروپ فلٹر (Group)</label>
+                    <select id="ub-filter-group" onchange="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);">
+                        <option value="">تمام گروپس (All Groups)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">قومیت (Nationality)</label>
+                    <select id="ub-filter-nationality" onchange="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);">
+                        <option value="">تمام قومیتیں (All Nationalities)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--text);">ویزا اسٹیٹس (Visa Status)</label>
+                    <select id="ub-filter-status" onchange="filterUmrahBookings()" style="width:100%;height:38px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);">
+                        <option value="">تمام اسٹیٹس (All Statuses)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Data Container (Dynamically rendered by filterUmrahBookings) -->
+        <div id="ub-container">
+            <div id="ub-empty-state" style="background:var(--surface-alt, rgba(0,0,0,0.02));border:1px dashed var(--border);border-radius:12px;padding:48px 24px;text-align:center;">
+                <div style="font-size:42px;margin-bottom:12px;">🕋</div>
+                <h3 style="margin:0 0 6px 0;font-size:18px;color:var(--primary);">کوئی عمرہ بکنگ یا معتمرین ڈیٹا موجود نہیں ہے</h3>
+                <p style="margin:0 0 18px 0;color:var(--muted);font-size:13px;max-width:520px;margin-inline:auto;">
+                    Nusuk پورٹل سے حاصل کردہ ایکسل فائل براہِ راست امپورٹ کریں تاکہ معتمرین کے نام، پاسپورٹ، ویزا اور گروپس کی تفصیلات یہاں خودکار طور پر آ جائیں۔
+                </p>
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-p" onclick="openNusukImportModal()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;font-size:14px;font-weight:600;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span>Nusuk Import (ایکسل امپورٹ کریں)</span>
+                    </button>
+                    <button type="button" class="btn btn-o" onclick="downloadNusukTemplate()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>سیمپل ٹیمپلیٹ ڈاؤنلوڈ کریں</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    if (typeof renderUmrahBookings === 'function') {
+        setTimeout(renderUmrahBookings, 50);
+    }
+</script>

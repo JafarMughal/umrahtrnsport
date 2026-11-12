@@ -73,10 +73,11 @@
     <!-- ── FILTER BAR ── -->
     <div class="ksa-detail-filter-bar no-print">
         <div class="fg ksd-search-fg">
-            <input type="text" id="ksd-search" placeholder="واؤچر / ٹرانسپورٹر / حاجی پارٹی / سیکٹر تلاش کریں..." oninput="renderKsaDetailTable()" />
+            <input type="text" id="ksd-search" placeholder="واؤچر نمبر / حاجی کا نام / ٹرانسپورٹر / حاجی پارٹی / سیکٹر / گروپ تلاش کریں..." oninput="renderKsaDetailTable()" />
         </div>
         <div class="fg">
             <select id="ksd-type-select" onchange="ksaDetailChangeType(this.value)" title="موومنٹ کی قسم تبدیل کریں">
+                <option value="all">🌐 تمام نقل و حرکت (All Movements)</option>
                 <option value="jed-arrival">✈ جدہ آمد (Jeddah Arrival)</option>
                 <option value="jed-departure">✈ جدہ روانگی (Jeddah Departure)</option>
                 <option value="med-arrival">✈ مدینہ آمد (Madinah Arrival)</option>
@@ -85,6 +86,8 @@
                 <option value="mak-checkout">🕋 مکہ چیک آؤٹ (Makkah Check-Out)</option>
                 <option value="med-checkin">🕌 مدینہ چیک ان (Madinah Check-In)</option>
                 <option value="med-checkout">🕌 مدینہ چیک آؤٹ (Madinah Check-Out)</option>
+                <option value="mak-present">🕋 مکہ میں موجود حجاج (Present in Makkah)</option>
+                <option value="med-present">🕌 مدینہ میں موجود حجاج (Present in Madinah)</option>
             </select>
         </div>
         <div class="fg">
@@ -100,6 +103,12 @@
         </div>
     </div>
 
+    <!-- ── DATE FALLBACK ALERT BANNER ── -->
+    <div id="ksd-date-alert" style="display:none;margin-bottom:12px;background:#fff8e1;border:1px solid #ffe082;color:#795548;padding:10px 16px;border-radius:var(--radius-md);font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div id="ksd-date-alert-text"></div>
+        <button type="button" class="btn btn-sm btn-o" onclick="ksaDetailShowAllDates()" style="font-size:12px;white-space:nowrap;">تمام تاریخیں دیکھیں</button>
+    </div>
+
     <!-- ── PRINT HEADER ── -->
     <div class="print-header">
         <div class="ph-title">Umrah Transport Management System</div>
@@ -113,19 +122,19 @@
             <table class="dash-table ksa-detail-table">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>واؤچر</th>
+                        <th style="width:40px;text-align:center;">#</th>
+                        <th>واؤچر نمبر</th>
+                        <th>حاجی / معتمر و گروپ</th>
                         <th>تاریخ</th>
                         <th>ٹرانسپورٹر</th>
-                        <th>حاجی پارٹی</th>
+                        <th>حاجی پارٹی / شرکہ</th>
                         <th>سیکٹر</th>
-                        <th>ٹرانسپورٹ</th>
-                        <th>حجاج</th>
-                        <th>فلائیٹ</th>
-                        <th>وقت</th>
-                        <th>کل رقم (SAR)</th>
+                        <th>گاڑی</th>
+                        <th style="text-align:center;">حجاج</th>
+                        <th>فلائیٹ و ائیرپورٹ</th>
+                        <th>کل رقم</th>
                         <th>اسٹیٹس</th>
-                        <th class="no-print">کارروائی</th>
+                        <th class="no-print" style="text-align:center;min-width:110px;">کارروائی</th>
                     </tr>
                 </thead>
                 <tbody id="ksd-table-body">
@@ -147,6 +156,29 @@
             <button type="button" class="btn btn-p btn-sm" onclick="showPage('entry')">
                 + نئی انٹری درج کریں
             </button>
+        </div>
+    </div>
+
+    <!-- ── MODAL: VIEW VOUCHER & PILGRIMS DETAIL ── -->
+    <div id="ksd-voucher-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;align-items:center;justify-content:center;padding:16px;">
+        <div style="background:var(--white);border-radius:var(--radius-xl);max-width:760px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-xl);border:1px solid var(--border);display:flex;flex-direction:column;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border-radius:var(--radius-xl) var(--radius-xl) 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:22px;">🎫</span>
+                    <div>
+                        <h3 style="margin:0;font-size:16px;color:#fff;" id="ksd-modal-vch-title">واؤچر و حجاج کی مکمل تفصیل</h3>
+                        <span style="font-size:12px;opacity:0.85;" id="ksd-modal-vch-sub">معتمرین، ٹرانسپورٹ و فلائیٹ تفصیلات</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeKsdVoucherModal()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 6px;line-height:1;">✕</button>
+            </div>
+            <div id="ksd-modal-vch-body" style="padding:20px;flex:1;">
+                <!-- Dynamic body content injected via JS -->
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border);background:var(--bg-page);border-radius:0 0 var(--radius-xl) var(--radius-xl);">
+                <button type="button" class="btn btn-o btn-sm" onclick="closeKsdVoucherModal()">بند کریں</button>
+                <div style="display:flex;gap:8px;" id="ksd-modal-actions"></div>
+            </div>
         </div>
     </div>
 

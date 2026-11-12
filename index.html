@@ -109,6 +109,16 @@
                         <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         <span class="nav-text">نئی انٹری</span>
                     </button>
+                    <button id="nav-umrah" onclick="showPage('umrah',this)">
+                        <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <span class="nav-text">UMRAH</span>
+                    </button>
+                    <div id="nav-umrah-sub" style="padding-inline-start:20px;display:flex;flex-direction:column;gap:2px;margin-top:1px;margin-bottom:3px;">
+                        <button id="nav-umrah-booking" onclick="showPage('umrah',this)" style="padding:6px 12px;font-size:12.5px;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;">
+                            <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                            <span class="nav-text">Booking</span>
+                        </button>
+                    </div>
                     <button id="nav-payment" onclick="showPage('payment',this)">
                         <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                         <span class="nav-text">ادائیگی</span>
@@ -191,6 +201,7 @@
                 <!-- ===== MODULAR PAGES (LOADED DYNAMICALLY FROM /pages) ===== -->
                 <div id="page-home" class="page active"></div>
                 <div id="page-entry" class="page"></div>
+                <div id="page-umrah" class="page"></div>
                 <div id="page-payment" class="page"></div>
                 <div id="page-ledger" class="page"></div>
                 <div id="page-records" class="page"></div>
@@ -581,6 +592,132 @@
     </div>
 
 
+    <!-- ===== NUSUK IMPORT MODAL ===== -->
+    <div class="mo" id="nusuk-import-modal" onclick="if(event.target===this)closeNusukImportModal()">
+        <div class="md nusuk-import-md" style="max-width:880px;width:95%;padding:0;overflow:hidden;border-radius:16px;max-height:92vh;display:flex;flex-direction:column;border-top:none;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+            <!-- Modal Header -->
+            <div class="nusuk-modal-hdr" style="background:linear-gradient(135deg, var(--charcoal-blue, #2f3e46) 0%, var(--dark-slate-grey, #354f52) 100%);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 style="margin:0;color:#fff;font-size:16px;font-weight:700;">Nusuk Import (نسک معتمرین و بکنگ امپورٹ)</h3>
+                        <p style="margin:0;color:rgba(255,255,255,0.85);font-size:12px;">نسک پورٹل سے ڈاؤنلوڈ کردہ Excel / CSV فائل کے ذریعے ڈیٹا امپورٹ کریں</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeNusukImportModal()" aria-label="Close" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="nusuk-modal-body" style="padding:20px 22px;overflow-y:auto;flex:1;background:var(--surface,#ffffff);">
+                <!-- Step 1: Info & Template Banner -->
+                <div class="import-template-box" style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <strong style="font-size:13px;display:block;margin-bottom:3px;color:var(--text);">نسک کالمز ٹیمپلیٹ (Nusuk Format)</strong>
+                        <span style="font-size:12px;color:var(--text-soft);line-height:1.5;">فائل میں معتمر نام، پاسپورٹ، ویزا، موفا، عمر، گروپ، پیکیج وغیرہ کے 15 کالمز شامل ہونے چاہئیں۔</span>
+                    </div>
+                    <button type="button" class="btn btn-o btn-sm" onclick="downloadNusukTemplate()" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>ٹیمپلیٹ ڈاؤنلوڈ کریں (.xlsx)</span>
+                    </button>
+                </div>
+
+                <!-- Step 2: Drag & Drop Zone -->
+                <input type="file" id="nusuk-file-input" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleNusukFileSelect(this)" />
+                <div id="nusuk-drop-zone" class="import-drop-zone" onclick="document.getElementById('nusuk-file-input').click()"
+                     ondragover="handleNusukDragOver(event)" ondragleave="handleNusukDragLeave(event)" ondrop="handleNusukDrop(event)"
+                     style="border:2px dashed var(--border-strong, #84a98c);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;background:var(--surface-alt);transition:all 0.2s ease;">
+                    <div style="width:48px;height:48px;margin:0 auto 10px;border-radius:50%;background:rgba(20,125,100,0.1);display:flex;align-items:center;justify-content:center;color:var(--accent,#147d64);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="12" y1="18" x2="12" y2="12"/>
+                            <line x1="9" y1="15" x2="12" y2="12"/>
+                            <line x1="15" y1="15" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <strong style="font-size:14px;color:var(--text);display:block;" id="nusuk-zone-title">نسک Excel یا CSV فائل یہاں ڈراپ کریں یا منتخب کریں</strong>
+                        <span style="font-size:12px;color:var(--text-soft);" id="nusuk-zone-sub">فائل فارمیٹس: .xlsx, .xls, .csv</span>
+                    </div>
+                </div>
+
+                <!-- Step 3: Preview Area (hidden until file parsed) -->
+                <div id="nusuk-preview-area" style="display:none;margin-top:18px;">
+                    <!-- Stats Strip -->
+                    <div class="rec-stats-strip" style="margin-bottom:12px;display:flex;gap:12px;flex-wrap:wrap;">
+                        <div class="rec-stat-item"><span class="lbl">کل معتمرین:</span> <span class="val text-accent" id="nusuk-stat-total">0</span></div>
+                        <div class="rec-stat-item"><span class="lbl">گروپس تعداد:</span> <span class="val" id="nusuk-stat-groups">0</span></div>
+                        <div class="rec-stat-item"><span class="lbl">ویزا جاری شدہ:</span> <span class="val" style="color:var(--green, #22c55e);" id="nusuk-stat-visas">0</span></div>
+                        <div class="rec-stat-item"><span class="lbl">قومیتیں:</span> <span class="val" id="nusuk-stat-nationalities">0</span></div>
+                        <div class="rec-stat-item"><span class="lbl">افراد (Adult/Child/Infant):</span> <span class="val" id="nusuk-stat-pax">0</span></div>
+                    </div>
+
+                    <!-- Import Mode Selection -->
+                    <div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;">
+                        <div style="font-size:12.5px;font-weight:700;margin-bottom:8px;color:var(--text);">امپورٹ کا طریقہ منتخب کریں:</div>
+                        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                                <input type="radio" name="nusuk-import-mode" value="append" checked />
+                                <span>موجودہ بکنگ لسٹ میں شامل کریں (Append)</span>
+                            </label>
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--red);">
+                                <input type="radio" name="nusuk-import-mode" value="replace" />
+                                <span>پرانا ڈیٹا ختم کر کے صرف یہ فائل رکھیں (Replace)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Table Preview -->
+                    <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+                        <span>فائل کا پیش منظر (Preview):</span>
+                        <span id="nusuk-preview-count" style="font-size:11.5px;color:var(--text-soft);"></span>
+                    </div>
+                    <div class="tbl-wrap" style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+                        <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">#</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);">معتمر کا نام</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">عمر</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">پاسپورٹ نمبر</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);">قومیت</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">گروپ</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);">پیکیج</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">ویزا اسٹیٹس</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">ویزا نمبر</th>
+                                    <th style="padding:6px 8px;background:var(--surface-alt);border:1px solid var(--border);text-align:center;">موفا نمبر</th>
+                                </tr>
+                            </thead>
+                            <tbody id="nusuk-preview-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="al-nusuk-import" style="margin-top:14px;"></div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="nusuk-modal-footer" style="padding:14px 22px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);background:var(--bg-page);">
+                <button type="button" class="btn btn-o" onclick="closeNusukImportModal()">منسوخ</button>
+                <button type="button" class="btn btn-p" id="btn-confirm-import-nusuk" onclick="confirmNusukImport()" disabled style="display:inline-flex;align-items:center;gap:6px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>امپورٹ محفوظ کریں (Save Import)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ===== FIREBASE SDK ===== -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
     </script>
@@ -617,6 +754,8 @@
     <script src="scripts/pages/records.js">
     </script>
     <script src="scripts/pages/report.js">
+    </script>
+    <script src="scripts/pages/umrah.js">
     </script>
     <script src="scripts/pages/daily-note.js">
     </script>

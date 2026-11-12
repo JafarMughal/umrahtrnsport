@@ -14,6 +14,7 @@ let vehicleRates = [];
 let partyCodes = {};
 let users = [];
 let dailyNotes = [];
+let umrahBookings = [];
 let loggedInUser = null;
 let isFirebaseReady = false;
 let fbLogo = null;

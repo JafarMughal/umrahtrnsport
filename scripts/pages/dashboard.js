@@ -435,74 +435,194 @@ function openPartyLedgerFromDash(partyName) {
 }
 
 // ─── KSA STATUS PANEL ───────────────────────────────────────────
-// transportNature values:
-//   Jed Arrival     → جدہ آمد
-//   MED Arrival     → مدینہ آمد
-//   Jeddah Depture  → جدہ روانگی
-//   Madina Depture  → مدینہ روانگی
-//   Madina TO Makha → مدینہ سے مکہ (مکہ چیک ان / مدینہ چیک آؤٹ)
-//   Makkah to Madina→ مکہ سے مدینہ (مدینہ چیک ان / مکہ چیک آؤٹ)
+// Intelligent matching for KSA movements supporting:
+// 1. transportNature (Jed Arrival, MED Arrival, Jeddah Depture, Madina Depture, etc.)
+// 2. sector (جدہ ➜ مکہ, مکہ ➜ مدینہ, مدینہ ➜ مکہ, مکہ ➜ جدہ, English equivalents)
+// 3. airport & notes
 // ───────────────────────────────────────────────────────────────
 
 let ksaStatusDate = (typeof today === 'function' ? today() : new Date().toISOString().split('T')[0]);
 window.ksaStatusDate = ksaStatusDate;
 
+function ksaFormatDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 function ksaChangeDate(delta) {
-    const d = new Date(ksaStatusDate);
+    let cur = ksaStatusDate || (typeof today === 'function' ? today() : new Date().toISOString().split('T')[0]);
+    let parts = cur.split('-').map(Number);
+    let d = (parts.length === 3 && !isNaN(parts[0])) ? new Date(parts[0], parts[1] - 1, parts[2]) : new Date();
     d.setDate(d.getDate() + delta);
-    ksaStatusDate = d.toISOString().split('T')[0];
+    ksaStatusDate = ksaFormatDate(d);
     window.ksaStatusDate = ksaStatusDate;
     renderKsaStatusPanel();
+}
+
+function ksaSetDate(val) {
+    if (!val) return;
+    ksaStatusDate = String(val).trim();
+    window.ksaStatusDate = ksaStatusDate;
+    renderKsaStatusPanel();
+}
+
+function ksaSetToday() {
+    ksaStatusDate = (typeof today === 'function' ? today() : new Date().toISOString().split('T')[0]);
+    window.ksaStatusDate = ksaStatusDate;
+    renderKsaStatusPanel();
+}
+
+function recordMatchesKsaType(r, type) {
+    if (!r) return false;
+    const tn  = String(r.transportNature || '').toLowerCase().trim();
+    const sec = String(r.sector || '').toLowerCase().trim();
+    const ap  = String(r.airport || '').toLowerCase().trim();
+
+    // 1. Jeddah Airport Arrival (jed-arrival)
+    if (type === 'jed-arrival') {
+        if (tn.includes('jed arrival') || tn.includes('jeddah arrival') || tn.includes('jed arr') || 
+            tn.includes('جدہ آمد') || tn.includes('آمد جدہ') || tn === 'jeddah') return true;
+        if (sec.includes('جدہ ➜ مکہ') || sec.includes('جدہ سے مکہ') || sec.includes('جدہ تا مکہ') || 
+            sec.includes('جدہ ➜ مدینہ') || sec.includes('جدہ سے مدینہ') || sec.includes('جدہ تا مدینہ') ||
+            sec.includes('jeddah to mak') || sec.includes('jed to mak') || sec.includes('jeddah to med') || sec.includes('jed to med')) return true;
+        if (ap.includes('jed') && (sec.includes('mak') || sec.includes('med') || sec.includes('مکہ') || sec.includes('مدینہ')) && 
+            !sec.includes('to jed') && !sec.includes('➜ جدہ') && !sec.includes('سے جدہ')) return true;
+        return false;
+    }
+
+    // 2. Jeddah Airport Departure (jed-departure)
+    if (type === 'jed-departure') {
+        if (tn.includes('jeddah dep') || tn.includes('jed dep') || tn.includes('jeddah depture') || 
+            tn.includes('jed depture') || tn.includes('جدہ روانگی') || tn.includes('روانگی جدہ')) return true;
+        if (sec.includes('مکہ ➜ جدہ') || sec.includes('مکہ سے جدہ') || sec.includes('مکہ تا جدہ') || 
+            sec.includes('مدینہ ➜ جدہ') || sec.includes('مدینہ سے جدہ') || sec.includes('مدینہ تا جدہ') ||
+            sec.includes('mak to jed') || sec.includes('makkah to jed') || sec.includes('med to jed') || sec.includes('madina to jed') ||
+            sec.includes('to jed') || sec.includes('➜ جدہ') || sec.includes('سے جدہ')) return true;
+        if (ap.includes('jed') && (sec.includes('to jed') || sec.includes('➜ جدہ') || sec.includes('سے جدہ'))) return true;
+        return false;
+    }
+
+    // 3. Madinah Airport Arrival (med-arrival)
+    if (type === 'med-arrival') {
+        if (tn.includes('med arrival') || tn.includes('madina arrival') || tn.includes('madinah arrival') || 
+            tn.includes('med arr') || tn.includes('مدینہ آمد') || tn.includes('آمد مدینہ')) return true;
+        if (sec.includes('مدینہ ائیرپورٹ ➜') || sec.includes('مدینہ ائیرپورٹ سے') || 
+            sec.includes('med airport to') || sec.includes('madina airport to') || sec.includes('madinah airport to')) return true;
+        if (ap.includes('med') || ap.includes('madina') || ap.includes('madinah')) {
+            if (!sec.includes('to med') && !sec.includes('to mad') && !sec.includes('➜ مدینہ ائیرپورٹ')) return true;
+        }
+        return false;
+    }
+
+    // 4. Madinah Airport Departure (med-departure)
+    if (type === 'med-departure') {
+        if (tn.includes('madina dep') || tn.includes('med dep') || tn.includes('madina depture') || 
+            tn.includes('med depture') || tn.includes('madinah dep') || tn.includes('مدینہ روانگی') || tn.includes('روانگی مدینہ')) return true;
+        if (sec.includes('➜ مدینہ ائیرپورٹ') || sec.includes('سے مدینہ ائیرپورٹ') || sec.includes('تا مدینہ ائیرپورٹ') ||
+            sec.includes('to med airport') || sec.includes('to madina airport')) return true;
+        return false;
+    }
+
+    // 5. Makkah Check-In (mak-checkin): Madina -> Makkah
+    if (type === 'mak-checkin') {
+        if (tn.includes('madina to mak') || tn.includes('med to mak') || tn.includes('madina to makk') || tn.includes('madina to makha') || tn.includes('مکہ چیک ان')) return true;
+        if (sec.includes('مدینہ ➜ مکہ') || sec.includes('مدینہ سے مکہ') || sec.includes('مدینہ تا مکہ') ||
+            sec.includes('madina to mak') || sec.includes('med to mak') || sec.includes('madina to makkah') || sec.includes('madina to makha')) return true;
+        return false;
+    }
+
+    // 6. Makkah Check-Out (mak-checkout): Makkah -> Madina
+    if (type === 'mak-checkout') {
+        if (tn.includes('makkah to mad') || tn.includes('makkah to medina') || tn.includes('mak to med') || tn.includes('makkah to madina') || tn.includes('مکہ چیک آؤٹ')) return true;
+        if (sec.includes('مکہ ➜ مدینہ') || sec.includes('مکہ سے مدینہ') || sec.includes('مکہ تا مدینہ') ||
+            sec.includes('makkah to mad') || sec.includes('mak to med') || sec.includes('makkah to medina') || sec.includes('makkah to madina')) return true;
+        return false;
+    }
+
+    // 7. Madinah Check-In (med-checkin): Makkah -> Madina
+    if (type === 'med-checkin') {
+        return recordMatchesKsaType(r, 'mak-checkout');
+    }
+
+    // 8. Madinah Check-Out (med-checkout): Madina -> Makkah
+    if (type === 'med-checkout') {
+        return recordMatchesKsaType(r, 'mak-checkin');
+    }
+
+    // 9. All Movements
+    if (type === 'all') return true;
+
+    // 10. Currently in Makkah (mak-present)
+    if (type === 'mak-present') {
+        return recordMatchesKsaType(r, 'jed-arrival') || recordMatchesKsaType(r, 'mak-checkin');
+    }
+
+    // 11. Currently in Madina (med-present)
+    if (type === 'med-present') {
+        return recordMatchesKsaType(r, 'med-arrival') || recordMatchesKsaType(r, 'med-checkin');
+    }
+
+    return false;
+}
+
+function sumForType(recs, type) {
+    if (!Array.isArray(recs)) return 0;
+    return recs.reduce((sum, r) => recordMatchesKsaType(r, type) ? sum + (parseInt(r.count) || 0) : sum, 0);
+}
+
+function openKsaDetailSafely(type, date) {
+    const curD = date || ksaStatusDate || (typeof today === 'function' ? today() : new Date().toISOString().split('T')[0]);
+    if (typeof openKsaDetail === 'function') {
+        openKsaDetail(type, curD);
+    } else if (typeof showPage === 'function') {
+        showPage('ksa-detail');
+    }
 }
 
 function renderKsaStatusPanel() {
     const allRecs = Array.isArray(records) ? records : [];
     const curDate = ksaStatusDate || (typeof today === 'function' ? today() : new Date().toISOString().split('T')[0]);
 
-    // Update date display
+    // Update date display (handles both input and span)
     const dateEl = document.getElementById('ksa-date-display');
-    if (dateEl) dateEl.textContent = curDate;
-
-    // Filter records for selected date
-    const dayRecs = allRecs.filter(r => r.date === curDate);
-
-    // Helper: sum count field for matching records
-    function sumCount(recs, ...natures) {
-        const lower = natures.map(n => n.toLowerCase());
-        return recs.reduce((sum, r) => {
-            const tn = (r.transportNature || '').toLowerCase().trim();
-            const matches = lower.some(n => tn.includes(n));
-            return matches ? sum + (parseInt(r.count) || 0) : sum;
-        }, 0);
+    if (dateEl) {
+        if (dateEl.tagName === 'INPUT') {
+            dateEl.value = curDate;
+        } else {
+            dateEl.textContent = curDate;
+        }
     }
 
+    // Filter records for selected date
+    const dayRecs = allRecs.filter(r => (r.date || '') === curDate);
+
     // Jeddah Airport
-    const jedArrival   = sumCount(dayRecs, 'jed arrival', 'jeddah arrival', 'jed arr');
-    const jedDeparture = sumCount(dayRecs, 'jeddah dep', 'jed dep', 'jeddah depture', 'jed depture');
+    const jedArrival   = sumForType(dayRecs, 'jed-arrival');
+    const jedDeparture = sumForType(dayRecs, 'jed-departure');
 
     // Madina Airport
-    const medArrival   = sumCount(dayRecs, 'med arrival', 'madina arrival', 'med arr');
-    const medDeparture = sumCount(dayRecs, 'madina dep', 'med dep', 'madina depture', 'med depture');
+    const medArrival   = sumForType(dayRecs, 'med-arrival');
+    const medDeparture = sumForType(dayRecs, 'med-departure');
 
-    // Makkah Check-In (Madina → Makkah)
-    const makkahCheckin  = sumCount(dayRecs, 'madina to mak', 'madina to makk', 'madina to makkah', 'madina to makha');
-    // Makkah Check-Out (Makkah → Madina)
-    const makkahCheckout = sumCount(dayRecs, 'makkah to mad', 'makkah to medina', 'makkah to madina');
+    // Makkah Check-In / Out
+    const makkahCheckin  = sumForType(dayRecs, 'mak-checkin');
+    const makkahCheckout = sumForType(dayRecs, 'mak-checkout');
 
-    // Madina Check-In (Makkah → Madina)
-    const madinaCheckin  = makkahCheckout; // same movement, different perspective
-    // Madina Check-Out (Madina → Makkah)
+    // Madina Check-In / Out
+    const madinaCheckin  = makkahCheckout;
     const madinaCheckout = makkahCheckin;
 
-    // Currently in Makkah (cumulative: arrivals + checkins - checkouts - departures)
-    // Using all records to track cumulative presence
-    const allJedArr   = sumCount(allRecs.filter(r => r.date <= curDate), 'jed arrival', 'jeddah arrival', 'jed arr');
-    const allMedToMak = sumCount(allRecs.filter(r => r.date <= curDate), 'madina to mak', 'madina to makk', 'madina to makkah', 'madina to makha');
-    const allMakToMed = sumCount(allRecs.filter(r => r.date <= curDate), 'makkah to mad', 'makkah to medina', 'makkah to madina');
-    const allJedDep   = sumCount(allRecs.filter(r => r.date <= curDate), 'jeddah dep', 'jed dep', 'jeddah depture', 'jed depture');
+    // Currently in Makkah & Madina (cumulative presence up to selected date)
+    const recsUpToDate = allRecs.filter(r => (r.date || '') <= curDate);
+    const allJedArr   = sumForType(recsUpToDate, 'jed-arrival');
+    const allMedToMak = sumForType(recsUpToDate, 'mak-checkin');
+    const allMakToMed = sumForType(recsUpToDate, 'mak-checkout');
+    const allJedDep   = sumForType(recsUpToDate, 'jed-departure');
 
-    const allMedArr   = sumCount(allRecs.filter(r => r.date <= curDate), 'med arrival', 'madina arrival', 'med arr');
-    const allMedDep   = sumCount(allRecs.filter(r => r.date <= curDate), 'madina dep', 'med dep', 'madina depture', 'med depture');
+    const allMedArr   = sumForType(recsUpToDate, 'med-arrival');
+    const allMedDep   = sumForType(recsUpToDate, 'med-departure');
 
     const inMakkah = Math.max(0, allJedArr + allMedToMak - allMakToMed - allJedDep);
     const inMadina = Math.max(0, allMedArr + allMakToMed - allMedToMak - allMedDep);
@@ -510,22 +630,22 @@ function renderKsaStatusPanel() {
     // Render counts
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val.toLocaleString(); };
 
-    set('ksa-jed-arrival',  jedArrival);
+    set('ksa-jed-arrival',   jedArrival);
     set('ksa-jed-departure', jedDeparture);
-    set('ksa-med-arrival',  medArrival);
+    set('ksa-med-arrival',   medArrival);
     set('ksa-med-departure', medDeparture);
-    set('ksa-mkk-checkin',  makkahCheckin);
-    set('ksa-mkk-checkout', makkahCheckout);
-    set('ksa-med-checkin',  madinaCheckin);
-    set('ksa-med-checkout', madinaCheckout);
-    set('ksa-in-makkah',    inMakkah);
-    set('ksa-in-madina',    inMadina);
+    set('ksa-mkk-checkin',   makkahCheckin);
+    set('ksa-mkk-checkout',  makkahCheckout);
+    set('ksa-med-checkin',   madinaCheckin);
+    set('ksa-med-checkout',  madinaCheckout);
+    set('ksa-in-makkah',     inMakkah);
+    set('ksa-in-madina',     inMadina);
 
     // Footer note
     const totalDay = dayRecs.length;
     const footerEl = document.getElementById('ksa-footer-note');
     if (footerEl) {
-        footerEl.textContent = `📊 ${curDate} — ${totalDay} ریکارڈ | transportNature فیلڈ پر مبنی`;
+        footerEl.textContent = `📊 ${curDate} — ${totalDay} روزانہ ریکارڈز | روزانہ حجاج نقل و حرکت`;
     }
 }
 
@@ -534,4 +654,8 @@ window.renderDashboard = renderDashboard;
 window.setDashTimeframe = setDashTimeframe;
 window.openPartyLedgerFromDash = openPartyLedgerFromDash;
 window.ksaChangeDate = ksaChangeDate;
+window.ksaSetDate = ksaSetDate;
+window.ksaSetToday = ksaSetToday;
+window.recordMatchesKsaType = recordMatchesKsaType;
+window.openKsaDetailSafely = openKsaDetailSafely;
 window.renderKsaStatusPanel = renderKsaStatusPanel;
