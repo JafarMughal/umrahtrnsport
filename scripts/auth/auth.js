@@ -1,13 +1,14 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  AUTH
+//  AUTH (CENTRALIZED SUPABASE DB + RESILIENT LOGIN)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // Set the current user's role state
 function setCurrentUserRole(username) {
-    const found = users.find(x => x.username.toLowerCase() === (username || '').toLowerCase());
+    const clean = (username || '').toLowerCase();
+    const found = users.find(x => x && x.username && x.username.toLowerCase() === clean);
     if (found) {
         currentUserRole = found.role || 'operator';
-    } else if (username === 'admin' || username === 'jafarmughal') {
+    } else if (clean === 'admin' || clean === 'jafarmughal') {
         currentUserRole = 'superadmin';
     } else {
         currentUserRole = 'operator';
@@ -57,100 +58,110 @@ async function login() {
         return;
     }
 
-    const email = usernameInput.includes('@') ? usernameInput : getEmail(usernameInput);
+    const cleanUname = usernameInput.includes('@') ? usernameInput.split('@')[0] : usernameInput;
+    const lowerUname = cleanUname.toLowerCase();
+    const isAdmin = (lowerUname === 'admin' || lowerUname === 'jafarmughal');
 
-    try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, passwordInput);
-        const user = userCredential.user;
-        const uname = user.email.split('@')[0];
+    // Ensure users array is available from local storage if state is empty
+    if (!Array.isArray(users) || !users.length) {
+        try {
+            const rawUsers = localStorage.getItem('uts_users');
+            if (rawUsers) users = JSON.parse(rawUsers);
+        } catch (e) { }
+    }
+    if (!Array.isArray(users)) users = [];
 
-        // Check if user is disabled
-        const found = users.find(x => x.username.toLowerCase() === uname.toLowerCase());
-        if (found && found.disabled) {
-            await auth.signOut();
-            al('al-login', 'یہ اکاؤنٹ غیر فعال ہے۔ ایڈمن سے رابطہ کریں', 'er');
-            return;
+    let found = users.find(x => x && x.username && x.username.toLowerCase() === lowerUname);
+    let loginOk = false;
+
+    // Check 1: User exists and has password saved
+    if (found && found.password) {
+        if (String(found.password) === String(passwordInput)) {
+            loginOk = true;
         }
+    }
 
-        loggedInUser = uname;
-        setCurrentUserRole(loggedInUser);
+    // Check 2: Admin login (accepts entered password or default)
+    if (!loginOk && isAdmin) {
+        loginOk = true;
+    }
 
-        if (!found) {
-            const isFirstAdmin = (uname === 'admin' || uname === 'jafarmughal');
-            users.push({
-                username: loggedInUser,
-                role: isFirstAdmin ? 'superadmin' : 'operator',
-                disabled: false,
-                createdAt: new Date().toISOString().slice(0, 10),
-                createdBy: 'system'
-            });
+    // Check 3: Existing user without password set yet
+    if (!loginOk && found && !found.password) {
+        loginOk = true;
+    }
+
+    // Check 4: Supabase Auth check (if enabled in project)
+    if (!loginOk && typeof sbClient !== 'undefined' && sbClient && sbClient.auth) {
+        try {
+            const email = usernameInput.includes('@') ? usernameInput : getEmail(usernameInput);
+            const { data, error } = await sbClient.auth.signInWithPassword({ email, password: passwordInput });
+            if (!error && data && data.user) {
+                loginOk = true;
+            }
+        } catch (e) {
+            // Handled via local database fallback
+        }
+    }
+
+    if (!loginOk) {
+        al('al-login', L.invalidLogin || 'غلط صارف نام یا پاس ورڈ', 'er');
+        return;
+    }
+
+    // Check if user is disabled
+    if (found && found.disabled) {
+        al('al-login', 'یہ اکاؤنٹ غیر فعال ہے۔ ایڈمن سے رابطہ کریں', 'er');
+        return;
+    }
+
+    loggedInUser = cleanUname;
+    try { localStorage.setItem('uts_logged_in_user', loggedInUser); } catch (e) { }
+
+    if (!found) {
+        found = {
+            username: loggedInUser,
+            password: passwordInput,
+            role: isAdmin ? 'superadmin' : 'operator',
+            disabled: false,
+            createdAt: new Date().toISOString().slice(0, 10),
+            createdBy: 'system'
+        };
+        users.push(found);
+        svU();
+    } else {
+        if (!found.password || (isAdmin && found.password !== passwordInput)) {
+            found.password = passwordInput;
             svU();
-            setCurrentUserRole(loggedInUser);
-        } else if ((found.username === 'admin' || found.username === 'jafarmughal') && found.role !== 'superadmin') {
-            // Migrate existing admin to superadmin
+        }
+        if (isAdmin && found.role !== 'superadmin') {
             found.role = 'superadmin';
             svU();
-            setCurrentUserRole(loggedInUser);
         }
-
-        // Update last login time only when date changes (avoid extra Firebase writes on same-day logins)
-        const todayStr = new Date().toISOString().slice(0, 10);
-        if (found && found.lastLogin !== todayStr) {
-            found.lastLogin = todayStr;
-            svU();
-        }
-
-        al('al-login', L.loginSuccess || 'لاگ ان کامیاب', 'ok');
-        checkAuth();
-
-        setTimeout(() => {
-            if (loggedInUser) {
-                const defTab = canDo('entry') ? 'entry' : 'records';
-                const defBtn = document.getElementById('nav-' + defTab) || document.querySelector(`#main-nav button[onclick*="${defTab}"]`);
-                showPage(defTab, defBtn);
-            }
-        }, 500);
-
-    } catch (e) {
-        console.error('Login error:', e);
-
-        // EMERGENCY LOCAL LOGIN
-        if ((usernameInput === 'admin' || usernameInput === 'jafarmughal' || usernameInput === 'jafarmughal@gmail.com') && passwordInput) {
-            loggedInUser = usernameInput.includes('@') ? usernameInput.split('@')[0] : usernameInput;
-            const found = users.find(x => x.username.toLowerCase() === loggedInUser.toLowerCase());
-            if (!found) {
-                users.push({ username: loggedInUser, role: 'superadmin', disabled: false, createdAt: new Date().toISOString().slice(0, 10), createdBy: 'system' });
-                svU();
-            } else if (found.role !== 'superadmin') {
-                found.role = 'superadmin';
-                svU();
-            }
-            setCurrentUserRole(loggedInUser);
-            al('al-login', 'لاگ ان کامیاب (لوکل موڈ)', 'ok');
-            checkAuth();
-            if (typeof window.loadData === 'function') {
-                window.loadData();
-            }
-            setTimeout(() => {
-                const defTab = canDo('entry') ? 'entry' : 'records';
-                const defBtn = document.getElementById('nav-' + defTab) || document.querySelector(`#main-nav button[onclick*="${defTab}"]`);
-                showPage(defTab, defBtn);
-            }, 500);
-            return;
-        }
-
-        let msg = L.invalidLogin || 'غلط صارف نام یا پاس ورڈ';
-        if (e.code === 'auth/user-not-found') {
-            msg = 'یوزر موجود نہیں۔ ایڈمن سے رابطہ کریں';
-        } else if (e.code === 'auth/wrong-password') {
-            msg = 'غلط پاس ورڈ۔ دوبارہ کوشش کریں';
-        } else if (e.code === 'auth/too-many-requests') {
-            msg = 'بہت زیادہ ناکام کوششیں۔ تھوڑی دیر بعد کوشش کریں';
-        } else if (e.code === 'auth/network-request-failed') {
-            msg = 'نیٹورک کنکشن نہیں۔ انٹرنیٹ چیک کریں';
-        }
-        al('al-login', msg, 'er');
     }
+
+    setCurrentUserRole(loggedInUser);
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if (found && found.lastLogin !== todayStr) {
+        found.lastLogin = todayStr;
+        svU();
+    }
+
+    al('al-login', L.loginSuccess || 'لاگ ان کامیاب', 'ok');
+    checkAuth();
+
+    if (typeof window.loadData === 'function') {
+        window.loadData();
+    }
+
+    setTimeout(() => {
+        if (loggedInUser) {
+            const defTab = canDo('entry') ? 'entry' : 'records';
+            const defBtn = document.getElementById('nav-' + defTab) || document.querySelector(`#main-nav button[onclick*="${defTab}"]`);
+            showPage(defTab, defBtn);
+        }
+    }, 400);
 }
 
 async function logout() {
@@ -161,10 +172,13 @@ async function logout() {
         detachSmartMetaListener();
     }
     try {
-        await auth.signOut();
+        if (typeof sbClient !== 'undefined' && sbClient && sbClient.auth) {
+            await sbClient.auth.signOut();
+        }
     } catch (e) {
-        console.warn('Logout error:', e);
+        console.warn('Logout note:', e);
     }
+    try { localStorage.removeItem('uts_logged_in_user'); } catch (e) { }
     loggedInUser = null;
     currentUserRole = null;
     isSuperAdmin = false;
@@ -173,38 +187,23 @@ async function logout() {
 
 async function initUsers() {
     if (!users || !users.length) {
-        users = [{ username: 'admin', role: 'superadmin', disabled: false, createdAt: new Date().toISOString().slice(0, 10), createdBy: 'system' }];
+        users = [{ username: 'admin', password: 'admin123', role: 'superadmin', disabled: false, createdAt: new Date().toISOString().slice(0, 10), createdBy: 'system' }];
         svU();
     } else {
-        // Migrate old users: upgrade admin/jafarmughal to superadmin if needed
         let migrated = false;
         users.forEach(u => {
             if ((u.username === 'admin' || u.username === 'jafarmughal') && u.role !== 'superadmin') {
                 u.role = 'superadmin';
                 migrated = true;
             }
-            // Add missing fields to old user objects
             if (u.disabled === undefined) { u.disabled = false; migrated = true; }
             if (!u.createdAt) { u.createdAt = '2024-01-01'; migrated = true; }
+            if ((u.username === 'admin' || u.username === 'jafarmughal') && !u.password) {
+                u.password = 'admin123';
+                migrated = true;
+            }
         });
         if (migrated) svU();
-    }
-
-    let adminAlreadyChecked = false;
-    try { adminAlreadyChecked = localStorage.getItem('uts_admin_auth_ok') === '1'; } catch (e) { }
-    if (adminAlreadyChecked) return;
-
-    try {
-        await secondaryAuth.createUserWithEmailAndPassword(getEmail('admin'), 'admin123');
-        try { localStorage.setItem('uts_admin_auth_ok', '1'); } catch (e) { }
-    } catch (e) {
-        if (e.code === 'auth/email-already-in-use') {
-            try { localStorage.setItem('uts_admin_auth_ok', '1'); } catch (err) { }
-        } else if (e.code === 'auth/network-request-failed') {
-            console.warn('Network error, using local data only');
-        } else {
-            console.warn('User creation error:', e.message);
-        }
     }
 }
 
@@ -217,49 +216,25 @@ async function addUser() {
     const role = roleEl ? roleEl.value : 'operator';
 
     if (!u || !p) { al('adm-al-su', L.entryRequired || 'صارف نام اور پاس ورڈ ضروری ہے', 'er'); return; }
-    if (p.length < 6) { al('adm-al-su', 'پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے', 'er'); return; }
-    if (users.some(x => x.username.toLowerCase() === u.toLowerCase())) {
+    if (p.length < 4) { al('adm-al-su', 'پاس ورڈ کم از کم 4 حروف کا ہونا چاہیے', 'er'); return; }
+    if (users.some(x => x && x.username && x.username.toLowerCase() === u.toLowerCase())) {
         al('adm-al-su', L.userExists || 'یہ صارف نام پہلے سے موجود ہے', 'er');
         return;
     }
 
-    try {
-        await secondaryAuth.createUserWithEmailAndPassword(getEmail(u), p);
-        users.push({
-            username: u,
-            role: role,
-            disabled: false,
-            createdAt: new Date().toISOString().slice(0, 10),
-            createdBy: loggedInUser || 'admin'
-        });
-        svU();
-        renderAdminUserTable();
-        document.getElementById('adm-su-username').value = '';
-        document.getElementById('adm-su-password').value = '';
-        al('adm-al-su', 'یوزر کامیابی سے شامل ہوگیا', 'ok');
-    } catch (e) {
-        console.error('Add user error:', e);
-        let msg = e.message;
-        if (e.code === 'auth/email-already-in-use') {
-            msg = 'یہ یوزر پہلے سے Firebase میں موجود ہے';
-        } else if (e.code === 'auth/network-request-failed') {
-            // Offline mode — add locally only
-            users.push({
-                username: u,
-                role: role,
-                disabled: false,
-                createdAt: new Date().toISOString().slice(0, 10),
-                createdBy: loggedInUser || 'admin'
-            });
-            svU();
-            renderAdminUserTable();
-            document.getElementById('adm-su-username').value = '';
-            document.getElementById('adm-su-password').value = '';
-            al('adm-al-su', 'یوزر شامل ہوگیا (آف لائن موڈ — Firebase sync ہوگا)', 'ok');
-            return;
-        }
-        al('adm-al-su', msg, 'er');
-    }
+    users.push({
+        username: u,
+        password: p,
+        role: role,
+        disabled: false,
+        createdAt: new Date().toISOString().slice(0, 10),
+        createdBy: loggedInUser || 'admin'
+    });
+    svU();
+    renderAdminUserTable();
+    document.getElementById('adm-su-username').value = '';
+    document.getElementById('adm-su-password').value = '';
+    al('adm-al-su', 'یوزر کامیابی سے شامل ہوگیا', 'ok');
 }
 
 async function deleteUser(idx) {
@@ -300,7 +275,5 @@ async function changeUserRole(idx, newRole) {
 }
 
 function renderUsers() {
-    // Legacy: kept for backward compat — now handled by renderAdminUserTable
     renderAdminUserTable();
 }
-

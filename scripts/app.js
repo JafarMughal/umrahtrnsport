@@ -357,8 +357,8 @@ function _withTimeout(promise, ms) {
 }
 
 function detachSmartMetaListener() {
-    if (_metaListenerRef && _metaListenerHandler) {
-        try { _metaListenerRef.off('value', _metaListenerHandler); } catch (e) { }
+    if (_metaListenerRef && typeof sbClient !== 'undefined' && sbClient) {
+        try { sbClient.removeChannel(_metaListenerRef); } catch (e) { }
     }
     _metaListenerRef = null;
     _metaListenerHandler = null;
@@ -366,49 +366,34 @@ function detachSmartMetaListener() {
 
 function attachSmartMetaListener() {
     detachSmartMetaListener();
-    if (typeof db === 'undefined' || !db || typeof db.ref !== 'function' || !loggedInUser) return;
+    if (typeof sbClient === 'undefined' || !sbClient || !loggedInUser) return;
     if (typeof getFbSyncMode === 'function' && getFbSyncMode() !== 'live') return;
 
-    _metaListenerRef = db.ref('_meta/nodes');
-    _metaListenerHandler = async (snapshot) => {
-        if (!isFirebaseReady || !snapshot.exists()) return;
-        const remoteMeta = snapshot.val() || {};
-        const localMeta = typeof getLocalFbMeta === 'function' ? getLocalFbMeta() : {};
-        const nodes = typeof FB_SYNC_NODES !== 'undefined' ? FB_SYNC_NODES : [];
-        const dirtySet = new Set(typeof getDirtyFbNodes === 'function' ? getDirtyFbNodes() : []);
-
-        const nodesToFetch = nodes.filter(node => {
-            if (dirtySet.has(node)) return false;
-            const rTs = Number(remoteMeta[node] || 0);
-            const lTs = Number(localMeta[node] || 0);
-            return rTs > lTs;
-        });
-
-        if (!nodesToFetch.length) return;
-
-        try {
-            const snaps = await Promise.all(nodesToFetch.map(n => db.ref(n).once('value')));
-            if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.nodeReads += nodesToFetch.length;
-
-            const updated = new Set();
-            nodesToFetch.forEach((node, idx) => {
+    try {
+        _metaListenerRef = sbClient.channel('app_data_live')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'app_data' }, (payload) => {
+                const row = payload.new;
+                if (!row || !row.node_name) return;
+                const node = row.node_name;
                 if (typeof isFbNodeDirty === 'function' && isFbNodeDirty(node)) return;
-                _applySingleFbNode(node, snaps[idx].val(), {
+
+                const rTs = row.updated_at ? new Date(row.updated_at).getTime() : Date.now();
+                const lTs = Number((typeof getLocalFbMeta === 'function' ? getLocalFbMeta() : {})[node] || 0);
+                if (rTs <= lTs) return;
+
+                const updated = new Set([node]);
+                _applySingleFbNode(node, row.data, {
                     isRemote: true,
-                    serverTs: Number(remoteMeta[node] || Date.now()),
+                    serverTs: rTs,
                     mergeRecords: node === 'records'
                 });
-                updated.add(node);
-            });
-            if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
-            _refreshUiAfterNodes(updated);
-        } catch (e) {
-            console.warn('Smart live delta fetch error:', e);
-        }
-    };
-    _metaListenerRef.on('value', _metaListenerHandler, (err) => {
-        console.warn('Firebase meta listener error:', err);
-    });
+                if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
+                _refreshUiAfterNodes(updated);
+            })
+            .subscribe();
+    } catch (e) {
+        console.warn('Supabase realtime listener setup error:', e);
+    }
 }
 
 function syncMetaListenerWithMode() {
@@ -442,13 +427,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const lastCheck = typeof getFbLastCheckAt === 'function' ? getFbLastCheckAt() : 0;
             const cacheFresh = hasCache && ttlMs > 0 && (Date.now() - lastCheck) < ttlMs;
 
-            if (typeof db === 'undefined' || !db || typeof db.ref !== 'function') {
+            if (typeof sbClient === 'undefined' || !sbClient) {
                 _applyDefaultsAndCleanup(false);
                 await _finishDataBoot(null);
                 return;
             }
 
-            // Eco/Manual cache hit: 0 Firebase reads!
+            // Eco/Manual cache hit: 0 remote reads!
             if (!force && !forceFull && hasCache && (syncMode === 'manual' || (syncMode === 'eco' && cacheFresh))) {
                 if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.cacheHits++;
                 if (typeof flushPendingFbWrites === 'function') {
@@ -465,93 +450,62 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await flushPendingFbWrites();
                 }
 
+                const { data: rows, error } = await sbClient
+                    .from('app_data')
+                    .select('node_name, data, updated_at');
+
+                if (error) {
+                    throw error;
+                }
+
+                if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.nodeReads += (rows ? rows.length : 1);
+
+                // Sync any local nodes that don't exist in Supabase yet
+                const remoteNodeSet = new Set((rows || []).map(r => r && r.node_name));
+                const missingRows = [];
+                const nowIso = new Date().toISOString();
                 const nodes = typeof FB_SYNC_NODES !== 'undefined' ? FB_SYNC_NODES : [];
-                const applyFullRootSnapshot = async (data, remoteMetaMap = null) => {
-                    const seedTs = Date.now();
-                    const initialMeta = {};
-                    const changed = new Set();
-                    nodes.forEach(node => {
-                        const rTs = Number((remoteMetaMap && remoteMetaMap[node]) || seedTs);
-                        _applySingleFbNode(node, data[node], {
-                            isRemote: true,
-                            serverTs: rTs,
-                            mergeRecords: false
-                        });
-                        initialMeta[node] = rTs;
-                        changed.add(node);
-                    });
-                    try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
-                    if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
-                    _applyDefaultsAndCleanup(true);
-                    if (!remoteMetaMap) {
-                        db.ref('_meta/nodes').update(initialMeta).catch(() => { });
-                    }
-                    await _finishDataBoot(changed);
-                };
 
-                if (forceFull) {
-                    const snap = await db.ref('/').once('value');
-                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.fullReads++;
-                    await applyFullRootSnapshot(snap.val() || {}, null);
-                    return;
-                }
-
-                const metaCheckPromise = db.ref('_meta/nodes').once('value');
-                const metaSnap = hasCache ? await _withTimeout(metaCheckPromise, 6000) : await metaCheckPromise;
-                if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.metaChecks++;
-
-                if (metaSnap.exists() && metaSnap.val()) {
-                    const remoteMeta = metaSnap.val() || {};
-                    const localMeta = typeof getLocalFbMeta === 'function' ? getLocalFbMeta() : {};
-                    const nodesToFetch = nodes.filter(node => {
-                        if (typeof isFbNodeDirty === 'function' && isFbNodeDirty(node)) return false;
-                        const rTs = Number(remoteMeta[node] || 0);
-                        const lTs = Number(localMeta[node] || 0);
-                        return !_hasStorageNode(node) || rTs > lTs;
-                    });
-
-                    if (!nodesToFetch.length) {
-                        try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
-                        if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
-                        if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
-                        _applyDefaultsAndCleanup(true);
-                        await _finishDataBoot(null);
-                        return;
-                    }
-
-                    const fetchPromise = Promise.all(nodesToFetch.map(n => db.ref(n).once('value')));
-                    const snaps = hasCache ? await _withTimeout(fetchPromise, 8000) : await fetchPromise;
-                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.nodeReads += nodesToFetch.length;
-
-                    const updated = new Set();
-                    nodesToFetch.forEach((node, idx) => {
-                        const rTs = Number(remoteMeta[node] || Date.now());
-                        _applySingleFbNode(node, snaps[idx].val(), {
-                            isRemote: true,
-                            serverTs: rTs,
-                            mergeRecords: node === 'records'
-                        });
-                        if (typeof setLocalFbMetaNode === 'function' && rTs === 0) {
-                            setLocalFbMetaNode(node, Date.now());
+                nodes.forEach(node => {
+                    if (!remoteNodeSet.has(node)) {
+                        const raw = localStorage.getItem('uts_' + node);
+                        if (raw !== null) {
+                            try {
+                                missingRows.push({
+                                    node_name: node,
+                                    data: JSON.parse(raw),
+                                    updated_at: nowIso
+                                });
+                            } catch (e) { }
                         }
-                        updated.add(node);
-                    });
+                    }
+                });
 
-                    try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
-                    if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
-                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
-                    _applyDefaultsAndCleanup(true);
-                    await _finishDataBoot(updated);
-                } else {
-                    // First-time bootstrap: DB has no _meta/nodes yet — read root ONCE and seed _meta/nodes
-                    const rootPromise = db.ref('/').once('value');
-                    const snap = hasCache ? await _withTimeout(rootPromise, 8000) : await rootPromise;
-                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.fullReads++;
-                    if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
-                    await applyFullRootSnapshot(snap.val() || {}, null);
+                if (missingRows.length > 0) {
+                    console.log('Syncing missing local nodes to Supabase:', missingRows.map(r => r.node_name));
+                    await sbClient.from('app_data').upsert(missingRows, { onConflict: 'node_name' });
                 }
+
+                const changed = new Set();
+                (rows || []).forEach(r => {
+                    if (!r || !r.node_name) return;
+                    const rTs = r.updated_at ? new Date(r.updated_at).getTime() : Date.now();
+                    _applySingleFbNode(r.node_name, r.data, {
+                        isRemote: true,
+                        serverTs: rTs,
+                        mergeRecords: false
+                    });
+                    changed.add(r.node_name);
+                });
+
+                try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
+                if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
+                if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
+                _applyDefaultsAndCleanup(true);
+                await _finishDataBoot(changed);
+
             } catch (error) {
-                console.error("Firebase Read Error:", error);
+                console.error("Supabase Read Error:", error);
                 if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = (error && error.message) || 'Read error';
                 if (!hasCache) {
                     showFirebaseStatusNotice(error);
@@ -576,24 +530,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.syncMetaListenerWithMode = syncMetaListenerWithMode;
     window.hydrateAllFromLocalCache = hydrateAllFromLocalCache;
 
-    auth.onAuthStateChanged(user => {
+    const setupAuthAndBoot = (user) => {
         if (user) {
-            const email = user.email || '';
+            const email = (typeof user === 'string') ? user : (user.email || '');
             loggedInUser = email.split('@')[0] || 'admin';
+            try { localStorage.setItem('uts_logged_in_user', loggedInUser); } catch (e) { }
             hydrateAllFromLocalCache();
             if (typeof setCurrentUserRole === 'function') setCurrentUserRole(loggedInUser);
             if (typeof window.loadData === 'function') window.loadData();
         } else {
-            loggedInUser = null;
-            detachSmartMetaListener();
-            if (!isFirebaseReady) {
-                isFirebaseReady = true;
-                const fbLoader = document.getElementById('firebase-loader');
-                if (fbLoader) fbLoader.style.display = 'none';
+            // Check local persistence
+            const savedUname = (() => {
+                try { return localStorage.getItem('uts_logged_in_user'); } catch (e) { return null; }
+            })();
+            if (savedUname) {
+                loggedInUser = savedUname;
+                hydrateAllFromLocalCache();
+                if (typeof setCurrentUserRole === 'function') setCurrentUserRole(loggedInUser);
+                if (typeof window.loadData === 'function') window.loadData();
+            } else {
+                loggedInUser = null;
+                detachSmartMetaListener();
+                if (!isFirebaseReady) {
+                    isFirebaseReady = true;
+                    const fbLoader = document.getElementById('firebase-loader');
+                    if (fbLoader) fbLoader.style.display = 'none';
+                }
+                if (typeof checkAuth === 'function') checkAuth();
             }
-            if (typeof checkAuth === 'function') checkAuth();
         }
-    });
+    };
+
+    if (typeof sbClient !== 'undefined' && sbClient && sbClient.auth) {
+        sbClient.auth.onAuthStateChange((event, session) => {
+            setupAuthAndBoot(session ? session.user : null);
+        });
+    } else {
+        setupAuthAndBoot(null);
+    }
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -714,10 +688,7 @@ window.onKsaDetailPageShow = typeof onKsaDetailPageShow !== 'undefined' ? onKsaD
 //  FIREBASE STATUS NOTICE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function showFirebaseStatusNotice(error) {
-    let isPerm = error && (error.code === 'PERMISSION_DENIED' || (error.message && error.message.toLowerCase().includes('permission_denied')));
-    let msg = isPerm 
-        ? '⚠️ فائر بیس ڈیٹا بیس میں رولز بلاک ہیں (Permission Denied)۔ براہ کرم Firebase Console میں Realtime Database Rules کو درست کریں۔ فی الحال لوکل ڈیٹا استعمال ہو رہا ہے۔'
-        : '⚠️ فائر بیس سے رابطہ نہیں ہو سکا — لوکل ڈیٹا استعمال ہو رہا ہے۔';
+    let msg = '⚠️ سپابیس (Supabase) ڈیٹا بیس سے رابطہ نہیں ہو سکا — لوکل ڈیٹا استعمال ہو رہا ہے۔';
     let el = document.getElementById('fb-status-banner');
     if (!el) {
         el = document.createElement('div');

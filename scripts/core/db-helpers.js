@@ -201,12 +201,10 @@ function updateFbSyncIndicator() {
     const dot = document.getElementById('fb-sync-dot');
     const lbl = document.getElementById('fb-sync-label');
     const pending = getDirtyFbNodes().length;
-    const mode = getFbSyncMode();
     const online = _isOnline();
-    const modeName = mode === 'live' ? 'Live' : mode === 'manual' ? 'Manual' : 'Eco';
 
     if (btn) {
-        btn.title = `Firebase (${modeName}) | Reads: ${_fbQuotaStats.metaChecks + _fbQuotaStats.nodeReads + _fbQuotaStats.fullReads} | Writes: ${_fbQuotaStats.writesSent} | Saved Skips: ${_fbQuotaStats.writesSkipped + _fbQuotaStats.writesBatched}`;
+        btn.title = `Supabase | Writes: ${_fbQuotaStats.writesSent} | Pending: ${pending}`;
     }
     if (dot && lbl) {
         if (!online) {
@@ -220,7 +218,7 @@ function updateFbSyncIndicator() {
             lbl.textContent = 'سنک ایرر';
         } else {
             dot.style.background = '#10b981';
-            lbl.textContent = `سنک (${modeName})`;
+            lbl.textContent = 'سنک (Supabase)';
         }
     }
     if (typeof renderFbQuotaStatsBox === 'function') {
@@ -254,57 +252,43 @@ async function flushPendingFbWrites() {
 
     const nodes = Object.keys(_pendingFbWrites);
     if (!nodes.length) return true;
-    if (typeof db === 'undefined' || !db || typeof db.ref !== 'function' || !_isOnline()) {
+    if (typeof sbClient === 'undefined' || !sbClient || !_isOnline()) {
         updateFbSyncIndicator();
         return false;
     }
 
     const snapshots = {};
-    const updates = {};
+    const updates = [];
     const nowTs = Date.now();
+    const nowIso = new Date(nowTs).toISOString();
+
     nodes.forEach(node => {
         const jsonStr = _pendingFbWrites[node];
         snapshots[node] = jsonStr;
         delete _pendingFbWrites[node];
+        let parsed = null;
         try {
-            updates[node] = JSON.parse(jsonStr);
+            parsed = JSON.parse(jsonStr);
         } catch (e) {
-            updates[node] = null;
+            parsed = null;
         }
-        if (!_metaDisabled) {
-            updates['_meta/nodes/' + node] = nowTs;
-        }
+        updates.push({
+            node_name: node,
+            data: parsed,
+            updated_at: nowIso
+        });
         _localFbMeta[node] = nowTs;
     });
     _persistMetaMap();
 
-    const doCommit = async (payload) => {
-        const rootRef = db.ref('/');
-        if (rootRef && typeof rootRef.update === 'function') {
-            await rootRef.update(payload);
-            return;
-        }
-        await Promise.all(
-            Object.entries(payload).map(([path, v]) => db.ref(path).set(v))
-        );
-    };
-
     _fbFlushInFlight = (async () => {
         try {
-            try {
-                await doCommit(updates);
-            } catch (err) {
-                const isPerm = err && (err.code === 'PERMISSION_DENIED' || String(err.message || '').toLowerCase().includes('permission_denied'));
-                if (isPerm && !_metaDisabled && Object.keys(updates).some(k => k.startsWith('_meta/'))) {
-                    _metaDisabled = true;
-                    const plainUpdates = {};
-                    Object.entries(updates).forEach(([k, v]) => {
-                        if (!k.startsWith('_meta/')) plainUpdates[k] = v;
-                    });
-                    await doCommit(plainUpdates);
-                } else {
-                    throw err;
-                }
+            const { error } = await sbClient
+                .from('app_data')
+                .upsert(updates, { onConflict: 'node_name' });
+
+            if (error) {
+                throw error;
             }
 
             nodes.forEach(node => {
@@ -314,7 +298,7 @@ async function flushPendingFbWrites() {
                 }
             });
             _persistDirtyMap();
-            _fbQuotaStats.writesSent++;
+            _fbQuotaStats.writesSent += updates.length;
             _fbQuotaStats.lastWriteAt = nowTs;
             _fbQuotaStats.lastError = '';
             updateFbSyncIndicator();
@@ -324,7 +308,7 @@ async function flushPendingFbWrites() {
             }
             return true;
         } catch (e) {
-            console.warn('Batch Firebase save error:', e);
+            console.warn('Batch Supabase save error:', e);
             _fbQuotaStats.lastError = (e && e.message) || 'Save failed';
             nodes.forEach(node => {
                 if (_pendingFbWrites[node] === undefined) {
