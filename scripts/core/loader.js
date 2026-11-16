@@ -46,11 +46,32 @@ async function loadComponentPages() {
         }
     }));
 
+    // Populate all dropdowns across all freshly injected modular page templates
+    if (typeof refreshAllDrops === 'function') {
+        refreshAllDrops();
+    }
+
     // Trigger render for active page if needed after loading templates
     const activePage = document.querySelector('.page.active');
-    if (activePage && activePage.id === 'page-umrah') {
-        if (typeof renderUmrahBookings === 'function') renderUmrahBookings();
-        if (typeof renderUmrahVouchers === 'function') renderUmrahVouchers();
+    if (activePage) {
+        if (activePage.id === 'page-entry') {
+            if (typeof initEntryPage === 'function') initEntryPage();
+            else if (typeof todayStats === 'function') todayStats();
+        } else if (activePage.id === 'page-umrah') {
+            if (typeof renderUmrahBookings === 'function') renderUmrahBookings();
+            if (typeof renderUmrahVouchers === 'function') renderUmrahVouchers();
+        } else if (activePage.id === 'page-home') {
+            if (typeof renderDashboard === 'function') renderDashboard();
+        } else if (activePage.id === 'page-records') {
+            if (typeof initRecordsPage === 'function') initRecordsPage();
+            else if (typeof filterRecords === 'function') filterRecords();
+        } else if (activePage.id === 'page-payment') {
+            if (typeof renderPayments === 'function') renderPayments();
+        } else if (activePage.id === 'page-ledger') {
+            if (typeof renderLedger === 'function') renderLedger();
+        } else if (activePage.id === 'page-dailynote') {
+            if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
+        }
     }
 
     if (fileCorsBlocked) {

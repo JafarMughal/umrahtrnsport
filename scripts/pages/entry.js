@@ -446,6 +446,24 @@ function clearEntryForm() {
 
     setNextVoucher();
     if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+    if (typeof initEntryPage === 'function') initEntryPage();
+}
+
+function initEntryPage() {
+    if (typeof fillDrop === 'function') {
+        fillDrop('e-party', (typeof parties !== 'undefined' && parties && parties.length) ? parties : null, false);
+        fillDrop('e-sector', (typeof sectors !== 'undefined' && sectors && sectors.length) ? sectors : null, false);
+        fillDrop('e-transport', (typeof transports !== 'undefined' && transports && transports.length) ? transports : null, false);
+    }
+    if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+    if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
+    if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
+    if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
+    if (typeof fillHajiPartyDatalist === 'function') fillHajiPartyDatalist();
+    const eDate = document.getElementById('e-date');
+    if (eDate && !eDate.value && typeof today === 'function') eDate.value = today();
+    if (typeof setNextVoucher === 'function') setNextVoucher();
+    if (typeof todayStats === 'function') todayStats();
 }
 
 function todayStats() {
@@ -464,6 +482,15 @@ function todayStats() {
     const tst = document.getElementById('ts-t'); if (tst) tst.textContent = tCount;
 }
 
+// Auto-run if DOM is ready and entry page elements exist
+if (document.readyState !== 'loading') {
+    if (document.getElementById('e-party')) initEntryPage();
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('e-party')) initEntryPage();
+    });
+}
+
 // ── 5. WINDOW EXPOSURES ──
 window.toggleAppTheme = toggleAppTheme;
 window.initAppTheme = initAppTheme;
@@ -478,3 +505,4 @@ window.addEntry = addEntry;
 window.editRecord = editRecord;
 window.clearEntryForm = clearEntryForm;
 window.todayStats = todayStats;
+window.initEntryPage = initEntryPage;

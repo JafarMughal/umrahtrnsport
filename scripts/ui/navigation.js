@@ -169,14 +169,18 @@ function _executeShowPageLogic(p) {
         if (typeof renderDashboard === 'function') renderDashboard();
     }
     if (p === 'entry') { 
-        fillDrop('e-party', parties, false);
-        fillDrop('e-sector', sectors); 
-        fillDrop('e-transport', transports); 
-        if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
-        if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
-        if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
-        if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
-        todayStats(); 
+        if (typeof initEntryPage === 'function') {
+            initEntryPage();
+        } else {
+            fillDrop('e-party', parties, false);
+            fillDrop('e-sector', sectors); 
+            fillDrop('e-transport', transports); 
+            if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+            if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
+            if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
+            if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
+            todayStats(); 
+        }
     }
     if (p === 'payment') { 
         fillDrop('p-party', parties, false);

@@ -67,31 +67,114 @@ function refreshSdPlaceholders() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function fillDrop(id, arr, withAll = false) {
     const sel = document.getElementById(id);
-    if (!sel || !arr) return;
-    const L = T[lang] || T.ur;
+    if (!sel) return;
+    const curLang = (typeof lang !== 'undefined' && lang) ? lang : 'ur';
+    const L = (typeof T !== 'undefined' && T[curLang]) ? T[curLang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
     const cur = sel.value;
-    let placeholder = L.selectParty;
-    if (id.includes('sector')) placeholder = L.selectSector;
-    else if (id.includes('transport')) placeholder = L.selectTransport;
-    sel.innerHTML = withAll ? `<option value="">${L.allParties}</option>` : `<option value="">${placeholder}</option>`;
-    arr.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; if (v === cur) o.selected = true; sel.appendChild(o); });
+
+    let list = Array.isArray(arr) ? arr.filter(Boolean) : [];
+    if (!list.length) {
+        if (id.includes('sector')) {
+            const fromState = (typeof sectors !== 'undefined' && Array.isArray(sectors)) ? sectors : [];
+            const fromRecs = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.sector).filter(Boolean) : [];
+            list = Array.from(new Set([...fromState, ...fromRecs])).filter(Boolean);
+            if (!list.length) {
+                list = (L.defaultSectors && L.defaultSectors.length) ? L.defaultSectors.slice() : ['جدہ ➜ مکہ', 'مکہ ➜ مدینہ', 'مدینہ ➜ مکہ', 'مکہ ➜ جدہ'];
+            }
+            if (typeof sectors !== 'undefined' && (!sectors || !sectors.length)) {
+                sectors = list.slice();
+            }
+        } else if (id.includes('transport')) {
+            const fromState = (typeof transports !== 'undefined' && Array.isArray(transports)) ? transports : [];
+            const fromRecs = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.transport).filter(Boolean) : [];
+            list = Array.from(new Set([...fromState, ...fromRecs])).filter(Boolean);
+            if (!list.length) {
+                list = ['بس', 'وین', 'کار', 'کوچ'];
+            }
+            if (typeof transports !== 'undefined' && (!transports || !transports.length)) {
+                transports = list.slice();
+            }
+        } else if (id.includes('party')) {
+            const fromState = (typeof parties !== 'undefined' && Array.isArray(parties)) ? parties : [];
+            const fromRecs = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.party).filter(Boolean) : [];
+            const fromPays = (typeof payments !== 'undefined' && Array.isArray(payments)) ? payments.map(p => p && p.party).filter(Boolean) : [];
+            list = Array.from(new Set([...fromState, ...fromRecs, ...fromPays])).filter(Boolean);
+            if (!list.length) {
+                list = (L.defaultParties && L.defaultParties.length) ? L.defaultParties.slice() : ['ٹرانسپورٹر الف', 'ٹرانسپورٹر ب'];
+            }
+            if (typeof parties !== 'undefined' && (!parties || !parties.length)) {
+                parties = list.slice();
+            }
+        }
+    }
+
+    let placeholder = L.selectParty || '-- ٹرانسپورٹر منتخب --';
+    if (id.includes('sector')) placeholder = L.selectSector || '-- سیکٹر منتخب --';
+    else if (id.includes('transport')) placeholder = L.selectTransport || '-- ٹرانسپورٹ منتخب کریں --';
+
+    sel.innerHTML = withAll ? `<option value="">${L.allParties || 'تمام'}</option>` : `<option value="">${placeholder}</option>`;
+    list.forEach(v => {
+        const o = document.createElement('option');
+        o.value = v;
+        o.textContent = v;
+        if (v === cur) o.selected = true;
+        sel.appendChild(o);
+    });
 }
 
 function refreshAllDrops() {
-    fillDrop('e-sector', sectors);
-    fillDrop('e-transport', transports);
-    if (typeof populateRateFormDropdowns === 'function') populateRateFormDropdowns();
-    const allLedgerParties = Array.from(new Set([
+    const curLang = (typeof lang !== 'undefined' && lang) ? lang : 'ur';
+    const L = (typeof T !== 'undefined' && T[curLang]) ? T[curLang] : ((typeof T !== 'undefined' && T.ur) ? T.ur : {});
+
+    // Ensure non-empty parties
+    const recParties = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.party).filter(Boolean) : [];
+    const payParties = (typeof payments !== 'undefined' && Array.isArray(payments)) ? payments.map(p => p && p.party).filter(Boolean) : [];
+    const allPartySet = new Set([
         ...(Array.isArray(parties) ? parties : []),
-        ...(typeof records !== 'undefined' && Array.isArray(records) ? records.map(r => r.party) : []),
-        ...(typeof payments !== 'undefined' && Array.isArray(payments) ? payments.map(p => p.party) : [])
-    ].map(p => (p || '').trim()).filter(Boolean)));
-    fillDrop('l-party', allLedgerParties.length ? allLedgerParties : parties, true);
-    fillDrop('f-party', parties, true);
-    fillDrop('f-sector', sectors, true);
-    fillDrop('r-party', parties, true);
-    fillDrop('p-party', parties, false);
-    fillDrop('e-party', parties, false);
+        ...recParties,
+        ...payParties
+    ].map(p => (p || '').trim()).filter(Boolean));
+    const allKnownParties = Array.from(allPartySet);
+    const activeParties = (Array.isArray(parties) && parties.length) ? parties : (allKnownParties.length ? allKnownParties : ((L.defaultParties && L.defaultParties.length) ? L.defaultParties.slice() : ['ٹرانسپورٹر الف', 'ٹرانسپورٹر ب']));
+    if (typeof parties !== 'undefined' && (!parties || !parties.length)) {
+        parties = activeParties.slice();
+    }
+
+    // Ensure non-empty sectors
+    const recSectors = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.sector).filter(Boolean) : [];
+    const allSectorSet = new Set([
+        ...(Array.isArray(sectors) ? sectors : []),
+        ...recSectors
+    ].map(s => (s || '').trim()).filter(Boolean));
+    const allKnownSectors = Array.from(allSectorSet);
+    const activeSectors = (Array.isArray(sectors) && sectors.length) ? sectors : (allKnownSectors.length ? allKnownSectors : ((L.defaultSectors && L.defaultSectors.length) ? L.defaultSectors.slice() : ['جدہ ➜ مکہ', 'مکہ ➜ مدینہ', 'مدینہ ➜ مکہ', 'مکہ ➜ جدہ']));
+    if (typeof sectors !== 'undefined' && (!sectors || !sectors.length)) {
+        sectors = activeSectors.slice();
+    }
+
+    // Ensure non-empty transports
+    const recTransports = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.transport).filter(Boolean) : [];
+    const allTransportSet = new Set([
+        ...(Array.isArray(transports) ? transports : []),
+        ...recTransports
+    ].map(t => (t || '').trim()).filter(Boolean));
+    const allKnownTransports = Array.from(allTransportSet);
+    const activeTransports = (Array.isArray(transports) && transports.length) ? transports : (allKnownTransports.length ? allKnownTransports : ['بس', 'وین', 'کار', 'کوچ']);
+    if (typeof transports !== 'undefined' && (!transports || !transports.length)) {
+        transports = activeTransports.slice();
+    }
+
+    fillDrop('e-party', activeParties, false);
+    fillDrop('e-sector', activeSectors, false);
+    fillDrop('e-transport', activeTransports, false);
+    if (typeof populateRateFormDropdowns === 'function') populateRateFormDropdowns();
+    fillDrop('l-party', allKnownParties.length ? allKnownParties : activeParties, true);
+    fillDrop('f-party', activeParties, true);
+    fillDrop('f-sector', activeSectors, true);
+    fillDrop('r-party', activeParties, true);
+    fillDrop('p-party', activeParties, false);
+    fillDrop('u-sector', activeSectors, false);
+    fillDrop('u-transport', activeTransports, false);
     if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
     fillHajiPartyDropdown();
     fillShirkaDatalist();

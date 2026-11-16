@@ -190,24 +190,50 @@ function hydrateAllFromLocalCache() {
     const explicitlyCached = (() => {
         try { return localStorage.getItem('uts_fb_has_cache') === '1'; } catch (e) { return false; }
     })();
+    _applyDefaultsAndCleanup(false);
     return explicitlyCached || foundAny;
 }
 
 function _applyDefaultsAndCleanup(allowWrite) {
     const L = (typeof T !== 'undefined' && (T[lang] || T.ur)) ? (T[lang] || T.ur) : { defaultParties: [], defaultSectors: [] };
 
-    if (!parties || !parties.length) {
-        parties = (L.defaultParties || []).slice();
+    // Auto-discover parties from existing records/payments if parties is empty or smaller
+    const recParties = (records || []).map(r => r && r.party).filter(Boolean);
+    const payParties = (payments || []).map(p => p && p.party).filter(Boolean);
+    const combinedP = Array.from(new Set([...(parties || []), ...recParties, ...payParties]));
+    if (combinedP.length > (parties || []).length) {
+        parties = combinedP;
         if (allowWrite && typeof svP === 'function') svP();
     }
-    if (!sectors || !sectors.length) {
-        sectors = (L.defaultSectors || []).slice();
+    if (!parties || !parties.length) {
+        parties = ((L.defaultParties && L.defaultParties.length) ? L.defaultParties : ['ٹرانسپورٹر الف', 'ٹرانسپورٹر ب']).slice();
+        if (allowWrite && typeof svP === 'function') svP();
+    }
+
+    // Auto-discover sectors from records if sectors is empty or smaller
+    const recSectors = (records || []).map(r => r && r.sector).filter(Boolean);
+    const combinedS = Array.from(new Set([...(sectors || []), ...recSectors]));
+    if (combinedS.length > (sectors || []).length) {
+        sectors = combinedS;
         if (allowWrite && typeof svS === 'function') svS();
+    }
+    if (!sectors || !sectors.length) {
+        sectors = ((L.defaultSectors && L.defaultSectors.length) ? L.defaultSectors : ['جدہ ➜ مکہ', 'مکہ ➜ مدینہ', 'مدینہ ➜ مکہ', 'مکہ ➜ جدہ']).slice();
+        if (allowWrite && typeof svS === 'function') svS();
+    }
+
+    // Auto-discover transports from records if transports is empty or smaller
+    const recTransports = (records || []).map(r => r && r.transport).filter(Boolean);
+    const combinedTr = Array.from(new Set([...(transports || []), ...recTransports]));
+    if (combinedTr.length > (transports || []).length) {
+        transports = combinedTr;
+        if (allowWrite && typeof svTr === 'function') svTr();
     }
     if (!transports || !transports.length) {
         transports = ['بس', 'وین', 'کار', 'کوچ'];
         if (allowWrite && typeof svTr === 'function') svTr();
     }
+
     if (!transportNatures || !transportNatures.length) {
         const saved = (records || []).map(r => r && r.transportNature).filter(Boolean);
         transportNatures = Array.from(new Set([..._defaultNaturesList(), ...saved]));
@@ -249,7 +275,7 @@ function _refreshUiAfterNodes(changedNodes = null) {
         if (typeof applyLogo === 'function') applyLogo(fbLogo);
         if (typeof loadAppName === 'function') loadAppName(lang);
     }
-    if (has('parties') || has('sectors') || has('transports') || has('shirkas') || has('hajiParties') || has('transportNatures') || has('partyCodes')) {
+    if (has('parties') || has('sectors') || has('transports') || has('shirkas') || has('hajiParties') || has('transportNatures') || has('partyCodes') || has('records')) {
         if (typeof refreshAllDrops === 'function') refreshAllDrops();
     }
 
@@ -257,8 +283,11 @@ function _refreshUiAfterNodes(changedNodes = null) {
     if (activePage) {
         if (activePage.id === 'page-home' && typeof renderDashboard === 'function') renderDashboard();
         if (activePage.id === 'page-entry') {
-            if (typeof todayStats === 'function') todayStats();
-            if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+            if (typeof initEntryPage === 'function') initEntryPage();
+            else {
+                if (typeof todayStats === 'function') todayStats();
+                if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
+            }
         }
         if (activePage.id === 'page-payment' && typeof renderPayments === 'function') renderPayments();
         if (activePage.id === 'page-ledger' && typeof renderLedger === 'function') renderLedger();

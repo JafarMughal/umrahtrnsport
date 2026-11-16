@@ -4,11 +4,11 @@
 let records = [];
 let deletedRecords = [];
 let payments = [];
-let parties = [];
+let parties = ['ٹرانسپورٹر الف', 'ٹرانسپورٹر ب'];
 let hajiParties = [];
-let sectors = [];
+let sectors = ['جدہ ➜ مکہ', 'مکہ ➜ مدینہ', 'مدینہ ➜ مکہ', 'مکہ ➜ جدہ'];
 let shirkas = [];
-let transports = [];
+let transports = ['بس', 'وین', 'کار', 'کوچ'];
 let transportNatures = [];
 let vehicleRates = [];
 let partyCodes = {};
