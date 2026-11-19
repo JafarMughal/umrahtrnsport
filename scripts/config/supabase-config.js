@@ -23,7 +23,8 @@ try {
             auth: {
                 persistSession: false,
                 autoRefreshToken: false,
-                detectSessionInUrl: false
+                detectSessionInUrl: false,
+                storageKey: 'sb-secondary-auth-token'
             }
         });
     } else {

@@ -25,13 +25,15 @@ function getCode(party) {
 }
 
 function genVoucher() {
-    const existing = records.map(r => parseInt((r.voucher || '').replace('VCH-', '')) || 0);
+    const recs = (typeof records !== 'undefined' && Array.isArray(records)) ? records : [];
+    const existing = recs.map(r => parseInt((r.voucher || '').replace('VCH-', '')) || 0);
     const next = existing.length ? Math.max(...existing) + 1 : 1;
     return 'VCH-' + String(next).padStart(4, '0');
 }
 
 function genDNRef() {
-    const existing = dailyNotes.map(n => parseInt((n.ref || '').replace('DN-', '')) || 0);
+    const notes = (typeof dailyNotes !== 'undefined' && Array.isArray(dailyNotes)) ? dailyNotes : [];
+    const existing = notes.map(n => parseInt((n.ref || '').replace('DN-', '')) || 0);
     const next = existing.length ? Math.max(...existing) + 1 : 1;
     return 'DN-' + String(next).padStart(4, '0');
 }

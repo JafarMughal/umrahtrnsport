@@ -30,15 +30,33 @@
     <div id="al-entry"></div>
     <input type="hidden" id="e-id" />
 
-    <!-- Form Row 1: Date, Voucher, Transporter, Haji Party, Sector, Transport -->
-    <div class="grid">
-        <div class="fg">
-            <label id="lbl-date">تاریخ</label>
-            <input type="date" id="e-date" onchange="onDateOrTransportChange('e')" />
-        </div>
+    <!-- Backward-compatibility hidden fields for legacy scripts -->
+    <input type="hidden" id="e-sector" />
+    <input type="hidden" id="e-transport" />
+    <input type="hidden" id="e-transport-nature-sel" />
+    <input type="hidden" id="e-fare" />
+    <input type="hidden" id="e-vehicle-total" />
+    <input type="hidden" id="e-flight-no" />
+    <input type="hidden" id="e-flight-time" />
+    <input type="hidden" id="e-airport" />
+    <div id="e-rate-badge" style="display:none;"></div>
+    <div id="e-transport-hint" style="display:none;"></div>
+
+    <!-- SECTION 1: MASTER VOUCHER & GROUP DETAILS (مشترکہ معلومات) -->
+    <div class="form-section-header">
+        <span class="section-title-dot"></span>
+        <span class="section-title-text">1. واوچر اور پارٹی کی بنیادی معلومات (Voucher & Group Details)</span>
+    </div>
+
+    <!-- Form Row 1: Voucher, Date, Transporter, Haji Party, Pilgrims Count -->
+    <div class="grid" style="margin-bottom:14px;">
         <div class="fg">
             <label id="lbl-voucher">واوچر نمبر</label>
-            <input type="text" id="e-voucher" class="voucher-input" />
+            <input type="text" id="e-voucher" class="voucher-input" placeholder="خودکار واوچر..." />
+        </div>
+        <div class="fg">
+            <label id="lbl-date">تاریخ واوچر</label>
+            <input type="date" id="e-date" onchange="onDateOrTransportChange('e')" />
         </div>
         <div class="fg">
             <label><span id="lbl-transporter-dropdown">ٹرانسپورٹر</span></label>
@@ -49,7 +67,7 @@
             </div>
         </div>
         <div class="fg">
-            <label id="lbl-party">پارٹی</label>
+            <label id="lbl-party">حاجی پارٹی</label>
             <div class="custom-multi-select" id="hp-multi-select">
                 <div class="cms-header" onclick="toggleMultiSelect(event)">
                     <span id="hp-selected-text">منتخب کریں...</span>
@@ -65,116 +83,136 @@
             </div>
             <input type="hidden" id="e-new-party" />
         </div>
-        <div class="fg">
-            <label><span id="lbl-sector">سیکٹر</span></label>
-            <div class="ddr">
-                <select id="e-sector" style="flex:1;" onchange="onDateOrTransportChange('e')"></select>
-            </div>
-        </div>
-        <div class="fg">
-            <label><span id="lbl-transport">ٹرانسپورٹ</span></label>
-            <div class="ddr">
-                <select id="e-transport" onchange="onDateOrTransportChange('e')">
-                    <option value="">-- منتخب کریں --</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- Form Row 2: Pilgrims Count, Fare, Total Amount, Vehicle Total -->
-    <div class="grid">
         <div class="fg" id="e-count-wrap">
-            <label id="lbl-count">حاجیوں کی تعداد</label>
+            <label id="lbl-count">حاجیوں کی تعداد (Pax)</label>
             <input type="number" id="e-count" min="1" placeholder="0" oninput="calcE()" />
         </div>
-        <div class="fg" id="e-fare-wrap">
-            <label id="lbl-fare">فی حاجی کرایہ (SAR)</label>
-            <input type="number" id="e-fare" min="0" placeholder="0" oninput="this.dataset.autoFilled='false';calcE()" />
-            <div id="e-rate-badge" style="display:none; font-size:11.5px; margin-top:4px; font-weight:600; line-height:1.4;"></div>
+    </div>
+
+    <!-- Form Row 2: Shirka, Group No, Mobile, Lead Passenger Name -->
+    <div class="grid" style="margin-bottom:20px;">
+        <div class="fg">
+            <label id="lbl-eShirka">شرکہ (Shirka)</label>
+            <input type="text" id="e-shirka" list="shirka-list" autocomplete="off" placeholder="شرکہ منتخب کریں یا لکھیں..." />
+            <datalist id="shirka-list"></datalist>
         </div>
         <div class="fg">
-            <label id="lbl-total">کل رقم (SAR)</label>
-            <input type="number" id="e-total" readonly class="total-input" />
+            <label id="lbl-eGroup">گروپ نمبر (Group No)</label>
+            <input type="text" id="e-group" placeholder="مثلاً: G-105" />
         </div>
-        <div class="fg" id="e-vehicle-wrap" style="display:none;">
-            <label id="lbl-vehicletotal">پوری گاڑی کی رقم (SAR)</label>
-            <input type="number" id="e-vehicle-total" min="0" placeholder="0" oninput="calcE()" />
+        <div class="fg">
+            <label id="lbl-eMobile">موبائل نمبر (Contact)</label>
+            <input type="text" id="e-mobile" class="ltr-input" placeholder="+9665..." />
+        </div>
+        <div class="fg">
+            <label id="lbl-eName">لیڈ مسافر کا نام (Lead Passenger)</label>
+            <input type="text" id="e-name" placeholder="نام معتمر / امیر گروپ..." />
         </div>
     </div>
 
-    <!-- Flight & Airport Details Card (Lightweight Blue Box) -->
-    <div class="flight-toggle-box">
-        <label class="flight-toggle-label">
-            <input type="checkbox" id="e-show-flight"
-                onchange="document.getElementById('e-flight-details').style.display = this.checked ? 'grid' : 'none';" />
-            <span>فلائیٹ اور ائیرپورٹ تفصیلات شامل کریں</span>
-            <span class="flight-toggle-badge">اختیاری</span>
-        </label>
-        <div id="e-flight-details" class="grid" style="display:none; margin-top:16px; margin-bottom:0;">
-            <div class="fg"><label id="lbl-eName">نام (NAME)</label><input type="text" id="e-name" /></div>
-            <div class="fg"><label id="lbl-eFlightTime">وقت آمد (Arrival Time)</label><input type="time"
-                    id="e-flight-time" /></div>
-            <div class="fg"><label id="lbl-eFlightNo">فلائیٹ نمبر (Flight No)</label><input type="text"
-                    id="e-flight-no" /></div>
-            <div class="fg"><label id="lbl-eAirport">ائیرپورٹ (Airport)</label>
-                <input type="text" id="e-airport" list="airport-list" autocomplete="off" placeholder="ائیرپورٹ منتخب کریں یا لکھیں..." />
-                <datalist id="airport-list">
-                    <option value="Jeddah Airport - Terminal 1 (KAIA T1)"></option>
-                    <option value="Jeddah Airport - North Terminal (شمالی ٹرمینل)"></option>
-                    <option value="Jeddah Airport - South Terminal (جنوبی ٹرمینل)"></option>
-                    <option value="Jeddah Airport - Hajj Terminal (حج ٹرمینل)"></option>
-                    <option value="Jeddah Airport (KAIA)"></option>
-                    <option value="Madinah Airport (AMAA)"></option>
-                    <option value="Madinah Airport - International Terminal"></option>
-                    <option value="Madinah Airport - Hajj Terminal"></option>
-                    <option value="Taif Airport (TIF)"></option>
-                    <option value="Yanbu Airport (YNB)"></option>
-                    <option value="Riyadh Airport (KKIA)"></option>
-                </datalist>
-            </div>
-            <div class="fg"><label id="lbl-eTransportNature">ٹرانسپورٹ کی نوعیت (TRANSPORT By)</label>
-                <div class="ddr">
-                    <select id="e-transport-nature-sel" style="flex:1;">
-                        <option value="">-- منتخب کریں --</option>
-                    </select>
+    <!-- SECTION 2: MULTI-SECTOR ITINERARY & MOVEMENTS (سیکٹرز اور روٹس شیڈول) -->
+    <div class="itinerary-section-box">
+        <div class="itinerary-header-bar">
+            <div class="itinerary-title-wrap">
+                <span class="itinerary-badge-icon">📍</span>
+                <div>
+                    <h3 class="itinerary-title">2. روٹس اور موومنٹ شیڈول (Itinerary Sectors)</h3>
+                    <p class="itinerary-desc">ایک ہی واؤچر میں متعدد سیکٹرز شامل کریں یا نیچے دیے گئے پیکجز منتخب کریں</p>
                 </div>
             </div>
-            <div class="fg"><label id="lbl-eShirka">شرکہ (Shirka)</label>
-                <input type="text" id="e-shirka" list="shirka-list" autocomplete="off" placeholder="شرکہ منتخب کریں یا لکھیں..." />
-                <datalist id="shirka-list">
-                    <option value="الرواد"></option>
-                    <option value="الشہداء"></option>
-                    <option value="المختار"></option>
-                    <option value="الدولية"></option>
-                    <option value="ضيوف الرحمن"></option>
-                    <option value="العالمية"></option>
-                    <option value="رواحل"></option>
-                    <option value="سماء المشاعر"></option>
-                    <option value="قافلة الإيمان"></option>
-                    <option value="دلہ"></option>
-                    <option value="سدرہ"></option>
-                    <option value="مواسم"></option>
-                    <option value="انوار الحرمین"></option>
-                    <option value="فنادق الہدایہ"></option>
-                    <option value="دار الایمان"></option>
-                    <option value="الماسیہ"></option>
-                    <option value="باب السلام"></option>
-                </datalist>
+
+            <!-- Quick Presets Toolbar -->
+            <div class="itinerary-presets-bar">
+                <span class="preset-label">کوئیک پیکیجز:</span>
+                <button type="button" class="preset-pill-btn" onclick="applyItineraryPreset('full_umrah')">
+                    🕋 مکمل عمرہ (4 روٹس)
+                </button>
+                <button type="button" class="preset-pill-btn" onclick="applyItineraryPreset('med_first')">
+                    🕌 مدینہ فرسٹ (3 روٹس)
+                </button>
+                <button type="button" class="preset-pill-btn" onclick="applyItineraryPreset('makkah_only')">
+                    🚗 مکہ صرف (2 روٹس)
+                </button>
+                <button type="button" class="preset-pill-btn" onclick="applyItineraryPreset('single')">
+                    🔘 1 روٹ
+                </button>
             </div>
-            <div class="fg"><label id="lbl-eGroup">گروپ نمبر (Group No)</label><input type="text" id="e-group" /></div>
-            <div class="fg"><label id="lbl-eMobile">موبائل نمبر (Contact)</label><input type="text" id="e-mobile"
-                    class="ltr-input" /></div>
+        </div>
+
+        <!-- Sectors Dynamic Table -->
+        <div class="itinerary-table-wrap">
+            <table class="itinerary-table">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th style="width:130px;">تاریخ (Date)</th>
+                        <th style="min-width:160px;">سیکٹر (Sector)</th>
+                        <th style="min-width:130px;">گاڑی / ٹرانسپورٹ</th>
+                        <th style="min-width:140px;">نوعیت (Nature)</th>
+                        <th style="width:135px;">فلائیٹ / ائیرپورٹ</th>
+                        <th style="width:110px;">کرایہ (SAR)</th>
+                        <th style="width:110px;">کل رقم (SAR)</th>
+                        <th style="width:45px;">حذف</th>
+                    </tr>
+                </thead>
+                <tbody id="e-sectors-table-body">
+                    <!-- Dynamic sector rows injected by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add Sector Button & Grand Summary Footer -->
+        <div class="itinerary-footer-bar">
+            <button type="button" class="btn btn-o btn-sm btn-add-sector" onclick="addEntrySectorRow()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>نیا سیکٹر رو شامل کریں (Add Sector Row)</span>
+            </button>
+
+            <!-- Realtime Grand Total Box -->
+            <div class="itinerary-grand-total-box">
+                <div class="grand-stat-item">
+                    <span class="grand-stat-lbl">کل سیکٹرز:</span>
+                    <strong class="grand-stat-val" id="e-summary-sectors-count">1</strong>
+                </div>
+                <div class="grand-stat-divider"></div>
+                <div class="grand-stat-item">
+                    <span class="grand-stat-lbl">کل حاجی:</span>
+                    <strong class="grand-stat-val" id="e-summary-pax-count">0</strong>
+                </div>
+                <div class="grand-stat-divider"></div>
+                <div class="grand-stat-item grand-highlight">
+                    <span class="grand-stat-lbl">واؤچر گرینڈ ٹوٹل:</span>
+                    <strong class="grand-total-num"><span id="e-summary-grand-total">0</span> <small>SAR</small></strong>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Transport Hint Alert -->
-    <div id="e-transport-hint"
-        style="display:none;margin-bottom:14px;padding:10px 16px;border-radius:8px;font-size:12.5px;"></div>
+    <!-- Hidden compatibility total input for any external script reading #e-total -->
+    <input type="hidden" id="e-total" />
 
-    <!-- Notes Field -->
-    <div class="fg" style="margin-bottom:18px;">
-        <label id="lbl-notes">نوٹس</label>
-        <textarea id="e-notes" rows="2" placeholder="اضافی معلومات یا ہدایات یہاں لکھیں..."></textarea>
+    <!-- Airport datalist definition for flight rows -->
+    <datalist id="airport-list">
+        <option value="Jeddah Airport - Terminal 1 (KAIA T1)"></option>
+        <option value="Jeddah Airport - North Terminal (شمالی ٹرمینل)"></option>
+        <option value="Jeddah Airport - South Terminal (جنوبی ٹرمینل)"></option>
+        <option value="Jeddah Airport - Hajj Terminal (حج ٹرمینل)"></option>
+        <option value="Jeddah Airport (KAIA)"></option>
+        <option value="Madinah Airport (AMAA)"></option>
+        <option value="Madinah Airport - International Terminal"></option>
+        <option value="Madinah Airport - Hajj Terminal"></option>
+        <option value="Taif Airport (TIF)"></option>
+        <option value="Yanbu Airport (YNB)"></option>
+        <option value="Riyadh Airport (KKIA)"></option>
+    </datalist>
+
+    <!-- SECTION 3: NOTES & ACTIONS (اضافی نوٹس اور بٹن) -->
+    <div class="fg" style="margin-top:20px; margin-bottom:18px;">
+        <label id="lbl-notes">اضافی نوٹس یا ہدایات (Notes)</label>
+        <textarea id="e-notes" rows="2" placeholder="واؤچر یا ڈرائیور کے لیے اضافی معلومات یا ہدایات یہاں لکھیں..."></textarea>
     </div>
 
     <!-- Action Buttons -->

@@ -1,12 +1,6 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  FIREBASE INIT & SMART QUOTA-SAVER SYNC ENGINE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const _LEGACY_HAJI_NAMES = new Set([
-    'القریشی ٹورز', 'الرحمان ٹریولز', 'الحرمین ٹورز اینڈ ٹریولز', 'ضیوف الرحمن گروپ',
-    'المروہ ٹریولز', 'الصفا عمرہ گروپ', 'کاروان فیصل', 'کاروان مدینہ',
-    'لبیک ٹورز اینڈ ٹریولز', 'باب الحرم ٹریولز', 'نور الہدیٰ ٹورز', 'قافلہ حرمین'
-]);
-
 let _loadDataPromise = null;
 let _appBootDone = false;
 let _metaListenerRef = null;
@@ -25,18 +19,11 @@ function _hasStorageNode(node) {
 }
 
 function _defaultShirkasList() {
-    if (typeof DEFAULT_SHIRKAS !== 'undefined' && Array.isArray(DEFAULT_SHIRKAS)) {
-        return [...DEFAULT_SHIRKAS];
-    }
-    return [
-        'الرواد', 'الشہداء', 'المختار', 'الدولية', 'ضيوف الرحمن',
-        'العالمية', 'رواحل', 'سماء المشاعر', 'قافلة الإيمان', 'دلہ',
-        'سدرہ', 'مواسم', 'انوار الحرمین', 'فنادق الہدایہ', 'دار الایمان'
-    ];
+    return [];
 }
 
 function _defaultNaturesList() {
-    return ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+    return [];
 }
 
 function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, mergeRecords = false } = {}) {
@@ -197,40 +184,34 @@ function hydrateAllFromLocalCache() {
 function _applyDefaultsAndCleanup(allowWrite) {
     const L = (typeof T !== 'undefined' && (T[lang] || T.ur)) ? (T[lang] || T.ur) : { defaultParties: [], defaultSectors: [] };
 
-    // Auto-discover parties from existing records/payments if parties is empty or smaller
+    // Auto-discover parties from existing records/payments; filter out any fake/dummy names
     const recParties = (records || []).map(r => r && r.party).filter(Boolean);
     const payParties = (payments || []).map(p => p && p.party).filter(Boolean);
-    const combinedP = Array.from(new Set([...(parties || []), ...recParties, ...payParties]));
-    if (combinedP.length > (parties || []).length) {
+    const combinedP = Array.from(new Set([...(parties || []), ...recParties, ...payParties]))
+        .filter(p => !_LEGACY_PARTY_NAMES.has((p || '').trim()));
+    if (combinedP.length !== (parties || []).length || (parties || []).some(p => _LEGACY_PARTY_NAMES.has((p || '').trim()))) {
         parties = combinedP;
-        if (allowWrite && typeof svP === 'function') svP();
-    }
-    if (!parties || !parties.length) {
-        parties = ((L.defaultParties && L.defaultParties.length) ? L.defaultParties : ['ٹرانسپورٹر الف', 'ٹرانسپورٹر ب']).slice();
         if (allowWrite && typeof svP === 'function') svP();
     }
 
     // Auto-discover sectors from records if sectors is empty or smaller
     const recSectors = (records || []).map(r => r && r.sector).filter(Boolean);
     const combinedS = Array.from(new Set([...(sectors || []), ...recSectors]));
-    if (combinedS.length > (sectors || []).length) {
+    if (combinedS.length !== (sectors || []).length) {
         sectors = combinedS;
         if (allowWrite && typeof svS === 'function') svS();
     }
-    if (!sectors || !sectors.length) {
-        sectors = ((L.defaultSectors && L.defaultSectors.length) ? L.defaultSectors : ['جدہ ➜ مکہ', 'مکہ ➜ مدینہ', 'مدینہ ➜ مکہ', 'مکہ ➜ جدہ']).slice();
-        if (allowWrite && typeof svS === 'function') svS();
-    }
 
-    // Auto-discover transports from records if transports is empty or smaller
+    // Auto-discover transports from records; filter out fake/dummy transports if not in records
     const recTransports = (records || []).map(r => r && r.transport).filter(Boolean);
     const combinedTr = Array.from(new Set([...(transports || []), ...recTransports]));
-    if (combinedTr.length > (transports || []).length) {
-        transports = combinedTr;
-        if (allowWrite && typeof svTr === 'function') svTr();
-    }
-    if (!transports || !transports.length) {
-        transports = ['بس', 'وین', 'کار', 'کوچ'];
+    const cleanedTr = combinedTr.filter(t => {
+        const isDummy = (t === 'بس' || t === 'وین' || t === 'کار' || t === 'کوچ');
+        if (isDummy && !recTransports.includes(t)) return false;
+        return true;
+    });
+    if (cleanedTr.length !== (transports || []).length) {
+        transports = cleanedTr;
         if (allowWrite && typeof svTr === 'function') svTr();
     }
 
@@ -239,9 +220,13 @@ function _applyDefaultsAndCleanup(allowWrite) {
         transportNatures = Array.from(new Set([..._defaultNaturesList(), ...saved]));
         if (allowWrite && typeof svTN === 'function') svTN();
     }
-    if (!shirkas || !shirkas.length) {
-        const saved = (records || []).map(r => r && r.shirka).filter(Boolean);
-        shirkas = Array.from(new Set([..._defaultShirkasList(), ...saved]));
+
+    // Clean out fake/dummy shirkas; keep only user-defined shirkas and real records shirkas
+    const recShirkas = (records || []).map(r => r && r.shirka).filter(Boolean);
+    const combinedSh = Array.from(new Set([...(shirkas || []), ...recShirkas]))
+        .filter(s => !_LEGACY_SHIRKA_NAMES.has((s || '').trim()));
+    if (combinedSh.length !== (shirkas || []).length || (shirkas || []).some(s => _LEGACY_SHIRKA_NAMES.has((s || '').trim()))) {
+        shirkas = combinedSh;
         if (allowWrite && typeof svSh === 'function') svSh();
     }
 
@@ -474,14 +459,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             try {
+                // Timeout helper to prevent infinite network hangs
+                const withTimeout = (prom, ms = 4000) => {
+                    let t;
+                    return Promise.race([
+                        prom,
+                        new Promise((_, reject) => { t = setTimeout(() => reject(new Error('Supabase request timeout (' + ms + 'ms)')), ms); })
+                    ]).finally(() => clearTimeout(t));
+                };
+
                 // Always push local pending edits BEFORE reading remote data so nothing local is overwritten
                 if (typeof flushPendingFbWrites === 'function') {
-                    await flushPendingFbWrites();
+                    try {
+                        await withTimeout(flushPendingFbWrites(), 2500);
+                    } catch (e) {
+                        console.warn('flushPendingFbWrites timeout or error:', e);
+                    }
                 }
 
-                const { data: rows, error } = await sbClient
-                    .from('app_data')
-                    .select('node_name, data, updated_at');
+                const { data: rows, error } = await withTimeout(
+                    sbClient.from('app_data').select('node_name, data, updated_at'),
+                    4000
+                );
 
                 if (error) {
                     throw error;
@@ -512,7 +511,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (missingRows.length > 0) {
                     console.log('Syncing missing local nodes to Supabase:', missingRows.map(r => r.node_name));
-                    await sbClient.from('app_data').upsert(missingRows, { onConflict: 'node_name' });
+                    try {
+                        await withTimeout(sbClient.from('app_data').upsert(missingRows, { onConflict: 'node_name' }), 3000);
+                    } catch (e) {
+                        console.warn('Upsert missing rows timeout or error:', e);
+                    }
                 }
 
                 const changed = new Set();
@@ -534,7 +537,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await _finishDataBoot(changed);
 
             } catch (error) {
-                console.error("Supabase Read Error:", error);
+                console.warn("Supabase Read Note / Timeout (using local data):", error && error.message);
                 if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = (error && error.message) || 'Read error';
                 if (!hasCache) {
                     showFirebaseStatusNotice(error);
@@ -566,6 +569,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             try { localStorage.setItem('uts_logged_in_user', loggedInUser); } catch (e) { }
             hydrateAllFromLocalCache();
             if (typeof setCurrentUserRole === 'function') setCurrentUserRole(loggedInUser);
+
+            // Fast loader dismiss: local data is already active in memory!
+            const fbLoader = typeof document !== 'undefined' ? document.getElementById('firebase-loader') : null;
+            if (fbLoader) fbLoader.style.display = 'none';
+
             if (typeof window.loadData === 'function') window.loadData();
         } else {
             // Check local persistence
@@ -576,6 +584,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loggedInUser = savedUname;
                 hydrateAllFromLocalCache();
                 if (typeof setCurrentUserRole === 'function') setCurrentUserRole(loggedInUser);
+
+                // Fast loader dismiss: local data is already active in memory!
+                const fbLoader = typeof document !== 'undefined' ? document.getElementById('firebase-loader') : null;
+                if (fbLoader) fbLoader.style.display = 'none';
+
                 if (typeof window.loadData === 'function') window.loadData();
             } else {
                 loggedInUser = null;
@@ -590,12 +603,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // Safety watchdog: guarantee loader is hidden within 2.5s even if network or auth hangs
+    setTimeout(() => {
+        const fbLoader = typeof document !== 'undefined' ? document.getElementById('firebase-loader') : null;
+        if (fbLoader && fbLoader.style.display !== 'none') {
+            console.warn('Firebase loader safety timeout triggered: Dismissing loader to display local app');
+            fbLoader.style.display = 'none';
+            if (!isFirebaseReady) isFirebaseReady = true;
+            if (typeof checkAuth === 'function') checkAuth();
+        }
+    }, 2500);
+
+    let authBootTriggered = false;
+    const triggerBootOnce = (user) => {
+        if (authBootTriggered) return;
+        authBootTriggered = true;
+        setupAuthAndBoot(user);
+    };
+
     if (typeof sbClient !== 'undefined' && sbClient && sbClient.auth) {
         sbClient.auth.onAuthStateChange((event, session) => {
-            setupAuthAndBoot(session ? session.user : null);
+            triggerBootOnce(session ? session.user : null);
         });
+        // Fallback: If onAuthStateChange does not fire within 350ms, proceed immediately
+        setTimeout(() => {
+            if (!authBootTriggered) {
+                if (typeof sbClient.auth.getSession === 'function') {
+                    sbClient.auth.getSession().then(({ data }) => {
+                        triggerBootOnce(data && data.session ? data.session.user : null);
+                    }).catch(() => {
+                        triggerBootOnce(null);
+                    });
+                } else {
+                    triggerBootOnce(null);
+                }
+            }
+        }, 350);
     } else {
-        setupAuthAndBoot(null);
+        triggerBootOnce(null);
     }
 });
 

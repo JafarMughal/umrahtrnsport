@@ -5,8 +5,7 @@
 
 function fillTransportNatureDropdown() {
     // Fill dropdown in main Entry form
-    const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
-    const baseNatures = (typeof transportNatures !== 'undefined' && Array.isArray(transportNatures) && transportNatures.length) ? transportNatures : defaultNatures;
+    const baseNatures = (typeof transportNatures !== 'undefined' && Array.isArray(transportNatures)) ? transportNatures : [];
     const savedNatures = (records || []).map(n => n.transportNature).filter(Boolean);
     const allNatures = [...new Set([...baseNatures, ...savedNatures])];
 

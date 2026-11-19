@@ -23,7 +23,10 @@ async function loadComponentPages() {
         const el = document.getElementById(p.id);
         if (!el) return;
         try {
-            const res = await fetch(p.file, { cache: 'no-store' });
+            const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+            const timeoutId = controller ? setTimeout(() => controller.abort(), 3000) : null;
+            const res = await fetch(p.file, { cache: 'no-store', signal: controller ? controller.signal : undefined });
+            if (timeoutId) clearTimeout(timeoutId);
             if (res.ok) {
                 let html = await res.text();
                 html = html.replace(/<!-- Code injected by live-server -->[\s\S]*?<\/script>/gi, '');
@@ -40,7 +43,7 @@ async function loadComponentPages() {
             if (!el.innerHTML.trim()) {
                 el.innerHTML = '<div style="padding:20px;color:red;direction:rtl;">صفحہ لوڈ نہیں ہو سکا: ' + p.file + '</div>';
             }
-            if (window.location.protocol === 'file:') {
+            if (window.location && window.location.protocol === 'file:') {
                 fileCorsBlocked = true;
             }
         }

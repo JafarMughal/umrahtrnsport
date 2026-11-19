@@ -1,5 +1,5 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  UMRAH TRANSPORT MANAGEMENT SYSTEM (TMS) — ENTRY & THEME ENGINE
+//  UMRAH TRANSPORT MANAGEMENT SYSTEM (TMS) — MULTI-SECTOR ITINERARY & ENTRY ENGINE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // ── 1. LIGHT & DARK THEME ENGINE ──
@@ -57,7 +57,7 @@ function updateEntryModeBadge(isUpdate) {
     }
 }
 
-// ── 3. TRANSPORT CHANGE, AUTO-RATE & SHARING LOGIC ──
+// ── 3. SHARING / VEHICLE HELPERS & RATE LOOKUP ──
 function isEconomyBus(transport, sector) {
     const str = ((transport || '') + ' ' + (sector || '')).trim();
     return /economy.*bus|bus.*economy|شیئرنگ|sharing|مشترك|بس|bus/i.test(str);
@@ -72,7 +72,6 @@ function findMatchingVehicleRate(sector, transport, date) {
     const trNorm = transport.trim().toLowerCase();
     const d = (date || '').trim() || new Date().toISOString().slice(0, 10);
 
-    // Filter matching sector & transport
     const matched = vehicleRates.filter(r => 
         (r.sector || '').trim().toLowerCase() === secNorm &&
         (r.transport || '').trim().toLowerCase() === trNorm
@@ -80,7 +79,7 @@ function findMatchingVehicleRate(sector, transport, date) {
 
     if (matched.length === 0) return null;
 
-    // 1. First priority: date-specific seasonal rate valid for the given date
+    // 1. Priority: date-specific seasonal rate valid for the given date
     const activeSeasonal = matched.find(r => {
         const hasFrom = !!r.validFrom;
         const hasTo = !!r.validTo;
@@ -103,7 +102,7 @@ function findMatchingVehicleRate(sector, transport, date) {
         };
     }
 
-    // 2. Second priority: default / permanent rate (no date constraints)
+    // 2. Priority: default permanent rate
     const permanent = matched.find(r => !r.validFrom && !r.validTo);
     if (permanent) {
         return {
@@ -116,7 +115,7 @@ function findMatchingVehicleRate(sector, transport, date) {
         };
     }
 
-    // 3. If there are rates but they are expired for this date
+    // 3. Expired seasonal rate
     const expiredRate = matched.find(r => r.validTo && d > r.validTo);
     if (expiredRate) {
         return {
@@ -133,108 +132,517 @@ function findMatchingVehicleRate(sector, transport, date) {
     return null;
 }
 
-function onDateOrTransportChange(prefix = 'e') {
-    const editId = document.getElementById(prefix + '-id')?.value;
-    const sectorEl = document.getElementById(prefix + '-sector');
-    const trEl = document.getElementById(prefix + '-transport');
-    const dateEl = document.getElementById(prefix + '-date');
-    const fareEl = document.getElementById(prefix + '-fare');
-    const badgeEl = document.getElementById(prefix + '-rate-badge');
+// Date helper: adds days to YYYY-MM-DD
+function addDaysToDate(dateStr, days) {
+    if (!dateStr) return dateStr;
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    d.setDate(d.getDate() + days);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
 
-    const sector = sectorEl ? sectorEl.value : '';
-    const transport = trEl ? trEl.value : '';
-    const date = dateEl ? dateEl.value : '';
+// ── 4. MULTI-SECTOR ITINERARY STATE & LOGIC ──
+let entrySectorsList = [];
 
-    if (sector && transport && fareEl) {
-        const matchResult = findMatchingVehicleRate(sector, transport, date);
-        if (matchResult) {
-            if (matchResult.isExpired) {
-                if (badgeEl) {
-                    badgeEl.style.display = 'block';
-                    badgeEl.style.color = '#dc2626';
-                    badgeEl.innerHTML = `⚠️ ریٹ میعاد ختم ہو چکی ہے (${matchResult.fare} SAR — آخری تاریخ ${matchResult.validTo})`;
-                }
-            } else {
-                // Auto-fill rate if not editing an existing record or if field was auto-filled
-                if (!editId || fareEl.value === '' || fareEl.dataset.autoFilled === 'true') {
-                    fareEl.value = matchResult.fare;
-                    fareEl.dataset.autoFilled = 'true';
-                }
-                if (badgeEl) {
-                    badgeEl.style.display = 'block';
-                    badgeEl.style.color = '#0d9488';
-                    const noteText = matchResult.note ? ` (${matchResult.note})` : (matchResult.isSeasonal ? ' (سیزنل ریٹ)' : ' (طے شدہ ریٹ)');
-                    const validityInfo = matchResult.validTo ? ` — تا ${matchResult.validTo}` : '';
-                    badgeEl.innerHTML = `✓ خودکار ریٹ: <b>${matchResult.fare} SAR</b>${noteText}${validityInfo}`;
-                }
-            }
-        } else {
-            if (badgeEl) {
-                badgeEl.style.display = 'none';
-                badgeEl.innerHTML = '';
-            }
+function createDefaultSectorRow(opts = {}) {
+    const todayStr = typeof today === 'function' ? today() : new Date().toISOString().split('T')[0];
+    const voucherDate = document.getElementById('e-date')?.value || todayStr;
+    const id = opts.id || ('sec_' + Math.random().toString(36).slice(2, 9));
+    return {
+        id: id,
+        date: opts.date || voucherDate,
+        sector: opts.sector || '',
+        transport: opts.transport || '',
+        transportNature: opts.transportNature || '',
+        fare: (opts.fare !== undefined && opts.fare !== null) ? opts.fare : '',
+        total: (opts.total !== undefined && opts.total !== null) ? opts.total : 0,
+        rateNote: opts.rateNote || '',
+        isAutoRate: !!opts.isAutoRate,
+        flightNo: opts.flightNo || '',
+        flightTime: opts.flightTime || '',
+        airport: opts.airport || '',
+        showFlight: !!(opts.flightNo || opts.flightTime || opts.airport || opts.showFlight)
+    };
+}
+
+function findBestMatchingSector(targetText) {
+    const available = (typeof sectors !== 'undefined' && Array.isArray(sectors)) ? sectors : [];
+    if (!available.length) return targetText;
+    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const targetNorm = norm(targetText);
+    const exact = available.find(s => norm(s) === targetNorm);
+    if (exact) return exact;
+    const partial = available.find(s => {
+        const sn = norm(s);
+        return sn.includes(targetNorm) || targetNorm.includes(sn);
+    });
+    return partial || targetText;
+}
+
+function findBestMatchingNature(targetText) {
+    const baseNatures = (typeof transportNatures !== 'undefined' && Array.isArray(transportNatures)) ? transportNatures : [];
+    const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+    const all = [...new Set([...baseNatures, ...defaultNatures])];
+    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const targetNorm = norm(targetText);
+    return all.find(n => norm(n) === targetNorm) || targetText;
+}
+
+// Apply Itinerary Preset (مکمل عمرہ، مدینہ فرسٹ، مکہ صرف، سنگل)
+function applyItineraryPreset(presetKey) {
+    const todayStr = typeof today === 'function' ? today() : new Date().toISOString().split('T')[0];
+    const voucherDate = document.getElementById('e-date')?.value || todayStr;
+    const currentTransport = (entrySectorsList[0] && entrySectorsList[0].transport) || '';
+
+    // Highlight active preset button
+    document.querySelectorAll('.preset-pill-btn').forEach(btn => btn.classList.remove('active'));
+    try {
+        if (typeof event !== 'undefined' && event && event.currentTarget && event.currentTarget.classList) {
+            event.currentTarget.classList.add('active');
         }
+    } catch (e) { }
+
+    if (presetKey === 'full_umrah') {
+        // 4 Routes: Jeddah -> Makkah, Makkah -> Madinah, Madinah -> Makkah, Makkah -> Jeddah
+        entrySectorsList = [
+            createDefaultSectorRow({
+                date: voucherDate,
+                sector: findBestMatchingSector('Jeddah ➜ Makkah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Jed Arrival'),
+                airport: 'Jeddah Airport - Terminal 1 (KAIA T1)',
+                showFlight: true
+            }),
+            createDefaultSectorRow({
+                date: addDaysToDate(voucherDate, 4),
+                sector: findBestMatchingSector('Makkah ➜ Madinah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Makkah to Madina'),
+                showFlight: false
+            }),
+            createDefaultSectorRow({
+                date: addDaysToDate(voucherDate, 8),
+                sector: findBestMatchingSector('Madinah ➜ Makkah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Madina TO Makha'),
+                showFlight: false
+            }),
+            createDefaultSectorRow({
+                date: addDaysToDate(voucherDate, 10),
+                sector: findBestMatchingSector('Makkah ➜ Jeddah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Jeddah Depture'),
+                airport: 'Jeddah Airport - Terminal 1 (KAIA T1)',
+                showFlight: true
+            })
+        ];
+    } else if (presetKey === 'med_first') {
+        // 3 Routes: Madinah Airport -> Madinah, Madinah -> Makkah, Makkah -> Jeddah
+        entrySectorsList = [
+            createDefaultSectorRow({
+                date: voucherDate,
+                sector: findBestMatchingSector('Madinah Airport ➜ Madinah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('MED Arrival'),
+                airport: 'Madinah Airport (AMAA)',
+                showFlight: true
+            }),
+            createDefaultSectorRow({
+                date: addDaysToDate(voucherDate, 4),
+                sector: findBestMatchingSector('Madinah ➜ Makkah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Madina TO Makha'),
+                showFlight: false
+            }),
+            createDefaultSectorRow({
+                date: addDaysToDate(voucherDate, 10),
+                sector: findBestMatchingSector('Makkah ➜ Jeddah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Jeddah Depture'),
+                airport: 'Jeddah Airport - Terminal 1 (KAIA T1)',
+                showFlight: true
+            })
+        ];
+    } else if (presetKey === 'makkah_only') {
+        // 2 Routes: Jeddah -> Makkah, Makkah -> Jeddah
+        entrySectorsList = [
+            createDefaultSectorRow({
+                date: voucherDate,
+                sector: findBestMatchingSector('Jeddah ➜ Makkah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Jed Arrival'),
+                airport: 'Jeddah Airport - Terminal 1 (KAIA T1)',
+                showFlight: true
+            }),
+            createDefaultSectorRow({
+                date: addDaysToDate(voucherDate, 5),
+                sector: findBestMatchingSector('Makkah ➜ Jeddah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Jeddah Depture'),
+                airport: 'Jeddah Airport - Terminal 1 (KAIA T1)',
+                showFlight: true
+            })
+        ];
     } else {
-        if (badgeEl) {
-            badgeEl.style.display = 'none';
-            badgeEl.innerHTML = '';
+        // 1 Single Route
+        entrySectorsList = [
+            createDefaultSectorRow({
+                date: voucherDate,
+                sector: findBestMatchingSector('Jeddah ➜ Makkah'),
+                transport: currentTransport,
+                transportNature: findBestMatchingNature('Jed Arrival'),
+                showFlight: false
+            })
+        ];
+    }
+
+    // Auto-calculate rates for all rows
+    entrySectorsList.forEach(r => recalcSectorRow(r.id, false));
+    renderEntrySectorsTable();
+    updateItinerarySummary();
+}
+
+function addEntrySectorRow() {
+    const todayStr = typeof today === 'function' ? today() : new Date().toISOString().split('T')[0];
+    const voucherDate = document.getElementById('e-date')?.value || todayStr;
+
+    let nextDate = voucherDate;
+    let nextTransport = '';
+
+    if (entrySectorsList.length > 0) {
+        const lastRow = entrySectorsList[entrySectorsList.length - 1];
+        nextDate = lastRow.date ? addDaysToDate(lastRow.date, 3) : voucherDate;
+        nextTransport = lastRow.transport || '';
+    }
+
+    const newRow = createDefaultSectorRow({
+        date: nextDate,
+        transport: nextTransport
+    });
+
+    entrySectorsList.push(newRow);
+    recalcSectorRow(newRow.id, false);
+    renderEntrySectorsTable();
+    updateItinerarySummary();
+}
+
+function removeEntrySectorRow(rowId) {
+    if (entrySectorsList.length <= 1) {
+        // Reset single row to clean state
+        entrySectorsList[0] = createDefaultSectorRow();
+    } else {
+        entrySectorsList = entrySectorsList.filter(r => r.id !== rowId);
+    }
+    renderEntrySectorsTable();
+    updateItinerarySummary();
+}
+
+function toggleSectorFlightDetails(rowId) {
+    const row = entrySectorsList.find(r => r.id === rowId);
+    if (!row) return;
+    row.showFlight = !row.showFlight;
+    renderEntrySectorsTable();
+}
+
+function updateSectorRowField(rowId, field, val) {
+    const row = entrySectorsList.find(r => r.id === rowId);
+    if (!row) return;
+    row[field] = val;
+
+    if (field === 'flightNo' || field === 'flightTime' || field === 'airport') {
+        const toggleBtn = document.getElementById(`btn-flight-${rowId}`);
+        if (toggleBtn) {
+            const hasFlight = !!(row.flightNo || row.flightTime || row.airport);
+            if (hasFlight) {
+                toggleBtn.classList.add('has-flight');
+                toggleBtn.textContent = `✈️ ${row.flightNo || 'تفصیلات'}`;
+            } else {
+                toggleBtn.classList.remove('has-flight');
+                toggleBtn.textContent = '✈️ فلائیٹ درج کریں';
+            }
         }
     }
 
-    calcE();
+    syncLegacyFieldsFromRow1();
+}
+
+function onSectorRowSectorChange(rowId, newSector) {
+    const row = entrySectorsList.find(r => r.id === rowId);
+    if (!row) return;
+    row.sector = newSector;
+
+    // Suggest default transportNature based on sector if not set
+    if (!row.transportNature && newSector) {
+        const s = newSector.toLowerCase();
+        if (s.includes('jed') && (s.includes('mak') || s.includes('arr') || s.includes('آمد'))) {
+            row.transportNature = findBestMatchingNature('Jed Arrival');
+        } else if (s.includes('med') && (s.includes('arr') || s.includes('آمد'))) {
+            row.transportNature = findBestMatchingNature('MED Arrival');
+        } else if (s.includes('mak') && s.includes('med')) {
+            row.transportNature = findBestMatchingNature('Makkah to Madina');
+        } else if (s.includes('med') && s.includes('mak')) {
+            row.transportNature = findBestMatchingNature('Madina TO Makha');
+        } else if (s.includes('jed') && (s.includes('dep') || s.includes('روانگی'))) {
+            row.transportNature = findBestMatchingNature('Jeddah Depture');
+        } else if (s.includes('med') && (s.includes('dep') || s.includes('روانگی'))) {
+            row.transportNature = findBestMatchingNature('Madina Depture');
+        }
+        const natureSel = document.getElementById(`sec-nature-${rowId}`);
+        if (natureSel) natureSel.value = row.transportNature;
+    }
+
+    recalcSectorRow(rowId);
+}
+
+function onSectorRowTransportChange(rowId, newTransport) {
+    const row = entrySectorsList.find(r => r.id === rowId);
+    if (!row) return;
+    row.transport = newTransport;
+    recalcSectorRow(rowId);
+}
+
+function onSectorRowFareChange(rowId, newFare) {
+    const row = entrySectorsList.find(r => r.id === rowId);
+    if (!row) return;
+    row.fare = newFare;
+    row.isAutoRate = false; // Manually overwritten by user
+    row.rateNote = '';
+    recalcSectorRow(rowId);
+}
+
+function recalcSectorRow(rowId, updateSummary = true) {
+    const row = entrySectorsList.find(r => r.id === rowId);
+    if (!row) return;
+
+    // Check automatic rate from vehicleRates
+    if (row.sector && row.transport) {
+        const matchResult = findMatchingVehicleRate(row.sector, row.transport, row.date);
+        if (matchResult && !matchResult.isExpired) {
+            if (row.fare === '' || row.fare === undefined || row.isAutoRate) {
+                row.fare = matchResult.fare;
+                row.isAutoRate = true;
+                const noteText = matchResult.note ? ` (${matchResult.note})` : (matchResult.isSeasonal ? ' (سیزنل)' : '');
+                row.rateNote = `✓ ${matchResult.fare} SAR${noteText}`;
+            }
+        } else if (row.isAutoRate) {
+            row.rateNote = '';
+        }
+    }
+
+    const countInput = parseInt(document.getElementById('e-count')?.value);
+    const pax = (!isNaN(countInput) && countInput > 0) ? countInput : 1;
+    const fare = parseFloat(row.fare) || 0;
+
+    const isPerPilgrim = typeof isEconomyBus === 'function'
+        ? isEconomyBus(row.transport, row.sector)
+        : /economy.*bus|bus.*economy|شیئرنگ|sharing|مشترك|بس|bus/i.test(((row.transport || '') + ' ' + (row.sector || '')).trim());
+
+    row.mode = isPerPilgrim ? 'sharing' : 'vehicle';
+    row.total = isPerPilgrim ? Math.round(pax * fare) : Math.round(fare);
+
+    // Update specific row DOM elements directly to preserve focus
+    const fareInp = document.getElementById(`sec-fare-${rowId}`);
+    if (fareInp && (fareInp.value === '' || row.isAutoRate)) {
+        fareInp.value = row.fare !== '' ? row.fare : '';
+    }
+    const totalInp = document.getElementById(`sec-tot-${rowId}`);
+    if (totalInp) {
+        totalInp.value = row.total;
+    }
+    const noteEl = document.getElementById(`sec-note-${rowId}`);
+    if (noteEl) {
+        noteEl.textContent = row.rateNote || '';
+        noteEl.style.display = row.rateNote ? 'block' : 'none';
+    }
+
+    if (updateSummary) {
+        updateItinerarySummary();
+    }
+}
+
+function recalcAllEntrySectors() {
+    entrySectorsList.forEach(r => recalcSectorRow(r.id, false));
+    updateItinerarySummary();
+}
+
+function updateItinerarySummary() {
+    const totalSectors = entrySectorsList.length;
+    const countInput = parseInt(document.getElementById('e-count')?.value);
+    const totalPax = (!isNaN(countInput) && countInput > 0) ? countInput : 0;
+    const grandTotal = entrySectorsList.reduce((sum, r) => sum + (parseFloat(r.total) || 0), 0);
+
+    const secCountEl = document.getElementById('e-summary-sectors-count');
+    if (secCountEl) secCountEl.textContent = totalSectors;
+
+    const paxCountEl = document.getElementById('e-summary-pax-count');
+    if (paxCountEl) paxCountEl.textContent = totalPax.toLocaleString();
+
+    const grandTotalEl = document.getElementById('e-summary-grand-total');
+    if (grandTotalEl) grandTotalEl.textContent = Math.round(grandTotal).toLocaleString();
+
+    // Compatibility hidden input
+    const compatTotal = document.getElementById('e-total');
+    if (compatTotal) compatTotal.value = Math.round(grandTotal);
+
+    syncLegacyFieldsFromRow1();
+}
+
+// Sync first row data into legacy hidden inputs for 100% backward compatibility
+function syncLegacyFieldsFromRow1() {
+    const r1 = entrySectorsList[0];
+    if (!r1) return;
+
+    const sEl = document.getElementById('e-sector'); if (sEl) sEl.value = r1.sector || '';
+    const tEl = document.getElementById('e-transport'); if (tEl) tEl.value = r1.transport || '';
+    const nEl = document.getElementById('e-transport-nature-sel'); if (nEl) nEl.value = r1.transportNature || '';
+    const fEl = document.getElementById('e-fare'); if (fEl) fEl.value = r1.fare || '';
+    const vtEl = document.getElementById('e-vehicle-total'); if (vtEl) vtEl.value = r1.total || '';
+    const fnEl = document.getElementById('e-flight-no'); if (fnEl) fnEl.value = r1.flightNo || '';
+    const ftEl = document.getElementById('e-flight-time'); if (ftEl) ftEl.value = r1.flightTime || '';
+    const apEl = document.getElementById('e-airport'); if (apEl) apEl.value = r1.airport || '';
+}
+
+function renderEntrySectorsTable() {
+    window.entrySectorsList = entrySectorsList;
+    const tbody = document.getElementById('e-sectors-table-body');
+    if (!tbody) return;
+
+    if (!entrySectorsList || entrySectorsList.length === 0) {
+        entrySectorsList = [createDefaultSectorRow()];
+    }
+
+    // Available sectors from state & records & default list
+    const recSectors = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.sector).filter(Boolean) : [];
+    const allSectors = Array.from(new Set([
+        ...(Array.isArray(sectors) ? sectors : []),
+        ...recSectors,
+        'Jeddah ➜ Makkah', 'Makkah ➜ Madinah', 'Madinah ➜ Makkah', 'Makkah ➜ Jeddah',
+        'Madinah Airport ➜ Madinah', 'Madinah ➜ Jeddah'
+    ])).filter(Boolean);
+
+    // Available transports from state & records
+    const recTransports = (typeof records !== 'undefined' && Array.isArray(records)) ? records.map(r => r && r.transport).filter(Boolean) : [];
+    const allTransports = Array.from(new Set([
+        ...(Array.isArray(transports) ? transports : []),
+        ...recTransports
+    ])).filter(Boolean);
+
+    // Available natures
+    const baseNatures = (typeof transportNatures !== 'undefined' && Array.isArray(transportNatures)) ? transportNatures : [];
+    const defaultNatures = ['Jed Arrival', 'MED Arrival', 'Makkah to Madina', 'Madina TO Makha', 'Jeddah Depture', 'Madina Depture'];
+    const allNatures = Array.from(new Set([...baseNatures, ...defaultNatures])).filter(Boolean);
+
+    let html = '';
+
+    entrySectorsList.forEach((row, index) => {
+        const rowNum = index + 1;
+        const hasFlight = !!(row.flightNo || row.flightTime || row.airport);
+        const flightBtnText = hasFlight ? `✈️ ${row.flightNo || 'تفصیلات'}` : '✈️ فلائیٹ درج کریں';
+
+        html += `
+        <tr id="sec-row-${row.id}">
+            <td style="text-align:center;">
+                <span class="sec-badge-num">${rowNum}</span>
+            </td>
+            <td>
+                <input type="date" class="sec-input" value="${row.date || ''}" 
+                    onchange="updateSectorRowField('${row.id}', 'date', this.value); recalcSectorRow('${row.id}')" />
+            </td>
+            <td>
+                <select class="sec-select" id="sec-sector-${row.id}" onchange="onSectorRowSectorChange('${row.id}', this.value)">
+                    <option value="">-- سیکٹر منتخب کریں --</option>
+                    ${allSectors.map(s => `<option value="${s}" ${s === row.sector ? 'selected' : ''}>${s}</option>`).join('')}
+                    ${(row.sector && !allSectors.includes(row.sector)) ? `<option value="${row.sector}" selected>${row.sector}</option>` : ''}
+                </select>
+            </td>
+            <td>
+                <select class="sec-select" id="sec-transport-${row.id}" onchange="onSectorRowTransportChange('${row.id}', this.value)">
+                    <option value="">-- گاڑی منتخب کریں --</option>
+                    ${allTransports.map(t => `<option value="${t}" ${t === row.transport ? 'selected' : ''}>${t}</option>`).join('')}
+                    ${(row.transport && !allTransports.includes(row.transport)) ? `<option value="${row.transport}" selected>${row.transport}</option>` : ''}
+                </select>
+            </td>
+            <td>
+                <select class="sec-select" id="sec-nature-${row.id}" onchange="updateSectorRowField('${row.id}', 'transportNature', this.value)">
+                    <option value="">-- نوعیت منتخب کریں --</option>
+                    ${allNatures.map(n => `<option value="${n}" ${n === row.transportNature ? 'selected' : ''}>${n}</option>`).join('')}
+                    ${(row.transportNature && !allNatures.includes(row.transportNature)) ? `<option value="${row.transportNature}" selected>${row.transportNature}</option>` : ''}
+                </select>
+            </td>
+            <td>
+                <button type="button" class="btn-sec-flight-toggle ${hasFlight ? 'has-flight' : ''}" id="btn-flight-${row.id}" 
+                    onclick="toggleSectorFlightDetails('${row.id}')">
+                    ${flightBtnText}
+                </button>
+            </td>
+            <td>
+                <input type="number" class="sec-input sec-num-input" id="sec-fare-${row.id}" min="0" placeholder="0" 
+                    value="${row.fare !== undefined ? row.fare : ''}" 
+                    oninput="onSectorRowFareChange('${row.id}', this.value)" />
+                <span class="sec-rate-note" id="sec-note-${row.id}" style="${row.rateNote ? 'display:block;' : 'display:none;'}">${row.rateNote || ''}</span>
+            </td>
+            <td>
+                <input type="text" class="sec-input sec-num-input sec-readonly" id="sec-tot-${row.id}" 
+                    value="${row.total || 0}" readonly />
+            </td>
+            <td style="text-align:center;">
+                <button type="button" class="btn-sec-del" onclick="removeEntrySectorRow('${row.id}')" title="رو حذف کریں">✕</button>
+            </td>
+        </tr>
+        `;
+
+        if (row.showFlight) {
+            html += `
+            <tr class="itinerary-flight-subrow" id="flight-subrow-${row.id}">
+                <td colspan="9">
+                    <div class="sec-flight-inline-card">
+                        <div class="sfg">
+                            <label>فلائیٹ نمبر (Flight No)</label>
+                            <input type="text" placeholder="مثلاً: SV-732" value="${row.flightNo || ''}" 
+                                oninput="updateSectorRowField('${row.id}', 'flightNo', this.value)" />
+                        </div>
+                        <div class="sfg">
+                            <label>فلائیٹ وقت (Time)</label>
+                            <input type="time" value="${row.flightTime || ''}" 
+                                oninput="updateSectorRowField('${row.id}', 'flightTime', this.value)" />
+                        </div>
+                        <div class="sfg" style="flex:2;">
+                            <label>ائیرپورٹ / ٹرمینل (Airport / Terminal)</label>
+                            <input type="text" list="airport-list" placeholder="ائیرپورٹ منتخب کریں یا لکھیں..." value="${row.airport || ''}" 
+                                oninput="updateSectorRowField('${row.id}', 'airport', this.value)" />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            `;
+        }
+    });
+
+    tbody.innerHTML = html;
+}
+
+// Global recalculation called on Pilgrims Count change (#e-count)
+function calcE() {
+    recalcAllEntrySectors();
+}
+
+function onDateOrTransportChange(prefix = 'e') {
+    const dateVal = document.getElementById(prefix + '-date')?.value;
+    if (dateVal && entrySectorsList.length > 0 && (!entrySectorsList[0].date || entrySectorsList.length === 1)) {
+        entrySectorsList[0].date = dateVal;
+    }
+    recalcAllEntrySectors();
 }
 
 function onTransportChange(prefix) {
     onDateOrTransportChange(prefix || 'e');
 }
 
-function calcE() {
-    const transportEl = document.getElementById('e-transport');
-    const sectorEl = document.getElementById('e-sector');
-    const transportVal = transportEl ? transportEl.value : '';
-    const sectorVal = sectorEl ? sectorEl.value : '';
-
-    const totalEl = document.getElementById('e-total');
-    const fareEl = document.getElementById('e-fare');
-    const countEl = document.getElementById('e-count');
-    const lblFare = document.getElementById('lbl-fare');
-
-    const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : (typeof T !== 'undefined' && T.ur ? T.ur : {});
-    const isEn = typeof lang !== 'undefined' && lang === 'en';
-    const isAr = typeof lang !== 'undefined' && lang === 'ar';
-
-    // Check if Economy By Bus or Sharing mode
-    const isPerPilgrim = typeof isEconomyBus === 'function' 
-        ? isEconomyBus(transportVal, sectorVal) 
-        : /economy.*bus|bus.*economy|شیئرنگ|sharing|مشترك|بس|bus/i.test((transportVal + ' ' + sectorVal).trim());
-
-    // Update Label dynamically for clarity
-    if (lblFare) {
-        if (isPerPilgrim) {
-            lblFare.textContent = L.farePerPilgrim || (isEn ? 'Fare per Pilgrim (SAR)' : isAr ? 'الأجرة لكل حاج (ريال)' : 'فی حاجی کرایہ (SAR)');
-        } else {
-            lblFare.textContent = L.fareVehicle || (isEn ? 'Vehicle Fare (SAR)' : isAr ? 'أجرة المركبة (ريال)' : 'گاڑی کا کرایہ (SAR)');
-        }
-    }
-
-    let c = countEl ? parseInt(countEl.value) : 1;
-    if (isNaN(c) || c < 1) c = 1;
-
-    let f = fareEl ? (parseFloat(fareEl.value) || 0) : 0;
-
-    if (!fareEl || fareEl.value === '') {
-        if (totalEl) totalEl.value = '';
-        return;
-    }
-
-    // Only Economy By Bus multiplies fare by pilgrims count (c * f)
-    // All other vehicles (Car, GMC, Van, etc.) use fixed vehicle fare (f)
-    if (totalEl) {
-        totalEl.value = isPerPilgrim ? Math.round(c * f) : Math.round(f);
-    }
-}
-
-// ── 4. VOUCHER & ENTRY FUNCTIONS ──
+// ── 5. VOUCHER & SAVE LOGIC ──
 function setNextVoucher() {
     const vEl = document.getElementById('e-voucher');
     if (vEl && typeof genVoucher === 'function') {
@@ -256,115 +664,181 @@ function addEntry() {
     }
 
     const L = (typeof T !== 'undefined' && T[lang]) ? T[lang] : (typeof T !== 'undefined' && T.ur ? T.ur : {});
-    const date = document.getElementById('e-date')?.value || '';
+    const voucherDate = document.getElementById('e-date')?.value || (typeof today === 'function' ? today() : '');
     const party = document.getElementById('e-party')?.value || '';
     const newParty = document.getElementById('e-new-party')?.value?.trim() || '';
-    const sector = document.getElementById('e-sector')?.value || '';
-    const transport = document.getElementById('e-transport')?.value || '';
     const notes = document.getElementById('e-notes')?.value?.trim() || '';
-    const voucher = document.getElementById('e-voucher')?.value || (typeof genVoucher === 'function' ? genVoucher() : '');
-
-    if (!date || !party || !sector || !transport) {
-        if (typeof al === 'function') al('al-entry', L.entryRequired || 'تمام ضروری فیلڈز پر کریں', 'er');
-        return;
-    }
+    const voucher = document.getElementById('e-voucher')?.value?.trim() || (typeof genVoucher === 'function' ? genVoucher() : '');
 
     let countInput = parseInt(document.getElementById('e-count')?.value);
     let count = isNaN(countInput) ? 0 : countInput;
-    let calcCount = count < 1 ? 1 : count;
-    let fare = parseFloat(document.getElementById('e-fare')?.value) || 0;
-
-    // Check if Economy By Bus / Sharing
-    const isPerPilgrim = typeof isEconomyBus === 'function' 
-        ? isEconomyBus(transport, sector) 
-        : /economy.*bus|bus.*economy|شیئرنگ|sharing|مشترك|بس|bus/i.test((transport + ' ' + sector).trim());
-
-    let total = isPerPilgrim ? Math.round(calcCount * fare) : Math.round(fare);
-    let mode = isPerPilgrim ? 'sharing' : 'vehicle';
-    let vehicleTotal = total;
 
     const name = document.getElementById('e-name')?.value?.trim() || '';
-    const flightTime = document.getElementById('e-flight-time')?.value || '';
-    const flightNo = document.getElementById('e-flight-no')?.value?.trim() || '';
-    const airport = document.getElementById('e-airport')?.value?.trim() || '';
-    const transportNature = document.getElementById('e-transport-nature-sel')?.value || '';
     const shirka = document.getElementById('e-shirka')?.value?.trim() || '';
     const group = document.getElementById('e-group')?.value?.trim() || '';
     const mobile = document.getElementById('e-mobile')?.value?.trim() || '';
 
-    if (editId) {
-        const idx = records.findIndex(r => r.id === editId);
-        if (idx !== -1) {
-            records[idx] = { ...records[idx], voucher, date, party, newParty, sector, transport, mode, count, fare, vehicleTotal, total, notes, name, flightTime, flightNo, airport, transportNature, shirka, group, mobile };
+    // Validation
+    if (!party) {
+        if (typeof al === 'function') al('al-entry', 'براہ کرم ٹرانسپورٹر منتخب کریں (Please select transporter)', 'er');
+        return;
+    }
+
+    if (!entrySectorsList || entrySectorsList.length === 0) {
+        if (typeof al === 'function') al('al-entry', 'براہ کرم کم از کم ایک سیکٹر شامل کریں (Add at least 1 sector)', 'er');
+        return;
+    }
+
+    // Validate that every sector row has a sector and date
+    for (let i = 0; i < entrySectorsList.length; i++) {
+        const sec = entrySectorsList[i];
+        if (!sec.sector) {
+            if (typeof al === 'function') al('al-entry', `رو نمبر #${i + 1} میں سیکٹر منتخب نہیں ہے (Sector is required for row #${i + 1})`, 'er');
+            return;
         }
-        if (typeof al === 'function') al('al-entry', L.updOk || 'Record updated successfully', 'ok');
+        if (!sec.date) {
+            sec.date = voucherDate;
+        }
+    }
+
+    if (editId) {
+        // Editing: Check if this record had a voucher with other legs
+        const existingRec = (typeof records !== 'undefined' && Array.isArray(records)) ? records.find(r => r.id === editId) : null;
+        const oldVoucher = (existingRec && existingRec.voucher) ? existingRec.voucher : '';
+
+        if (oldVoucher && oldVoucher !== '—') {
+            // Remove existing records sharing this old voucher to update the complete itinerary
+            records = records.filter(r => r.voucher !== oldVoucher);
+        } else {
+            records = records.filter(r => r.id !== editId);
+        }
+
+        // Re-insert all updated sectors for this voucher
+        entrySectorsList.forEach(sec => {
+            const newId = typeof uid === 'function' ? uid() : ('r_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6));
+            records.push({
+                id: newId,
+                voucher: voucher,
+                date: sec.date || voucherDate,
+                party: party,
+                newParty: newParty,
+                count: count,
+                sector: sec.sector,
+                transport: sec.transport || '',
+                mode: sec.mode || (isEconomyBus(sec.transport, sec.sector) ? 'sharing' : 'vehicle'),
+                fare: parseFloat(sec.fare) || 0,
+                vehicleTotal: sec.total,
+                total: sec.total,
+                notes: notes,
+                name: name,
+                flightTime: sec.flightTime || '',
+                flightNo: sec.flightNo || '',
+                airport: sec.airport || '',
+                transportNature: sec.transportNature || '',
+                shirka: shirka,
+                group: group,
+                mobile: mobile,
+                updatedAt: new Date().toISOString()
+            });
+        });
+
+        if (typeof al === 'function') {
+            al('al-entry', `واؤچر ${voucher} کے ${entrySectorsList.length} روٹس کامیابی کے ساتھ اپ ڈیٹ ہو گئے`, 'ok');
+        }
     } else {
-        const newId = typeof uid === 'function' ? uid() : Date.now().toString(36);
-        records.push({ id: newId, voucher, date, party, newParty, sector, transport, mode, count, fare, vehicleTotal, total, notes, name, flightTime, flightNo, airport, transportNature, shirka, group, mobile });
-        if (typeof al === 'function') al('al-entry', L.entrySaved || 'انٹری کامیابی کے ساتھ محفوظ ہو گئی', 'ok');
+        // New Entry: Save all sector rows as records under this master voucher
+        entrySectorsList.forEach(sec => {
+            const newId = typeof uid === 'function' ? uid() : ('r_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6));
+            records.push({
+                id: newId,
+                voucher: voucher,
+                date: sec.date || voucherDate,
+                party: party,
+                newParty: newParty,
+                count: count,
+                sector: sec.sector,
+                transport: sec.transport || '',
+                mode: sec.mode || (isEconomyBus(sec.transport, sec.sector) ? 'sharing' : 'vehicle'),
+                fare: parseFloat(sec.fare) || 0,
+                vehicleTotal: sec.total,
+                total: sec.total,
+                notes: notes,
+                name: name,
+                flightTime: sec.flightTime || '',
+                flightNo: sec.flightNo || '',
+                airport: sec.airport || '',
+                transportNature: sec.transportNature || '',
+                shirka: shirka,
+                group: group,
+                mobile: mobile,
+                createdAt: new Date().toISOString()
+            });
+        });
+
+        if (typeof al === 'function') {
+            al('al-entry', `واؤچر ${voucher} کے تمام (${entrySectorsList.length}) سیکٹرز کامیابی سے محفوظ ہو گئے`, 'ok');
+        }
     }
 
     if (typeof svR === 'function') svR();
     if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
     if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
     if (typeof fillHajiPartyDatalist === 'function') fillHajiPartyDatalist();
+
     clearEntryForm();
     todayStats();
 }
 
 function editRecord(id) {
-    if (typeof openEditRecordModal === 'function') {
-        openEditRecordModal(id);
-        return;
-    }
     if (typeof canDo === 'function' && !canDo('edit')) {
         alert(T[lang]?.noEditPerm || 'آپ کو ریکارڈ میں تبدیلی کی اجازت نہیں ہے');
         return;
     }
-    const r = (typeof records !== 'undefined') ? records.find(x => x.id === id) : null;
+    const r = (typeof records !== 'undefined' && Array.isArray(records)) ? records.find(x => x.id === id) : null;
     if (!r) return;
 
     const idEl = document.getElementById('e-id'); if (idEl) idEl.value = id;
-    const dateEl = document.getElementById('e-date'); if (dateEl) dateEl.value = r.date;
+    const dateEl = document.getElementById('e-date'); if (dateEl) dateEl.value = r.date || '';
     const vchEl = document.getElementById('e-voucher'); if (vchEl) vchEl.value = r.voucher || '—';
     const notesEl = document.getElementById('e-notes'); if (notesEl) notesEl.value = r.notes || '';
 
-    const partyEl = document.getElementById('e-party'); if (partyEl) partyEl.value = r.party;
+    const partyEl = document.getElementById('e-party'); if (partyEl) partyEl.value = r.party || '';
     const newPartyEl = document.getElementById('e-new-party'); if (newPartyEl) newPartyEl.value = r.newParty || '';
     if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
-    const sectorEl = document.getElementById('e-sector'); if (sectorEl) sectorEl.value = r.sector;
-    const trEl = document.getElementById('e-transport'); if (trEl) trEl.value = r.transport;
 
     const countEl = document.getElementById('e-count'); if (countEl) countEl.value = r.count || 0;
-    const fareEl = document.getElementById('e-fare'); if (fareEl) fareEl.value = r.fare || 0;
-
     const nameEl = document.getElementById('e-name'); if (nameEl) nameEl.value = r.name || '';
-    const ftEl = document.getElementById('e-flight-time'); if (ftEl) ftEl.value = r.flightTime || '';
-    const fnEl = document.getElementById('e-flight-no'); if (fnEl) fnEl.value = r.flightNo || '';
-    const apEl = document.getElementById('e-airport'); if (apEl) apEl.value = r.airport || '';
-    const tnEl = document.getElementById('e-transport-nature-sel'); if (tnEl) tnEl.value = r.transportNature || '';
     const shEl = document.getElementById('e-shirka'); if (shEl) shEl.value = r.shirka || '';
     const grEl = document.getElementById('e-group'); if (grEl) grEl.value = r.group || '';
     const mbEl = document.getElementById('e-mobile'); if (mbEl) mbEl.value = r.mobile || '';
 
-    // Show flight details if any exist
-    const hasFlightData = r.name || r.flightTime || r.flightNo || r.airport || r.transportNature || r.shirka || r.group || r.mobile;
-    const flightDetailsDiv = document.getElementById('e-flight-details');
-    const flightDetailsCheckbox = document.getElementById('e-show-flight');
-    if (flightDetailsDiv && flightDetailsCheckbox) {
-        flightDetailsCheckbox.checked = !!hasFlightData;
-        flightDetailsDiv.style.display = hasFlightData ? 'grid' : 'none';
-    }
+    // Check if this voucher has multiple legs
+    const matchingRecs = (r.voucher && r.voucher !== '—')
+        ? records.filter(x => x.voucher === r.voucher)
+        : [r];
 
-    onTransportChange('e');
-    const totalEl = document.getElementById('e-total');
-    if (totalEl) totalEl.value = r.total;
+    entrySectorsList = matchingRecs.map(rec => ({
+        id: rec.id || ('sec_' + Math.random().toString(36).slice(2, 9)),
+        date: rec.date || r.date,
+        sector: rec.sector || '',
+        transport: rec.transport || '',
+        transportNature: rec.transportNature || '',
+        fare: rec.fare !== undefined ? rec.fare : 0,
+        total: rec.total !== undefined ? rec.total : 0,
+        flightNo: rec.flightNo || '',
+        flightTime: rec.flightTime || '',
+        airport: rec.airport || '',
+        showFlight: !!(rec.flightNo || rec.flightTime || rec.airport)
+    }));
+
+    renderEntrySectorsTable();
+    updateItinerarySummary();
 
     const L_entry = (typeof T !== 'undefined' && T[lang]) ? T[lang] : {};
     const btnSave = document.getElementById('btn-save');
     if (btnSave) {
         const text = L_entry.updateEntry || 'اپڈیٹ محفوظ کریں';
-        const span = btnSave.querySelector('span');
+        const span = (typeof btnSave.querySelector === 'function') ? btnSave.querySelector('span') : null;
         if (span) span.textContent = text;
         else btnSave.textContent = text;
     }
@@ -389,38 +863,12 @@ function clearEntryForm() {
     const npEl = document.getElementById('e-new-party'); if (npEl) npEl.value = '';
     if (typeof fillHajiPartyDropdown === 'function') fillHajiPartyDropdown();
     const pEl = document.getElementById('e-party'); if (pEl) pEl.value = '';
-    const sEl = document.getElementById('e-sector'); if (sEl) sEl.value = '';
-    const trEl = document.getElementById('e-transport'); if (trEl) trEl.value = '';
     const cEl = document.getElementById('e-count'); if (cEl) cEl.value = '';
-    const fEl = document.getElementById('e-fare'); if (fEl) fEl.value = '';
-    const totEl = document.getElementById('e-total'); if (totEl) totEl.value = '';
-    const vehTotEl = document.getElementById('e-vehicle-total'); if (vehTotEl) vehTotEl.value = '';
 
     const nameEl = document.getElementById('e-name'); if (nameEl) nameEl.value = '';
-    const ftEl = document.getElementById('e-flight-time'); if (ftEl) ftEl.value = '';
-    const fnEl = document.getElementById('e-flight-no'); if (fnEl) fnEl.value = '';
-    const apEl = document.getElementById('e-airport'); if (apEl) apEl.value = '';
-    const tnEl = document.getElementById('e-transport-nature-sel'); if (tnEl) tnEl.value = '';
     const shEl = document.getElementById('e-shirka'); if (shEl) shEl.value = '';
     const grEl = document.getElementById('e-group'); if (grEl) grEl.value = '';
     const mbEl = document.getElementById('e-mobile'); if (mbEl) mbEl.value = '';
-
-    const flightDetailsDiv = document.getElementById('e-flight-details');
-    const flightDetailsCheckbox = document.getElementById('e-show-flight');
-    if (flightDetailsDiv && flightDetailsCheckbox) {
-        flightDetailsCheckbox.checked = false;
-        flightDetailsDiv.style.display = 'none';
-    }
-
-    const countWrap = document.getElementById('e-count-wrap'); if (countWrap) countWrap.style.display = '';
-    const fareWrap = document.getElementById('e-fare-wrap'); if (fareWrap) fareWrap.style.display = '';
-    const vehicleWrap = document.getElementById('e-vehicle-wrap'); if (vehicleWrap) vehicleWrap.style.display = 'none';
-    const hint = document.getElementById('e-transport-hint'); if (hint) hint.style.display = 'none';
-    const badge = document.getElementById('e-rate-badge');
-    if (badge) {
-        badge.style.display = 'none';
-        badge.innerHTML = '';
-    }
 
     const eDate = document.getElementById('e-date');
     if (eDate && typeof today === 'function') eDate.value = today();
@@ -429,24 +877,25 @@ function clearEntryForm() {
     const L_clear = (typeof T !== 'undefined' && T[lang]) ? T[lang] : {};
     if (btnSave) {
         const text = L_clear.saveEntry || (typeof lang !== 'undefined' && lang === 'en' ? 'Save Entry' : 'انٹری محفوظ کریں');
-        const span = btnSave.querySelector('span');
+        const span = (typeof btnSave.querySelector === 'function') ? btnSave.querySelector('span') : null;
         if (span) span.textContent = text;
         else btnSave.textContent = text;
     }
 
+    // Reset presets buttons state
+    document.querySelectorAll('.preset-pill-btn').forEach(btn => btn.classList.remove('active'));
+
     // Header badge → "نئی انٹری"
     updateEntryModeBadge(false);
 
-    // Reset Fare label
-    const lblFare = document.getElementById('lbl-fare');
-    if (lblFare) {
-        const L_clear = (typeof T !== 'undefined' && T[lang]) ? T[lang] : {};
-        lblFare.textContent = L_clear.fare || 'فی حاجی کرایہ (SAR)';
-    }
-
     setNextVoucher();
+
+    // Reset sectors list to single clean row
+    entrySectorsList = [createDefaultSectorRow()];
+    renderEntrySectorsTable();
+    updateItinerarySummary();
+
     if (typeof fillTransportNatureDropdown === 'function') fillTransportNatureDropdown();
-    if (typeof initEntryPage === 'function') initEntryPage();
 }
 
 function initEntryPage() {
@@ -460,9 +909,18 @@ function initEntryPage() {
     if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
     if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
     if (typeof fillHajiPartyDatalist === 'function') fillHajiPartyDatalist();
+
     const eDate = document.getElementById('e-date');
     if (eDate && !eDate.value && typeof today === 'function') eDate.value = today();
+
     if (typeof setNextVoucher === 'function') setNextVoucher();
+
+    if (!entrySectorsList || entrySectorsList.length === 0) {
+        entrySectorsList = [createDefaultSectorRow()];
+    }
+    renderEntrySectorsTable();
+    updateItinerarySummary();
+
     if (typeof todayStats === 'function') todayStats();
 }
 
@@ -482,7 +940,7 @@ function todayStats() {
     const tst = document.getElementById('ts-t'); if (tst) tst.textContent = tCount;
 }
 
-// Auto-run if DOM is ready and entry page elements exist
+// Auto-run if DOM is ready
 if (document.readyState !== 'loading') {
     if (document.getElementById('e-party')) initEntryPage();
 } else {
@@ -491,7 +949,7 @@ if (document.readyState !== 'loading') {
     });
 }
 
-// ── 5. WINDOW EXPOSURES ──
+// ── 6. WINDOW EXPOSURES ──
 window.toggleAppTheme = toggleAppTheme;
 window.initAppTheme = initAppTheme;
 window.updateEntryModeBadge = updateEntryModeBadge;
@@ -506,3 +964,18 @@ window.editRecord = editRecord;
 window.clearEntryForm = clearEntryForm;
 window.todayStats = todayStats;
 window.initEntryPage = initEntryPage;
+
+// Multi-sector exports
+window.entrySectorsList = entrySectorsList;
+window.applyItineraryPreset = applyItineraryPreset;
+window.addEntrySectorRow = addEntrySectorRow;
+window.removeEntrySectorRow = removeEntrySectorRow;
+window.toggleSectorFlightDetails = toggleSectorFlightDetails;
+window.updateSectorRowField = updateSectorRowField;
+window.onSectorRowSectorChange = onSectorRowSectorChange;
+window.onSectorRowTransportChange = onSectorRowTransportChange;
+window.onSectorRowFareChange = onSectorRowFareChange;
+window.recalcSectorRow = recalcSectorRow;
+window.recalcAllEntrySectors = recalcAllEntrySectors;
+window.renderEntrySectorsTable = renderEntrySectorsTable;
+window.updateItinerarySummary = updateItinerarySummary;

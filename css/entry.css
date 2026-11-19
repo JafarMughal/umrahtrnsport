@@ -1106,3 +1106,505 @@ body.lang-en .fg select,
     justify-content: center;
   }
 }
+
+/* ═══════════════════════════════════════════
+   MULTI-SECTOR ITINERARY & ROUTE SCHEDULE STYLES
+   Nordic Slate-Teal Palette · Responsive & Clean
+═══════════════════════════════════════════ */
+
+/* Section Dividers */
+.form-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--border-soft);
+}
+
+.section-title-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--deep-teal);
+  flex-shrink: 0;
+}
+
+.section-title-text {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+/* Itinerary Container Box */
+.itinerary-section-box {
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin: 16px 0 20px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.itinerary-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.itinerary-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.itinerary-badge-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.itinerary-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 2px;
+}
+
+.itinerary-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Presets Toolbar */
+.itinerary-presets-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preset-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  margin-inline-end: 4px;
+}
+
+.preset-pill-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.preset-pill-btn:hover {
+  background: var(--primary-soft);
+  border-color: var(--deep-teal);
+  color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+}
+
+.preset-pill-btn:active {
+  transform: translateY(0);
+}
+
+.preset-pill-btn.active {
+  background: var(--deep-teal);
+  color: #ffffff;
+  border-color: var(--deep-teal);
+}
+
+/* Itinerary Table */
+.itinerary-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-xs);
+}
+
+.itinerary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: start;
+}
+
+.itinerary-table th {
+  background: var(--surface-alt);
+  color: var(--text-soft);
+  font-weight: 700;
+  padding: 10px 8px;
+  border-bottom: 1.5px solid var(--border);
+  font-size: 12px;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.itinerary-table td {
+  padding: 7px 6px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
+}
+
+.itinerary-table tbody tr:hover td {
+  background: rgba(132, 169, 140, 0.05);
+}
+
+.itinerary-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Sector Row Controls */
+.sec-badge-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 11.5px;
+  font-family: var(--font-num);
+}
+
+.sec-input,
+.sec-select {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.sec-input:focus,
+.sec-select:focus {
+  outline: none;
+  border-color: var(--deep-teal);
+  box-shadow: var(--focus-ring);
+}
+
+.sec-num-input {
+  text-align: center;
+  font-weight: 600;
+  font-family: var(--font-num);
+}
+
+.sec-readonly {
+  background: var(--surface-alt);
+  color: var(--text-soft);
+  cursor: not-allowed;
+  border-color: var(--border-soft);
+  font-weight: 700;
+}
+
+.sec-rate-note {
+  font-size: 10px;
+  color: var(--deep-teal);
+  margin-top: 2px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-sec-flight-toggle {
+  background: var(--surface-alt);
+  border: 1px dashed var(--border-strong);
+  color: var(--text-soft);
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-sec-flight-toggle:hover {
+  background: var(--primary-soft);
+  border-color: var(--deep-teal);
+  color: var(--primary);
+}
+
+.btn-sec-flight-toggle.has-flight {
+  background: rgba(82, 121, 111, 0.14);
+  border: 1px solid var(--deep-teal);
+  color: var(--deep-teal);
+}
+
+.btn-sec-del {
+  background: transparent;
+  border: none;
+  color: var(--er-fg);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-xs);
+  line-height: 1;
+  transition: background 0.15s ease, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-sec-del:hover {
+  background: var(--er-bg);
+  transform: scale(1.1);
+}
+
+/* Flight Details Subrow */
+.itinerary-flight-subrow {
+  background: rgba(132, 169, 140, 0.08) !important;
+}
+
+.itinerary-flight-subrow td {
+  padding: 6px 10px 10px !important;
+}
+
+.sec-flight-inline-card {
+  background: var(--surface);
+  border: 1px dashed var(--deep-teal);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.sfg {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 120px;
+  flex: 1;
+}
+
+.sfg label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.sfg input {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 11.5px;
+  background: var(--surface);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.sfg input:focus {
+  outline: none;
+  border-color: var(--deep-teal);
+}
+
+/* Itinerary Footer & Grand Total */
+.itinerary-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-add-sector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px dashed var(--deep-teal);
+  color: var(--deep-teal);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-sector:hover {
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+  border-style: solid;
+  transform: translateY(-1px);
+}
+
+.itinerary-grand-total-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  box-shadow: var(--shadow-xs);
+}
+
+.grand-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grand-stat-lbl {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.grand-stat-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-num);
+}
+
+.grand-stat-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+}
+
+.grand-highlight .grand-stat-lbl {
+  color: var(--deep-teal);
+  font-weight: 700;
+}
+
+.grand-total-num {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--dark-slate-grey);
+  font-family: var(--font-num);
+}
+
+.grand-total-num small {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-inline-start: 3px;
+}
+
+/* Dark Mode Overrides for Itinerary */
+[data-theme="dark"] .itinerary-section-box {
+  background: var(--surface-alt);
+  border-color: var(--border-strong);
+}
+
+[data-theme="dark"] .itinerary-table th {
+  background: #243239;
+  color: var(--text-soft);
+  border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .itinerary-table td {
+  border-bottom-color: var(--border-soft);
+}
+
+[data-theme="dark"] .itinerary-table-wrap {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .itinerary-table tbody tr:hover td {
+  background: rgba(132, 169, 140, 0.12);
+}
+
+[data-theme="dark"] .grand-total-num {
+  color: #84a98c;
+}
+
+[data-theme="dark"] .preset-pill-btn {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme="dark"] .preset-pill-btn:hover {
+  background: #354f52;
+  color: #ffffff;
+  border-color: var(--muted-teal);
+}
+
+[data-theme="dark"] .preset-pill-btn.active {
+  background: var(--muted-teal);
+  color: #1c262b;
+}
+
+[data-theme="dark"] .btn-add-sector {
+  background: var(--surface);
+  border-color: var(--muted-teal);
+  color: var(--muted-teal);
+}
+
+[data-theme="dark"] .btn-add-sector:hover {
+  background: #354f52;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .itinerary-flight-subrow {
+  background: rgba(53, 79, 82, 0.25) !important;
+}
+
+[data-theme="dark"] .sec-flight-inline-card {
+  background: var(--surface-alt);
+  border-color: var(--muted-teal);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .itinerary-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .itinerary-presets-bar {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .itinerary-footer-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .itinerary-grand-total-box {
+    justify-content: space-between;
+  }
+}
