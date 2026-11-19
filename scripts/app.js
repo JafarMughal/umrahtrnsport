@@ -459,8 +459,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             try {
-                // Timeout helper to prevent infinite network hangs
-                const withTimeout = (prom, ms = 4000) => {
+                // Timeout helper to prevent infinite network hangs (12s allows normal cloud latency)
+                const withTimeout = (prom, ms = 12000) => {
                     let t;
                     return Promise.race([
                         prom,
@@ -471,15 +471,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Always push local pending edits BEFORE reading remote data so nothing local is overwritten
                 if (typeof flushPendingFbWrites === 'function') {
                     try {
-                        await withTimeout(flushPendingFbWrites(), 2500);
+                        await withTimeout(flushPendingFbWrites(), 6000);
                     } catch (e) {
-                        console.warn('flushPendingFbWrites timeout or error:', e);
+                        console.warn('flushPendingFbWrites note:', e && e.message);
                     }
                 }
 
                 const { data: rows, error } = await withTimeout(
                     sbClient.from('app_data').select('node_name, data, updated_at'),
-                    4000
+                    12000
                 );
 
                 if (error) {
@@ -512,9 +512,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (missingRows.length > 0) {
                     console.log('Syncing missing local nodes to Supabase:', missingRows.map(r => r.node_name));
                     try {
-                        await withTimeout(sbClient.from('app_data').upsert(missingRows, { onConflict: 'node_name' }), 3000);
+                        await withTimeout(sbClient.from('app_data').upsert(missingRows, { onConflict: 'node_name' }), 5000);
                     } catch (e) {
-                        console.warn('Upsert missing rows timeout or error:', e);
+                        console.warn('Upsert missing rows note:', e && e.message);
                     }
                 }
 
@@ -533,11 +533,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try { localStorage.setItem('uts_fb_has_cache', '1'); } catch (e) { }
                 if (typeof setFbLastCheckAt === 'function') setFbLastCheckAt(Date.now());
                 if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = '';
+                console.log("Supabase sync successful: " + (rows ? rows.length : 0) + " nodes loaded.");
                 _applyDefaultsAndCleanup(true);
                 await _finishDataBoot(changed);
 
             } catch (error) {
-                console.warn("Supabase Read Note / Timeout (using local data):", error && error.message);
+                console.info("Supabase sync note: " + ((error && error.message) || 'Cloud pending') + " — Using local data.");
                 if (typeof _fbQuotaStats !== 'undefined') _fbQuotaStats.lastError = (error && error.message) || 'Read error';
                 if (!hasCache) {
                     showFirebaseStatusNotice(error);
