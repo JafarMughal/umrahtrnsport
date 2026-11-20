@@ -23,17 +23,20 @@ async function loadComponentPages() {
         const el = document.getElementById(p.id);
         if (!el) return;
         try {
-            const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-            const timeoutId = controller ? setTimeout(() => controller.abort(), 3000) : null;
-            const res = await fetch(p.file, { cache: 'no-store', signal: controller ? controller.signal : undefined });
-            if (timeoutId) clearTimeout(timeoutId);
-            if (res.ok) {
+            let res = null;
+            try {
+                res = await fetch(p.file, { cache: 'no-store' });
+            } catch (e1) {
+                // Quick retry once in case of temporary socket contention or delay
+                res = await fetch(p.file, { cache: 'no-store' });
+            }
+            if (res && res.ok) {
                 let html = await res.text();
                 html = html.replace(/<!-- Code injected by live-server -->[\s\S]*?<\/script>/gi, '');
                 html = html.replace(/<\/body>\s*$/i, '');
                 el.innerHTML = html;
             } else {
-                console.error(`Failed to load ${p.file}: HTTP ${res.status}`);
+                console.error(`Failed to load ${p.file}: HTTP ${res ? res.status : 'ERR'}`);
                 if (!el.innerHTML.trim()) {
                     el.innerHTML = '<div style="padding:20px;color:red;direction:rtl;">صفحہ لوڈ نہیں ہو سکا: ' + p.file + '</div>';
                 }
