@@ -32,10 +32,19 @@ function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, merg
     switch (node) {
         case 'records': {
             const incoming = _toFbArray(rawVal);
-            if (mergeRecords && Array.isArray(records) && records.length && typeof isFbNodeDirty === 'function' && isFbNodeDirty('records')) {
-                const fbIds = new Set(incoming.map(r => r && r.id));
-                const localOnly = records.filter(r => r && !fbIds.has(r.id));
-                records = localOnly.length ? [...incoming, ...localOnly] : incoming;
+            const isDirty = (typeof isFbNodeDirty === 'function' && isFbNodeDirty('records'));
+            if (Array.isArray(records) && records.length && (mergeRecords || isDirty)) {
+                const fbIds = new Set(incoming.map(r => r && r.id).filter(Boolean));
+                const localOnly = records.filter(r => r && r.id && !fbIds.has(r.id));
+                if (localOnly.length > 0) {
+                    records = [...incoming, ...localOnly];
+                    if (typeof _dirtyFbNodes !== 'undefined') _dirtyFbNodes['records'] = true;
+                    if (typeof _pendingFbWrites !== 'undefined') _pendingFbWrites['records'] = JSON.stringify(records);
+                    if (typeof _persistDirtyMap === 'function') _persistDirtyMap();
+                    if (typeof _scheduleFbFlush === 'function') _scheduleFbFlush();
+                } else {
+                    records = incoming;
+                }
             } else {
                 records = incoming;
             }
@@ -46,10 +55,19 @@ function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, merg
             deletedRecords = _toFbArray(rawVal);
             normalizedVal = deletedRecords;
             break;
-        case 'payments':
-            payments = _toFbArray(rawVal);
+        case 'payments': {
+            const incoming = _toFbArray(rawVal);
+            const isDirty = (typeof isFbNodeDirty === 'function' && isFbNodeDirty('payments'));
+            if (Array.isArray(payments) && payments.length && isDirty) {
+                const fbIds = new Set(incoming.map(p => p && p.id).filter(Boolean));
+                const localOnly = payments.filter(p => p && p.id && !fbIds.has(p.id));
+                payments = localOnly.length ? [...incoming, ...localOnly] : incoming;
+            } else {
+                payments = incoming;
+            }
             normalizedVal = payments;
             break;
+        }
         case 'parties':
             parties = _toFbArray(rawVal);
             normalizedVal = parties;
@@ -86,17 +104,31 @@ function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, merg
             normalizedVal = users;
             break;
         }
-        case 'dailyNotes':
-            dailyNotes = _toFbArray(rawVal);
+        case 'dailyNotes': {
+            const incoming = _toFbArray(rawVal);
+            const isDirty = (typeof isFbNodeDirty === 'function' && isFbNodeDirty('dailyNotes'));
+            if (Array.isArray(dailyNotes) && dailyNotes.length && isDirty) {
+                const fbIds = new Set(incoming.map(n => n && (n.id || n.ref)).filter(Boolean));
+                const localOnly = dailyNotes.filter(n => n && (n.id || n.ref) && !fbIds.has(n.id || n.ref));
+                dailyNotes = localOnly.length ? [...incoming, ...localOnly] : incoming;
+            } else {
+                dailyNotes = incoming;
+            }
             normalizedVal = dailyNotes;
             break;
+        }
         case 'hajiParties':
             hajiParties = _toFbArray(rawVal);
             normalizedVal = hajiParties;
             break;
         case 'umrahBookings': {
-            const nextUB = _toFbArray(rawVal);
-            if (!nextUB.length && (rawVal === undefined || rawVal === null)) {
+            const incoming = _toFbArray(rawVal);
+            const isDirty = (typeof isFbNodeDirty === 'function' && isFbNodeDirty('umrahBookings'));
+            if (Array.isArray(umrahBookings) && umrahBookings.length && isDirty) {
+                const fbIds = new Set(incoming.map(b => b && b.id).filter(Boolean));
+                const localOnly = umrahBookings.filter(b => b && b.id && !fbIds.has(b.id));
+                umrahBookings = localOnly.length ? [...incoming, ...localOnly] : incoming;
+            } else if (!incoming.length && (rawVal === undefined || rawVal === null)) {
                 try {
                     const localUB = JSON.parse(localStorage.getItem('uts_umrahBookings') || '[]');
                     if (Array.isArray(localUB) && localUB.length > 0 && !localStorage.getItem('uts_fb_has_cache')) {
@@ -106,14 +138,21 @@ function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, merg
                         return;
                     }
                 } catch (e) { }
+                umrahBookings = incoming;
+            } else {
+                umrahBookings = incoming;
             }
-            umrahBookings = nextUB;
             normalizedVal = umrahBookings;
             break;
         }
         case 'umrahVouchers': {
-            const nextUV = _toFbArray(rawVal);
-            if (!nextUV.length && (rawVal === undefined || rawVal === null)) {
+            const incoming = _toFbArray(rawVal);
+            const isDirty = (typeof isFbNodeDirty === 'function' && isFbNodeDirty('umrahVouchers'));
+            if (Array.isArray(umrahVouchers) && umrahVouchers.length && isDirty) {
+                const fbIds = new Set(incoming.map(v => v && v.id).filter(Boolean));
+                const localOnly = umrahVouchers.filter(v => v && v.id && !fbIds.has(v.id));
+                umrahVouchers = localOnly.length ? [...incoming, ...localOnly] : incoming;
+            } else if (!incoming.length && (rawVal === undefined || rawVal === null)) {
                 try {
                     const localUV = JSON.parse(localStorage.getItem('uts_umrahVouchers') || '[]');
                     if (Array.isArray(localUV) && localUV.length > 0 && !localStorage.getItem('uts_fb_has_cache')) {
@@ -123,8 +162,10 @@ function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, merg
                         return;
                     }
                 } catch (e) { }
+                umrahVouchers = incoming;
+            } else {
+                umrahVouchers = incoming;
             }
-            umrahVouchers = nextUV;
             normalizedVal = umrahVouchers;
             break;
         }
@@ -149,7 +190,10 @@ function _applySingleFbNode(node, rawVal, { isRemote = false, serverTs = 0, merg
     }
 
     if (isRemote && typeof markFbNodeSynced === 'function') {
-        markFbNodeSynced(node, normalizedVal, serverTs);
+        const stillDirty = typeof isFbNodeDirty === 'function' && isFbNodeDirty(node);
+        if (!stillDirty) {
+            markFbNodeSynced(node, normalizedVal, serverTs);
+        }
     }
 }
 
@@ -275,7 +319,10 @@ function _refreshUiAfterNodes(changedNodes = null) {
             }
         }
         if (activePage.id === 'page-payment' && typeof renderPayments === 'function') renderPayments();
-        if (activePage.id === 'page-ledger' && typeof renderLedger === 'function') renderLedger();
+        if (activePage.id === 'page-ledger') {
+            if (typeof switchToTab === 'function') switchToTab('ledger');
+            else if (typeof renderLedger === 'function') renderLedger();
+        }
         if (activePage.id === 'page-records') {
             if (typeof initRecordsPage === 'function') initRecordsPage();
             else if (typeof filterRecords === 'function') filterRecords();
@@ -525,7 +572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     _applySingleFbNode(r.node_name, r.data, {
                         isRemote: true,
                         serverTs: rTs,
-                        mergeRecords: false
+                        mergeRecords: true
                     });
                     changed.add(r.node_name);
                 });

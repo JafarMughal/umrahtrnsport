@@ -315,7 +315,7 @@ function addEntrySectorRow() {
 
     if (entrySectorsList.length > 0) {
         const lastRow = entrySectorsList[entrySectorsList.length - 1];
-        nextDate = lastRow.date ? addDaysToDate(lastRow.date, 3) : voucherDate;
+        nextDate = lastRow.date || voucherDate;
         nextTransport = lastRow.transport || '';
     }
 
@@ -689,6 +689,27 @@ function addEntry() {
         return;
     }
 
+    // Freshly sync entrySectorsList from active DOM table rows to ensure 100% data fidelity
+    if (Array.isArray(entrySectorsList)) {
+        entrySectorsList.forEach(sec => {
+            const rowEl = document.getElementById(`sec-row-${sec.id}`);
+            if (rowEl) {
+                const dateInp = rowEl.querySelector('input[type="date"]');
+                if (dateInp && dateInp.value) sec.date = dateInp.value;
+                const secSel = document.getElementById(`sec-sector-${sec.id}`);
+                if (secSel && secSel.value) sec.sector = secSel.value;
+                const trSel = document.getElementById(`sec-transport-${sec.id}`);
+                if (trSel && trSel.value) sec.transport = trSel.value;
+                const natSel = document.getElementById(`sec-nature-${sec.id}`);
+                if (natSel && natSel.value) sec.transportNature = natSel.value;
+                const fareInp = document.getElementById(`sec-fare-${sec.id}`);
+                if (fareInp && fareInp.value !== '') sec.fare = fareInp.value;
+                const totInp = document.getElementById(`sec-tot-${sec.id}`);
+                if (totInp && totInp.value !== '') sec.total = parseFloat(totInp.value) || 0;
+            }
+        });
+    }
+
     // Validate that every sector row has a sector and date
     for (let i = 0; i < entrySectorsList.length; i++) {
         const sec = entrySectorsList[i];
@@ -705,10 +726,11 @@ function addEntry() {
         // Editing: Check if this record had a voucher with other legs
         const existingRec = (typeof records !== 'undefined' && Array.isArray(records)) ? records.find(r => r.id === editId) : null;
         const oldVoucher = (existingRec && existingRec.voucher) ? existingRec.voucher : '';
+        const oldNorm = (oldVoucher || '').trim().toLowerCase();
 
-        if (oldVoucher && oldVoucher !== '—') {
+        if (oldNorm && oldNorm !== '—') {
             // Remove existing records sharing this old voucher to update the complete itinerary
-            records = records.filter(r => r.voucher !== oldVoucher);
+            records = records.filter(r => (r.voucher || '').trim().toLowerCase() !== oldNorm);
         } else {
             records = records.filter(r => r.id !== editId);
         }
@@ -781,6 +803,9 @@ function addEntry() {
     }
 
     if (typeof svR === 'function') svR();
+    if (typeof flushPendingFbWrites === 'function') {
+        flushPendingFbWrites();
+    }
     if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
     if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
     if (typeof fillHajiPartyDatalist === 'function') fillHajiPartyDatalist();
@@ -813,9 +838,13 @@ function editRecord(id) {
     const mbEl = document.getElementById('e-mobile'); if (mbEl) mbEl.value = r.mobile || '';
 
     // Check if this voucher has multiple legs
-    const matchingRecs = (r.voucher && r.voucher !== '—')
-        ? records.filter(x => x.voucher === r.voucher)
+    const voucherNorm = (r.voucher && r.voucher !== '—') ? r.voucher.trim().toLowerCase() : '';
+    const matchingRecs = voucherNorm
+        ? records.filter(x => x && (x.voucher || '').trim().toLowerCase() === voucherNorm)
         : [r];
+
+    // Sort chronologically by date
+    matchingRecs.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
     entrySectorsList = matchingRecs.map(rec => ({
         id: rec.id || ('sec_' + Math.random().toString(36).slice(2, 9)),
@@ -854,7 +883,43 @@ function editRecord(id) {
     const firstNav = document.querySelectorAll('#main-nav button')[0];
     if (firstNav) firstNav.classList.add('active');
 
+    const banner = document.getElementById('e-voucher-lookup-banner');
+    if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function lookupVoucherInEntry(vNo) {
+    const banner = document.getElementById('e-voucher-lookup-banner');
+    if (!banner) return;
+    const cleanV = (vNo || '').trim();
+    if (!cleanV || cleanV === '—' || !Array.isArray(records)) {
+        banner.style.display = 'none';
+        banner.innerHTML = '';
+        return;
+    }
+    const norm = cleanV.toLowerCase();
+    const matches = records.filter(x => x && (x.voucher || '').trim().toLowerCase() === norm);
+    if (matches.length > 0) {
+        banner.style.display = 'block';
+        banner.innerHTML = `
+            <div style="background:rgba(20,125,100,0.1);border:1px solid var(--accent,#147d64);color:var(--accent,#147d64);padding:8px 12px;border-radius:8px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px;">
+                <span>ℹ️ واؤچر <strong>${cleanV}</strong> کے <strong>${matches.length}</strong> سیکٹرز محفوظ شدہ ہیں۔</span>
+                <button type="button" class="btn btn-sm btn-p" onclick="loadVoucherToEntry('${matches[0].id}')" style="padding:3px 10px;font-size:11.5px;white-space:nowrap;">تمام سیکٹرز فارم میں لوڈ کریں</button>
+            </div>
+        `;
+    } else {
+        banner.style.display = 'none';
+        banner.innerHTML = '';
+    }
+}
+
+function loadVoucherToEntry(recId) {
+    if (typeof editRecord === 'function') {
+        editRecord(recId);
+    }
+    const banner = document.getElementById('e-voucher-lookup-banner');
+    if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
 }
 
 function clearEntryForm() {
@@ -872,6 +937,9 @@ function clearEntryForm() {
 
     const eDate = document.getElementById('e-date');
     if (eDate && typeof today === 'function') eDate.value = today();
+
+    const banner = document.getElementById('e-voucher-lookup-banner');
+    if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
 
     const btnSave = document.getElementById('btn-save');
     const L_clear = (typeof T !== 'undefined' && T[lang]) ? T[lang] : {};
@@ -961,6 +1029,10 @@ window.calcE = calcE;
 window.setNextVoucher = setNextVoucher;
 window.addEntry = addEntry;
 window.editRecord = editRecord;
+window.editRecordInEntry = editRecord;
+window.editFullVoucher = editRecord;
+window.lookupVoucherInEntry = lookupVoucherInEntry;
+window.loadVoucherToEntry = loadVoucherToEntry;
 window.clearEntryForm = clearEntryForm;
 window.todayStats = todayStats;
 window.initEntryPage = initEntryPage;

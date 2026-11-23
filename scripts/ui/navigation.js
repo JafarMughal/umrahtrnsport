@@ -188,13 +188,36 @@ function _executeShowPageLogic(p) {
         renderPayHead(); 
     }
     if (p === 'ledger') {
-        const allLedgerParties = Array.from(new Set([
-            ...(Array.isArray(parties) ? parties : []),
-            ...(Array.isArray(records) ? records.map(r => r.party) : []),
-            ...(Array.isArray(payments) ? payments.map(p => p.party) : [])
-        ].map(p => (p || '').trim()).filter(Boolean)));
-        fillDrop('l-party', allLedgerParties.length ? allLedgerParties : parties, true);
-        renderLedger();
+        // Ledger HTML may still be injecting (async loadComponentPages), so retry until DOM ready
+        function _doRenderLedger(retries) {
+            const outEl = document.getElementById('ledger-output');
+            const partyEl = document.getElementById('l-party');
+            if (outEl && partyEl) {
+                const allLedgerParties = Array.from(new Set([
+                    ...(Array.isArray(parties) ? parties : []),
+                    ...(Array.isArray(records) ? records.map(r => r.party) : []),
+                    ...(Array.isArray(payments) ? payments.map(pay => pay.party) : [])
+                ].map(pt => (pt || '').trim()).filter(Boolean)));
+                fillDrop('l-party', allLedgerParties.length ? allLedgerParties : parties, true);
+                if (typeof renderLedger === 'function') renderLedger();
+            } else if (retries > 0) {
+                setTimeout(() => _doRenderLedger(retries - 1), 300);
+            } else {
+                // Last resort: force-inject ledger HTML then render
+                const pageEl = document.getElementById('page-ledger');
+                if (pageEl && !pageEl.innerHTML.trim()) {
+                    fetch('pages/ledger.html', { cache: 'no-store' })
+                        .then(r => r.text())
+                        .then(html => {
+                            pageEl.innerHTML = html;
+                            if (typeof refreshAllDrops === 'function') refreshAllDrops();
+                            _doRenderLedger(3);
+                        })
+                        .catch(() => {});
+                }
+            }
+        }
+        _doRenderLedger(10);
     }
     if (p === 'records') { 
         fillDrop('f-party', parties, true); 

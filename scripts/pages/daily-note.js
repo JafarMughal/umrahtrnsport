@@ -180,9 +180,26 @@ function renderDailyNoteReport() {
         printDate.textContent = `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     }
 
-    // Filter only records that have flight/transport nature data
+    // Helper to infer transport nature if missing
+    const inferNature = (sec, cur) => {
+        if (cur) return cur;
+        const s = String(sec || '').toLowerCase();
+        if (s.includes('jed') && (s.includes('mak') || s.includes('arr') || s.includes('آمد'))) return 'Jed Arrival';
+        if (s.includes('med') && (s.includes('arr') || s.includes('آمد'))) return 'MED Arrival';
+        if (s.includes('mak') && s.includes('med')) return 'Makkah to Madina';
+        if (s.includes('med') && s.includes('mak')) return 'Madina TO Makha';
+        if (s.includes('jed') && (s.includes('dep') || s.includes('روانگی'))) return 'Jeddah Depture';
+        if (s.includes('med') && (s.includes('dep') || s.includes('روانگی'))) return 'Madina Depture';
+        return 'Other Operations';
+    };
+
+    // Filter and map all active operational records
     let recs = [...(records || [])]
-        .filter(r => r.transportNature || r.flightNo || r.flightTime || r.airport || r.shirka)
+        .map(r => ({
+            ...r,
+            transportNature: r.transportNature || inferNature(r.sector, r.transportNature)
+        }))
+        .filter(r => r.sector || r.transportNature || r.flightNo || r.flightTime || r.airport || r.shirka)
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
     if (from) recs = recs.filter(r => r.date >= from);

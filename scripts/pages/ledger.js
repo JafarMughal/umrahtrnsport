@@ -1,9 +1,9 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  LEDGER — REDESIGNED & RESILIENT (ٹیلی شدہ اور مکمل فنکشنل ورژن)
+//  LEDGER — COMPLETE & RESILIENT PARTY ACCOUNTING STATEMENT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-let ledgerCurrentPage = 1;
-let ledgerPageSize = 25;
+var ledgerCurrentPage = 1;
+var ledgerPageSize = 'all'; // Default to 'all' so date filtered reports show 100% of records
 
 function filterLedger() {
     ledgerCurrentPage = 1;
@@ -16,9 +16,13 @@ function setLedgerPage(page) {
 }
 
 function setLedgerPageSize(size) {
-    const parsedSize = Number(size);
-    if (parsedSize !== 25 && parsedSize !== 50) return;
-    ledgerPageSize = parsedSize;
+    if (size === 'all') {
+        ledgerPageSize = 'all';
+    } else {
+        const parsedSize = Number(size);
+        if (isNaN(parsedSize) || parsedSize <= 0) return;
+        ledgerPageSize = parsedSize;
+    }
     ledgerCurrentPage = 1;
     renderLedger();
 }
@@ -46,19 +50,23 @@ function renderLedger() {
     };
 
     const selParty = (document.getElementById('l-party')?.value || '').trim();
-    const from = document.getElementById('l-from')?.value || '';
-    const to = document.getElementById('l-to')?.value || '';
+    const from = (document.getElementById('l-from')?.value || '').trim();
+    const to = (document.getElementById('l-to')?.value || '').trim();
     const out = document.getElementById('ledger-output');
-    if (!out) return;
+    if (!out) {
+        // DOM not ready yet — retry after page template loads
+        setTimeout(() => { if (typeof renderLedger === 'function') renderLedger(); }, 500);
+        return;
+    }
 
     // ── Safe Data Arrays ──
     const allRecords = Array.isArray(records) ? records : [];
     const allPayments = Array.isArray(payments) ? payments : [];
 
-    // ── Determine Parties List (سابقہ اور موجودہ تمام پارٹیاں) ──
+    // ── Determine Parties List ──
     const stateParties = Array.isArray(parties) ? parties : [];
-    const recordParties = allRecords.map(r => r.party);
-    const paymentParties = allPayments.map(p => p.party);
+    const recordParties = allRecords.map(r => r && r.party).filter(Boolean);
+    const paymentParties = allPayments.map(p => p && p.party).filter(Boolean);
 
     const partySet = new Set();
     [...stateParties, ...recordParties, ...paymentParties].forEach(p => {
@@ -82,14 +90,14 @@ function renderLedger() {
         let sumRecs = [...allRecords];
         let sumPays = perms.showPayments ? [...allPayments] : [];
 
-        // صرف تب تاریخ سے فلٹر کریں جب صارف نے تاریخ دی ہو (سابقہ فائل کے عین مطابق)
+        // فلٹر برائے تاریخ
         if (from) {
-            sumRecs = sumRecs.filter(r => r.date && r.date >= from);
-            sumPays = sumPays.filter(p => p.date && p.date >= from);
+            sumRecs = sumRecs.filter(r => r.date && String(r.date).trim() >= from);
+            sumPays = sumPays.filter(p => p.date && String(p.date).trim() >= from);
         }
         if (to) {
-            sumRecs = sumRecs.filter(r => r.date && r.date <= to);
-            sumPays = sumPays.filter(p => p.date && p.date <= to);
+            sumRecs = sumRecs.filter(r => r.date && String(r.date).trim() <= to);
+            sumPays = sumPays.filter(p => p.date && String(p.date).trim() <= to);
         }
 
         let tDr = 0, tCr = 0;
@@ -109,7 +117,7 @@ function renderLedger() {
             const balColor = ovBal > 0 ? '#10b981' : ovBal < 0 ? '#ef4444' : 'inherit';
 
             return `
-            <tr style="border-bottom: 1px solid #e5e7eb;">
+            <tr style="border-bottom: 1px solid var(--border-soft, #e5e7eb);">
                 <td style="padding:8px 10px;font-family:monospace;font-weight:600;">${code}</td>
                 <td style="padding:8px 10px;font-weight:bold;">${party}</td>
                 <td style="padding:8px 10px;text-align:right;color:#dc2626;">${typeof sar === 'function' ? sar(ovDebit) : ovDebit}</td>
@@ -127,24 +135,24 @@ function renderLedger() {
             summaryHtml = `
             <div style="font-family: inherit; color: inherit; background: var(--surface, #fff); padding: 14px; border: 1px solid var(--border, #ccc); border-radius: 8px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
                 <div style="background-color: rgba(45, 106, 79, 0.1); border: 1px solid var(--gold, #c9a84c); text-align: center; padding: 8px; font-weight: bold; font-size: 16px; margin-bottom: 15px; border-radius: 6px; color: var(--gold, #c9a84c);">
-                    ${L.ledgerTitle || 'Ledger Summary'}
+                    ${L.ledgerTitle || 'خلاصہ لیجر (Ledger Summary)'}
                 </div>
                 <table style="width: 100%; border: none; font-size: 12.5px; margin-bottom: 14px;">
                     <tr>
-                        <td style="font-weight: bold; width: 100px;">${L.fromDate || 'Period'}:</td>
+                        <td style="font-weight: bold; width: 100px;">${L.fromDate || 'مدت (Period)'}:</td>
                         <td>${from ? (typeof fd === 'function' ? fd(from) : from) : '...'} &nbsp;${typeof L_arrow === 'function' ? L_arrow() : '➜'}&nbsp; ${to ? (typeof fd === 'function' ? fd(to) : to) : '...'}</td>
-                        <td style="font-weight: bold; text-align: right; width: 100px;">${L.dateCol || 'Print Date'}:</td>
+                        <td style="font-weight: bold; text-align: right; width: 100px;">${L.dateCol || 'پرنٹ تاریخ'}:</td>
                         <td style="text-align: right; width: 120px;">${printDateStr}</td>
                     </tr>
                 </table>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
                     <thead>
                         <tr style="border-top: 1px solid var(--border, #000); border-bottom: 1px solid var(--border, #000); background: rgba(0,0,0,0.03);">
-                            <th style="text-align: left; padding: 8px 10px;">${L.codeCol || 'Code'}</th>
-                            <th style="text-align: left; padding: 8px 10px;">${L.partyCol || 'Party'}</th>
-                            <th style="text-align: right; padding: 8px 10px;">${L.debitCol || 'Debit'}</th>
-                            <th style="text-align: right; padding: 8px 10px;">${L.creditCol || 'Credit'}</th>
-                            <th style="text-align: right; padding: 8px 10px;">${L.balance || 'Balance'}</th>
+                            <th style="text-align: left; padding: 8px 10px;">${L.codeCol || 'کوڈ'}</th>
+                            <th style="text-align: left; padding: 8px 10px;">${L.partyCol || 'پارٹی'}</th>
+                            <th style="text-align: right; padding: 8px 10px;">${L.debitCol || 'ڈیبٹ (SAR)'}</th>
+                            <th style="text-align: right; padding: 8px 10px;">${L.creditCol || 'کریڈٹ (SAR)'}</th>
+                            <th style="text-align: right; padding: 8px 10px;">${L.balance || 'بیلنس (SAR)'}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -165,38 +173,55 @@ function renderLedger() {
     const ledgerGroups = pList.map(party => {
         const matchParty = (pName) => (pName || '').trim().toLowerCase() === party.trim().toLowerCase();
 
-        let recs = [...allRecords].filter(r => matchParty(r.party));
-        let pays = perms.showPayments ? [...allPayments].filter(p => matchParty(p.party)) : [];
+        const partyAllRecs = allRecords.filter(r => matchParty(r.party));
+        const partyAllPays = perms.showPayments ? allPayments.filter(p => matchParty(p.party)) : [];
 
         // All-Time Totals
-        const overallDebit = allRecords.filter(r => matchParty(r.party)).reduce((s, r) => s + (Number(r.total) || 0), 0);
-        const overallCredit = pays.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+        const overallDebit = partyAllRecs.reduce((s, r) => s + (Number(r.total) || 0), 0);
+        const overallCredit = partyAllPays.reduce((s, p) => s + (Number(p.amount) || 0), 0);
         const overallBal = overallCredit - overallDebit;
 
-        // Date Range Filters (صرف تب جب صارف نے منتخب کی ہوں)
+        // Opening Balance before 'from' date
+        let openingDebit = 0;
+        let openingCredit = 0;
+        let openingBal = 0;
         if (from) {
-            recs = recs.filter(r => r.date && r.date >= from);
-            pays = pays.filter(p => p.date && p.date >= from);
+            openingDebit = partyAllRecs.filter(r => r.date && String(r.date).trim() < from).reduce((s, r) => s + (Number(r.total) || 0), 0);
+            openingCredit = partyAllPays.filter(p => p.date && String(p.date).trim() < from).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+            openingBal = openingCredit - openingDebit;
+        }
+
+        // Filter within selected date range
+        let recs = [...partyAllRecs];
+        let pays = [...partyAllPays];
+
+        if (from) {
+            recs = recs.filter(r => r.date && String(r.date).trim() >= from);
+            pays = pays.filter(p => p.date && String(p.date).trim() >= from);
         }
         if (to) {
-            recs = recs.filter(r => r.date && r.date <= to);
-            pays = pays.filter(p => p.date && p.date <= to);
+            recs = recs.filter(r => r.date && String(r.date).trim() <= to);
+            pays = pays.filter(p => p.date && String(p.date).trim() <= to);
         }
 
         const totalDebit = recs.reduce((s, r) => s + (Number(r.total) || 0), 0);
         const totalCredit = pays.reduce((s, p) => s + (Number(p.amount) || 0), 0);
         const totalHujjaj = recs.reduce((s, r) => s + (parseInt(r.count, 10) || 0), 0);
-        const balance = totalCredit - totalDebit;
+        const periodBalance = totalCredit - totalDebit;
+
+        // Closing Balance as of 'to' date
+        const closingBal = from ? (openingBal + periodBalance) : overallBal;
 
         // Build Unified Transactions
-        const txns = [
+        const rawTxns = [
             ...recs.map(r => ({
                 date: r.date,
                 type: 'Debit',
                 voucher: r.voucher || '—',
                 desc: `${r.sector || '—'} (${r.count || 0} ${L.hujPerSector || 'حاجی ×'} ${typeof sar === 'function' ? sar(r.fare || 0) : (r.fare || 0)}) ${r.notes || ''}`.trim(),
                 amount: Number(r.total) || 0,
-                count: Number(r.count) || 0
+                count: Number(r.count) || 0,
+                isOpening: false
             })),
             ...pays.map(p => {
                 let mLabel = p.method || 'ادائیگی';
@@ -209,55 +234,104 @@ function renderLedger() {
                     voucher: '—',
                     desc: `${mLabel} ${p.notes || ''}`.trim(),
                     amount: Number(p.amount) || 0,
-                    count: 0
+                    count: 0,
+                    isOpening: false
                 };
             })
-        ].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        ].sort((a, b) => (String(a.date || '')).localeCompare(String(b.date || '')));
 
-        let running = 0;
-        const transactions = txns.map(tx => {
+        // Calculate running balance starting from opening balance
+        let running = openingBal;
+        const transactions = [];
+
+        // Insert Opening Balance row if 'from' date is set and there was any previous activity
+        if (from && (openingDebit !== 0 || openingCredit !== 0)) {
+            transactions.push({
+                date: from,
+                type: openingBal >= 0 ? 'Credit' : 'Debit',
+                voucher: '—',
+                desc: `${L.balanceBF || 'سابقہ بیلنس (Balance B/F)'}`,
+                amount: Math.abs(openingBal),
+                count: 0,
+                runningBalance: openingBal,
+                isOpening: true
+            });
+        }
+
+        rawTxns.forEach(tx => {
             if (tx.type === 'Debit') running -= tx.amount;
             else running += tx.amount;
-            return { ...tx, runningBalance: running };
+            transactions.push({ ...tx, runningBalance: running });
         });
 
         return {
             party,
             overallBal,
+            openingBal,
+            closingBal,
             totalDebit,
             totalCredit,
             totalHujjaj,
-            balance,
+            periodBalance,
+            recsCount: recs.length,
             transactions,
-            showEmpty: txns.length === 0 && (from || to || selParty)
+            showEmpty: transactions.length === 0 && (from || to || selParty)
         };
     }).filter(group => group.transactions.length || group.showEmpty);
 
     const totalTransactions = ledgerGroups.reduce((total, group) => total + group.transactions.length, 0);
-    const totalPages = Math.max(1, Math.ceil(totalTransactions / ledgerPageSize));
+
+    // Pagination Calculation (Default 'all' displays 100% of rows)
+    const isPagingEnabled = ledgerPageSize !== 'all' && Number(ledgerPageSize) > 0;
+    const effectivePageSize = isPagingEnabled ? Number(ledgerPageSize) : (totalTransactions || 1);
+    const totalPages = Math.max(1, Math.ceil(totalTransactions / effectivePageSize));
     ledgerCurrentPage = Math.min(Math.max(ledgerCurrentPage, 1), totalPages);
-    const firstTransaction = (ledgerCurrentPage - 1) * ledgerPageSize;
-    const lastTransaction = Math.min(firstTransaction + ledgerPageSize, totalTransactions);
+    const firstTransaction = isPagingEnabled ? (ledgerCurrentPage - 1) * effectivePageSize : 0;
+    const lastTransaction = isPagingEnabled ? Math.min(firstTransaction + effectivePageSize, totalTransactions) : totalTransactions;
 
     let html = '';
     let transactionIndex = 0;
+
     ledgerGroups.forEach(group => {
-        const pageTransactions = group.transactions.filter((tx, index) => {
-            const currentIndex = transactionIndex + index;
-            return currentIndex >= firstTransaction && currentIndex < lastTransaction;
-        });
-        transactionIndex += group.transactions.length;
+        let pageTransactions = group.transactions;
 
-        if (!pageTransactions.length && totalTransactions > 0) return;
+        if (isPagingEnabled) {
+            pageTransactions = group.transactions.filter((tx, index) => {
+                const currentIndex = transactionIndex + index;
+                return currentIndex >= firstTransaction && currentIndex < lastTransaction;
+            });
+            transactionIndex += group.transactions.length;
+            if (!pageTransactions.length && totalTransactions > 0) return;
+        }
 
-        const { party, overallBal, totalDebit, totalCredit, totalHujjaj, balance } = group;
+        const { party, overallBal, closingBal, totalDebit, totalCredit, totalHujjaj, periodBalance, recsCount } = group;
+
         const rows = pageTransactions.map(tx => {
             const running = tx.runningBalance;
             const sign = running >= 0 ? '' : '-';
             const runColor = running > 0 ? '#10b981' : running < 0 ? '#ef4444' : 'inherit';
 
+            if (tx.isOpening) {
+                return `
+                <tr style="border-bottom: 1.5px solid var(--border-strong, #52796f); background: rgba(82, 121, 111, 0.08); font-weight: 600;">
+                    <td style="padding:7px 8px;white-space:nowrap;">${typeof fd === 'function' ? fd(tx.date) : (tx.date || '—')}</td>
+                    <td style="padding:7px 8px;">
+                        <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#e0f2fe;color:#0369a1;">
+                            سابقہ
+                        </span>
+                    </td>
+                    ${perms.showVoucher ? `<td style="padding:7px 8px;color:#9ca3af;font-family:monospace;">—</td>` : ''}
+                    <td style="padding:7px 8px;font-weight:bold;">${tx.desc}</td>
+                    <td style="padding:7px 8px;color:#9ca3af;">—</td>
+                    ${perms.showAmounts ? `
+                    <td style="padding:7px 8px;text-align:right;color:#dc2626;">${tx.type === 'Debit' ? (typeof sar === 'function' ? sar(tx.amount) : tx.amount) : ''}</td>
+                    <td style="padding:7px 8px;text-align:right;color:#16a34a;">${tx.type === 'Credit' ? (typeof sar === 'function' ? sar(tx.amount) : tx.amount) : ''}</td>
+                    <td style="padding:7px 8px;text-align:right;font-weight:bold;color:${runColor};">${sign}${typeof sar === 'function' ? sar(Math.abs(running)) : Math.abs(running)}</td>` : ''}
+                </tr>`;
+            }
+
             return `
-            <tr style="border-bottom: 1px solid #e5e7eb;">
+            <tr style="border-bottom: 1px solid var(--border-soft, #e5e7eb);">
                 <td style="padding:6px 8px;white-space:nowrap;">${typeof fd === 'function' ? fd(tx.date) : (tx.date || '—')}</td>
                 <td style="padding:6px 8px;">
                     <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;${tx.type === 'Debit' ? 'background:#fee2e2;color:#b91c1c;' : 'background:#dcfce7;color:#15803d;'}">
@@ -274,39 +348,41 @@ function renderLedger() {
             </tr>`;
         }).join('');
 
-        // شرط: لین دین موجود ہوں یا تاریخ دی گئی ہو یا مخصوص پارٹی منتخب ہو
         if (group.transactions.length > 0 || group.showEmpty) {
             const balSign = overallBal >= 0 ? '' : '-';
             const overallBalColor = overallBal > 0 ? '#10b981' : overallBal < 0 ? '#ef4444' : 'inherit';
-            const periodBalColor = balance > 0 ? '#10b981' : balance < 0 ? '#ef4444' : 'inherit';
+            const closingSign = closingBal >= 0 ? '' : '-';
+            const closingBalColor = closingBal > 0 ? '#10b981' : closingBal < 0 ? '#ef4444' : 'inherit';
             const code = (typeof getCode === 'function') ? getCode(party) : '—';
             const printDateStr = (typeof today === 'function') ? (typeof fd === 'function' ? fd(today()) : today()) : new Date().toLocaleDateString();
-
             const nonAmtCols = perms.showVoucher ? 5 : 4;
 
             html += `
             <div style="font-family: inherit; color: inherit; background: var(--surface, #fff); padding: 14px; border: 1px solid var(--border, #ccc); border-radius: 8px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
                 <div style="background-color: rgba(45, 106, 79, 0.1); border: 1px solid var(--gold, #c9a84c); text-align: center; padding: 8px; font-weight: bold; font-size: 16px; margin-bottom: 15px; border-radius: 6px; color: var(--gold, #c9a84c);">
-                    ${L.ledgerTitle || 'Account Ledger'}
+                    ${L.ledgerTitle || 'کھاتہ لیجر (Account Ledger)'}
                 </div>
                 <table style="width: 100%; border: none; font-size: 12.5px; margin-bottom: 15px;">
                     <tr>
-                        <td style="font-weight: bold; width: 120px;">${L.codeCol || 'Account Code'}:</td>
+                        <td style="font-weight: bold; width: 120px;">${L.codeCol || 'اکاؤنٹ کوڈ'}:</td>
                         <td style="font-family:monospace;font-weight:bold;">${code}</td>
                         ${perms.showAmounts ? `
-                        <td style="font-weight: bold; text-align: right; width: 120px;">${L.overallBalance || 'Balance SAR'}:</td>
-                        <td style="text-align: right; font-weight: bold; width: 120px; font-size:14px; color:${overallBalColor};">${balSign}${typeof sar === 'function' ? sar(Math.abs(overallBal)) : Math.abs(overallBal)}</td>` : '<td colspan="2"></td>'}
+                        <td style="font-weight: bold; text-align: right; width: 120px;">${L.overallBalance || 'کل واجب الادا'}:</td>
+                        <td style="text-align: right; font-weight: bold; width: 140px; font-size:14px; color:${overallBalColor};">${balSign}${typeof sar === 'function' ? sar(Math.abs(overallBal)) : Math.abs(overallBal)}</td>` : '<td colspan="2"></td>'}
                     </tr>
                     <tr>
-                        <td style="font-weight: bold;">${L.partyCol || 'Account Title'}:</td>
-                        <td colspan="3" style="font-weight:bold;font-size:14px;">${party}</td>
+                        <td style="font-weight: bold;">${L.partyCol || 'پارٹی / ٹرانسپورٹر'}:</td>
+                        <td colspan="${perms.showAmounts ? 1 : 3}" style="font-weight:bold;font-size:14px;">${party}</td>
+                        ${(perms.showAmounts && from) ? `
+                        <td style="font-weight: bold; text-align: right;">اختتامی بیلنس (${to || 'آج'}):</td>
+                        <td style="text-align: right; font-weight: bold; font-size:13px; color:${closingBalColor};">${closingSign}${typeof sar === 'function' ? sar(Math.abs(closingBal)) : Math.abs(closingBal)}</td>` : ''}
                     </tr>
                     <tr>
-                        <td style="font-weight: bold;">${L.fromDate || 'Period'}:</td>
-                        <td colspan="3">${from ? (typeof fd === 'function' ? fd(from) : from) : '...'} &nbsp;&nbsp;&nbsp; ${L.toDate || 'To'}: ${to ? (typeof fd === 'function' ? fd(to) : to) : '...'}</td>
+                        <td style="font-weight: bold;">${L.fromDate || 'مدت رپورٹ'}:</td>
+                        <td colspan="3">${from ? (typeof fd === 'function' ? fd(from) : from) : 'ابتدائی تاریخ'} &nbsp;&nbsp;&nbsp; ${L.toDate || 'تا'}: ${to ? (typeof fd === 'function' ? fd(to) : to) : 'آخری تاریخ'}</td>
                     </tr>
                     <tr>
-                        <td style="font-weight: bold;">${L.dateCol || 'Print Date'}:</td>
+                        <td style="font-weight: bold;">${L.dateCol || 'پرنٹ تاریخ'}:</td>
                         <td colspan="3">${printDateStr}</td>
                     </tr>
                 </table>
@@ -314,25 +390,28 @@ function renderLedger() {
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                     <thead>
                         <tr style="border-top: 1px solid var(--border, #000); border-bottom: 1px solid var(--border, #000); background: rgba(0,0,0,0.03);">
-                            <th style="text-align: left; padding: 6px 8px;">${L.dateCol || 'Date'}</th>
-                            <th style="text-align: left; padding: 6px 8px;">${L.txType || 'Type'}</th>
-                            ${perms.showVoucher ? `<th style="text-align: left; padding: 6px 8px;">${L.voucherCol || 'Trans.#'}</th>` : ''}
-                            <th style="text-align: left; padding: 6px 8px;">${L.desc || 'Particulars'}</th>
+                            <th style="text-align: left; padding: 6px 8px;">${L.dateCol || 'تاریخ'}</th>
+                            <th style="text-align: left; padding: 6px 8px;">${L.txType || 'قسم'}</th>
+                            ${perms.showVoucher ? `<th style="text-align: left; padding: 6px 8px;">${L.voucherCol || 'واؤچر نمبر'}</th>` : ''}
+                            <th style="text-align: left; padding: 6px 8px;">${L.desc || 'تفصیلات / سیکٹر'}</th>
                             <th style="text-align: left; padding: 6px 8px;">Inv/Ref</th>
                             ${perms.showAmounts ? `
-                            <th style="text-align: right; padding: 6px 8px;">${L.debitCol || 'Debit'}</th>
-                            <th style="text-align: right; padding: 6px 8px;">${L.creditCol || 'Credit'}</th>
-                            <th style="text-align: right; padding: 6px 8px;">${L.balance || 'Balance'}</th>` : ''}
+                            <th style="text-align: right; padding: 6px 8px;">${L.debitCol || 'ڈیبٹ (SAR)'}</th>
+                            <th style="text-align: right; padding: 6px 8px;">${L.creditCol || 'کریڈٹ (SAR)'}</th>
+                            <th style="text-align: right; padding: 6px 8px;">${L.balance || 'بیلنس (SAR)'}</th>` : ''}
                         </tr>
                     </thead>
                     <tbody>
                         ${rows || `<tr><td colspan="${nonAmtCols + (perms.showAmounts ? 3 : 0)}" style="text-align:center;padding:16px;color:#9ca3af;">${L.noTx || 'کوئی لین دین نہیں'}</td></tr>`}
                         <tr style="border-top: 2px solid var(--border, #000); font-weight: bold; background: rgba(0,0,0,0.04); page-break-inside: avoid;">
-                            <td colspan="${nonAmtCols}" style="padding: 8px;">${L.totalHujjaj || 'Total Hujjaj'}: <strong>${totalHujjaj}</strong></td>
+                            <td colspan="${nonAmtCols}" style="padding: 8px;">
+                                <span>${L.totalHujjaj || 'کل حجاج'}: <strong>${totalHujjaj}</strong></span>
+                                <span style="margin-inline-start: 16px; font-size: 11.5px; color: var(--text-muted, #6b7280);">کل ٹرپس / انٹریز: <strong>${recsCount}</strong></span>
+                            </td>
                             ${perms.showAmounts ? `
                             <td style="text-align: right; padding: 8px; color:#dc2626;">${typeof sar === 'function' ? sar(totalDebit) : totalDebit}</td>
                             <td style="text-align: right; padding: 8px; color:#16a34a;">${typeof sar === 'function' ? sar(totalCredit) : totalCredit}</td>
-                            <td style="text-align: right; padding: 8px; color:${periodBalColor};">${balance >= 0 ? '' : '-'}${typeof sar === 'function' ? sar(Math.abs(balance)) : Math.abs(balance)}</td>` : '<td colspan="3"></td>'}
+                            <td style="text-align: right; padding: 8px; font-size:13px; color:${closingBalColor};">${closingSign}${typeof sar === 'function' ? sar(Math.abs(closingBal)) : Math.abs(closingBal)}</td>` : '<td colspan="3"></td>'}
                         </tr>
                     </tbody>
                 </table>
@@ -342,25 +421,30 @@ function renderLedger() {
 
     let paginationHtml = '';
     if (totalTransactions > 0) {
-        const isEnglish = lang === 'en';
-        const isArabic = lang === 'ar';
+        const isEnglish = typeof lang !== 'undefined' && lang === 'en';
+        const isArabic = typeof lang !== 'undefined' && lang === 'ar';
         const previousLabel = isEnglish ? 'Previous' : isArabic ? 'السابق' : 'پچھلا';
         const nextLabel = isEnglish ? 'Next' : isArabic ? 'التالي' : 'اگلا';
-        const rowsLabel = isEnglish ? 'Rows' : isArabic ? 'الصفوف' : 'ریکارڈ';
+        const rowsLabel = isEnglish ? 'Display' : isArabic ? 'عرض' : 'ڈسپلے';
+        const allLabel = isEnglish ? 'All Records' : isArabic ? 'جميع السجلات' : 'تمام ریکارڈز (مکمل رپورٹ)';
+
         paginationHtml = `
             <div class="ledger-pagination no-print">
                 <label class="ledger-page-size-label" for="ledger-page-size">${rowsLabel}:
                     <select id="ledger-page-size" onchange="setLedgerPageSize(this.value)">
-                        <option value="25" ${ledgerPageSize === 25 ? 'selected' : ''}>25</option>
+                        <option value="all" ${ledgerPageSize === 'all' ? 'selected' : ''}>${allLabel}</option>
+                        <option value="100" ${ledgerPageSize === 100 ? 'selected' : ''}>100</option>
                         <option value="50" ${ledgerPageSize === 50 ? 'selected' : ''}>50</option>
+                        <option value="25" ${ledgerPageSize === 25 ? 'selected' : ''}>25</option>
                     </select>
                 </label>
-                <span class="ledger-page-status">${firstTransaction + 1}–${lastTransaction} / ${totalTransactions}</span>
+                <span class="ledger-page-status">${isPagingEnabled ? `${firstTransaction + 1}–${lastTransaction} / ${totalTransactions}` : `کل ریکارڈز: ${totalTransactions}`}</span>
+                ${isPagingEnabled ? `
                 <div class="ledger-page-buttons">
                     <button type="button" class="btn btn-o btn-sm" onclick="setLedgerPage(${ledgerCurrentPage - 1})" ${ledgerCurrentPage === 1 ? 'disabled' : ''}>${previousLabel}</button>
                     <span>${ledgerCurrentPage} / ${totalPages}</span>
                     <button type="button" class="btn btn-o btn-sm" onclick="setLedgerPage(${ledgerCurrentPage + 1})" ${ledgerCurrentPage === totalPages ? 'disabled' : ''}>${nextLabel}</button>
-                </div>
+                </div>` : ''}
             </div>`;
     }
 
@@ -373,3 +457,5 @@ window.filterLedger = filterLedger;
 window.renderLedger = renderLedger;
 window.setLedgerPage = setLedgerPage;
 window.setLedgerPageSize = setLedgerPageSize;
+window.ledgerCurrentPage = ledgerCurrentPage;
+window.ledgerPageSize = ledgerPageSize;

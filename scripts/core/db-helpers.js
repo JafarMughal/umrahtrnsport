@@ -173,10 +173,12 @@ function markFbNodeSynced(node, val, serverTs = 0) {
     }
     _lastSyncedJson[node] = json;
     _writeStorageStr('uts_' + node, json);
-    delete _pendingFbWrites[node];
-    if (_dirtyFbNodes[node]) {
-        delete _dirtyFbNodes[node];
-        _persistDirtyMap();
+    if (_pendingFbWrites[node] === json || _pendingFbWrites[node] === undefined) {
+        delete _pendingFbWrites[node];
+        if (_dirtyFbNodes[node]) {
+            delete _dirtyFbNodes[node];
+            _persistDirtyMap();
+        }
     }
     if (serverTs > 0) {
         _localFbMeta[node] = Number(serverTs);

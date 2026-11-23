@@ -52,7 +52,8 @@
     <div class="grid" style="margin-bottom:14px;">
         <div class="fg">
             <label id="lbl-voucher">واوچر نمبر</label>
-            <input type="text" id="e-voucher" class="voucher-input" placeholder="خودکار واوچر..." />
+            <input type="text" id="e-voucher" class="voucher-input" placeholder="خودکار واوچر..." oninput="if(typeof lookupVoucherInEntry==='function') lookupVoucherInEntry(this.value)" onchange="if(typeof lookupVoucherInEntry==='function') lookupVoucherInEntry(this.value)" />
+            <div id="e-voucher-lookup-banner" style="display:none;"></div>
         </div>
         <div class="fg">
             <label id="lbl-date">تاریخ واوچر</label>

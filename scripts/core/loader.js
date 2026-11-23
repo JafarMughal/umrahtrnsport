@@ -8,7 +8,7 @@ async function loadComponentPages() {
         { id: 'page-entry', file: 'pages/entry.html' },
         { id: 'page-umrah', file: 'pages/umrah.html' },
         { id: 'page-payment', file: 'pages/payment.html' },
-        { id: 'page-ledger', file: 'pages/ledger.html' },
+        // page-ledger is now hardcoded in index.html — skip fetch
         { id: 'page-records', file: 'pages/records.html' },
         { id: 'page-report', file: 'pages/report.html' },
         { id: 'page-dailynote', file: 'pages/daily-note.html' },
@@ -22,6 +22,8 @@ async function loadComponentPages() {
     await Promise.all(pages.map(async (p) => {
         const el = document.getElementById(p.id);
         if (!el) return;
+        // If the page div already has content (hardcoded in index.html), skip fetch
+        if (el.innerHTML.trim()) return;
         try {
             let res = null;
             try {
@@ -74,7 +76,12 @@ async function loadComponentPages() {
         } else if (activePage.id === 'page-payment') {
             if (typeof renderPayments === 'function') renderPayments();
         } else if (activePage.id === 'page-ledger') {
-            if (typeof renderLedger === 'function') renderLedger();
+            // Use switchToTab to properly populate party dropdown before rendering
+            if (typeof switchToTab === 'function') {
+                switchToTab('ledger');
+            } else if (typeof renderLedger === 'function') {
+                renderLedger();
+            }
         } else if (activePage.id === 'page-dailynote') {
             if (typeof renderDailyNoteReport === 'function') renderDailyNoteReport();
         }

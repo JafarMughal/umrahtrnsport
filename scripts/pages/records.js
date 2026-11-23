@@ -93,17 +93,33 @@ function renderRecords(rows) {
                 ? `<span class="badge ${r.checked ? 'badge-checked' : 'badge-pending'}">${r.checked ? (lang === 'en' ? 'Checked' : 'مکمل') : (lang === 'en' ? 'Pending' : 'زیر التواء')}</span>`
                 : '';
 
-            const editBtn = canEdit ? `<button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')">${L.edit}</button>` : '';
+            const editBtn = canEdit ? `<button class="btn btn-sm btn-o" onclick="editRecord('${r.id}')" title="${lang === 'en' ? 'Edit Full Voucher' : 'مکمل واؤچر ایڈٹ کریں'}">${L.edit}</button>` : '';
+            const quickEditBtn = canEdit ? `<button class="btn btn-sm btn-o" onclick="openEditRecordModal('${r.id}')" title="${lang === 'en' ? 'Quick Edit Row' : 'صرف اس روٹ کی فوری ترمیم'}" style="padding:2px 6px;font-size:11px;">⚡</button>` : '';
             const delBtn = canDel ? `<button class="btn btn-sm btn-d" onclick="deleteRecord('${r.id}')">${L.del}</button>` : '';
             const copyBtn = canEntry ? `<button class="btn btn-sm btn-o" onclick="copyVoucher('${r.id}')" title="${lang === 'en' ? 'Copy' : 'کاپی'}">${lang === 'en' ? 'Copy' : 'کاپی'}</button>` : '';
-            const actionHtml = (editBtn || delBtn || copyBtn) ? `<div class="rec-action-buttons">${editBtn}${delBtn}${copyBtn}</div>` : '—';
+            const actionHtml = (editBtn || delBtn || copyBtn) ? `<div class="rec-action-buttons">${editBtn}${quickEditBtn}${delBtn}${copyBtn}</div>` : '—';
+
+            // Voucher tag with multi-sector leg indicator
+            let voucherCellHtml = '';
+            if (perms.showVoucher) {
+                const vNorm = (r.voucher || '').trim().toLowerCase();
+                const allVoucherLegs = (vNorm && vNorm !== '—') ? (records || []).filter(x => x && (x.voucher || '').trim().toLowerCase() === vNorm) : [];
+                const legCount = allVoucherLegs.length;
+                let vBadge = `<span class="voucher-tag">${r.voucher || '—'}</span>`;
+                if (legCount > 1) {
+                    const sortedLegs = [...allVoucherLegs].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+                    const legIdx = sortedLegs.findIndex(x => x.id === r.id);
+                    vBadge += ` <span class="badge" title="${legCount} سیکٹرز کا واؤچر" style="font-size:10.5px;background:rgba(20,125,100,0.12);color:var(--accent,#147d64);font-weight:700;border:1px solid rgba(20,125,100,0.25);margin-inline-start:4px;">${legIdx >= 0 ? (legIdx + 1) : '•'}/${legCount}</span>`;
+                }
+                voucherCellHtml = `<td>${vBadge}</td>`;
+            }
 
             return `
                 <tr class="rec-data-row" data-hujjaj="${sharing ? r.count : 0}" data-amount="${r.total}">
                     <td style="text-align:center;" class="no-print">
                         <input type="checkbox" onchange="toggleRecordCheck('${r.id}')" ${r.checked ? 'checked' : ''}>
                     </td>
-                    ${perms.showVoucher ? `<td><span class="voucher-tag">${r.voucher || '—'}</span></td>` : ''}
+                    ${voucherCellHtml}
                     <td>${fd(r.date)}</td>
                     <td><strong>${r.party}</strong></td>
                     <td><span class="badge">${r.sector}</span> ${statusBadge}</td>
@@ -236,8 +252,11 @@ function applyRecordFilters() {
     const search = normalizeRecordFilterValue(document.getElementById('f-search')?.value);
 
     let rows = [...records];
-    if (from) rows = rows.filter(r => String(r.date || '') >= from);
-    if (to) rows = rows.filter(r => String(r.date || '') <= to);
+    // If user is searching specifically for a voucher number (e.g. "UB-104121"), do not let date range filter out other sectors of that voucher
+    const isVoucherSearch = Boolean(search && records.some(r => r.voucher && normalizeRecordFilterValue(r.voucher).includes(search)));
+
+    if (from && !isVoucherSearch) rows = rows.filter(r => String(r.date || '') >= from);
+    if (to && !isVoucherSearch) rows = rows.filter(r => String(r.date || '') <= to);
     if (party) rows = rows.filter(r => normalizeRecordFilterValue(r.party) === normalizeRecordFilterValue(party));
     if (sector) rows = rows.filter(r => normalizeRecordFilterValue(r.sector) === normalizeRecordFilterValue(sector));
     if (search) {
@@ -1646,7 +1665,13 @@ window.saveRecordEditModal = saveRecordEditModal;
 window.saveAndRestoreRecordEditModal = saveAndRestoreRecordEditModal;
 window.calcEditRecordTotal = calcEditRecordTotal;
 window.toggleEditFlightDetails = toggleEditFlightDetails;
-window.editRecord = openEditRecordModal;
+window.editRecord = (id) => {
+    if (typeof editRecordInEntry === 'function') {
+        editRecordInEntry(id);
+    } else {
+        openEditRecordModal(id);
+    }
+};
 function onEditRecHajiPartyChange() {
     const sel = document.getElementById('edit-rec-new-party');
     if (!sel) return;

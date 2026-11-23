@@ -621,59 +621,81 @@
   .no-print,
   .ledger-hdr-actions,
   .card-header-bar,
-  .ledger-filter-grid {
+  .ledger-filter-grid,
+  .ledger-pagination {
     display: none !important;
   }
 
+  .ledger-filter-card {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
   .print-header {
-    display: block;
+    display: block !important;
     text-align: center;
-    margin-bottom: 20px;
-    padding-bottom: 14px;
-    border-bottom: 2px solid #2f3e46;
+    margin: 0 0 12px 0 !important;
+    padding-bottom: 8px !important;
+    border-bottom: 2px solid #2f3e46 !important;
   }
 
   .print-header .ph-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: #2f3e46;
-    margin-bottom: 4px;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #2f3e46 !important;
+    margin-bottom: 3px !important;
   }
 
   .print-header .ph-sub {
-    font-size: 13px;
-    color: #52796f;
-    margin-bottom: 8px;
+    font-size: 13px !important;
+    color: #52796f !important;
+    margin-bottom: 6px !important;
   }
 
   .print-header .ph-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #354f52;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 11px !important;
+    color: #354f52 !important;
   }
 
   .print-footer {
-    display: block;
-    text-align: center;
-    margin-top: 20px;
-    padding-top: 12px;
-    border-top: 1px solid #cad2c5;
-    font-size: 11px;
-    color: #52796f;
+    display: block !important;
+    text-align: center !important;
+    margin-top: 14px !important;
+    padding-top: 8px !important;
+    border-top: 1px solid #cad2c5 !important;
+    font-size: 10px !important;
+    color: #52796f !important;
   }
 
-  #ledger-output>div {
-    page-break-inside: avoid;
-    border: 1px solid #cad2c5 !important;
+  #ledger-output {
+    margin-top: 0 !important;
+    padding: 0 !important;
+  }
+
+  #ledger-output > div {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    page-break-before: auto !important;
+    break-before: auto !important;
     margin-bottom: 16px !important;
   }
 
   #ledger-output table {
-    page-break-inside: auto;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    width: 100% !important;
+  }
+
+  #ledger-output thead {
+    display: table-header-group !important;
   }
 
   #ledger-output tr {
-    page-break-inside: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }
