@@ -650,7 +650,7 @@ function setNextVoucher() {
     }
 }
 
-function addEntry() {
+async function addEntry() {
     const idEl = document.getElementById('e-id');
     const editId = idEl ? idEl.value : '';
 
@@ -722,6 +722,8 @@ function addEntry() {
         }
     }
 
+    const savedSectorCount = entrySectorsList.length;
+
     if (editId) {
         // Editing: Check if this record had a voucher with other legs
         const existingRec = (typeof records !== 'undefined' && Array.isArray(records)) ? records.find(r => r.id === editId) : null;
@@ -764,9 +766,6 @@ function addEntry() {
             });
         });
 
-        if (typeof al === 'function') {
-            al('al-entry', `واؤچر ${voucher} کے ${entrySectorsList.length} روٹس کامیابی کے ساتھ اپ ڈیٹ ہو گئے`, 'ok');
-        }
     } else {
         // New Entry: Save all sector rows as records under this master voucher
         entrySectorsList.forEach(sec => {
@@ -797,21 +796,34 @@ function addEntry() {
             });
         });
 
-        if (typeof al === 'function') {
-            al('al-entry', `واؤچر ${voucher} کے تمام (${entrySectorsList.length}) سیکٹرز کامیابی سے محفوظ ہو گئے`, 'ok');
-        }
     }
 
-    if (typeof svR === 'function') svR();
+    const savedLocally = typeof svR === 'function' ? svR() : false;
+    const saveButton = document.getElementById('btn-save');
+    if (saveButton) saveButton.disabled = true;
+    let syncedToSupabase = false;
     if (typeof flushPendingFbWrites === 'function') {
-        flushPendingFbWrites();
+        try {
+            syncedToSupabase = await flushPendingFbWrites();
+        } catch (error) {
+            console.error('Entry Supabase sync error:', error);
+        }
     }
+    if (saveButton) saveButton.disabled = false;
     if (typeof fillShirkaDatalist === 'function') fillShirkaDatalist();
     if (typeof fillAirportDatalist === 'function') fillAirportDatalist();
     if (typeof fillHajiPartyDatalist === 'function') fillHajiPartyDatalist();
 
     clearEntryForm();
     todayStats();
+    if (typeof al === 'function') {
+        const message = syncedToSupabase
+            ? `واؤچر ${voucher} کے ${savedSectorCount} سیکٹرز Supabase میں محفوظ ہو گئے`
+            : savedLocally
+                ? `واؤچر ${voucher} اس ڈیوائس پر محفوظ ہے، مگر Supabase sync pending/failed ہے۔ دوبارہ انٹری نہ کریں؛ sync status چیک کریں۔`
+                : `واؤچر ${voucher} کی local save بھی ناکام ہوئی اور Supabase sync مکمل نہیں ہوا۔ صفحہ بند نہ کریں؛ ریکارڈ محفوظ کرنے میں مدد لیں۔`;
+        al('al-entry', message, syncedToSupabase ? 'ok' : 'er');
+    }
 }
 
 function editRecord(id) {

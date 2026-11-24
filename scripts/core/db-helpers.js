@@ -34,10 +34,13 @@ const _fbQuotaStats = {
 let _lastSyncedJson = {};
 let _pendingFbWrites = {};
 let _fbWriteTimer = null;
+let _fbRetryTimer = null;
+let _fbRetryAttempt = 0;
 let _fbFlushInFlight = null;
 let _metaDisabled = false;
 let _dirtyFbNodes = _readJsonStorage(_FB_LS_KEYS.dirty, {});
 let _localFbMeta = _readJsonStorage(_FB_LS_KEYS.meta, {});
+const FB_MAX_RETRY_ATTEMPTS = 5;
 
 function _readStorageStr(key, fallback = '') {
     try {
@@ -206,18 +209,19 @@ function updateFbSyncIndicator() {
     const online = _isOnline();
 
     if (btn) {
-        btn.title = `Supabase | Writes: ${_fbQuotaStats.writesSent} | Pending: ${pending}`;
+        const errorInfo = _fbQuotaStats.lastError ? ` | Error: ${_fbQuotaStats.lastError}` : '';
+        btn.title = `Supabase | Writes: ${_fbQuotaStats.writesSent} | Pending: ${pending}${errorInfo}`;
     }
     if (dot && lbl) {
         if (!online) {
             dot.style.background = '#f59e0b';
             lbl.textContent = pending > 0 ? `آف لائن (${pending})` : 'آف لائن';
+        } else if (_fbQuotaStats.lastError) {
+            dot.style.background = '#ef4444';
+            lbl.textContent = pending > 0 ? `سنک ایرر (${pending})` : 'سنک ایرر';
         } else if (pending > 0) {
             dot.style.background = '#f59e0b';
             lbl.textContent = `محفوظ ہو رہا (${pending})`;
-        } else if (_fbQuotaStats.lastError) {
-            dot.style.background = '#ef4444';
-            lbl.textContent = 'سنک ایرر';
         } else {
             dot.style.background = '#10b981';
             lbl.textContent = 'سنک (Supabase)';
@@ -237,10 +241,24 @@ function _scheduleFbFlush() {
     }, delay);
 }
 
+function _scheduleFbRetry() {
+    if (_fbRetryTimer || _fbRetryAttempt >= FB_MAX_RETRY_ATTEMPTS || !_isOnline()) return;
+    const delay = Math.min(30000, 2000 * Math.pow(2, _fbRetryAttempt));
+    _fbRetryAttempt += 1;
+    _fbRetryTimer = setTimeout(() => {
+        _fbRetryTimer = null;
+        flushPendingFbWrites();
+    }, delay);
+}
+
 async function flushPendingFbWrites() {
     if (_fbWriteTimer) {
         clearTimeout(_fbWriteTimer);
         _fbWriteTimer = null;
+    }
+    if (_fbRetryTimer) {
+        clearTimeout(_fbRetryTimer);
+        _fbRetryTimer = null;
     }
     if (_fbFlushInFlight) return _fbFlushInFlight;
 
@@ -254,7 +272,12 @@ async function flushPendingFbWrites() {
 
     const nodes = Object.keys(_pendingFbWrites);
     if (!nodes.length) return true;
-    if (typeof sbClient === 'undefined' || !sbClient || !_isOnline()) {
+    if (typeof sbClient === 'undefined' || !sbClient) {
+        _fbQuotaStats.lastError = 'Supabase client unavailable';
+        updateFbSyncIndicator();
+        return false;
+    }
+    if (!_isOnline()) {
         updateFbSyncIndicator();
         return false;
     }
@@ -285,9 +308,21 @@ async function flushPendingFbWrites() {
 
     _fbFlushInFlight = (async () => {
         try {
-            const { error } = await sbClient
-                .from('app_data')
-                .upsert(updates, { onConflict: 'node_name' });
+            const controller = typeof AbortController === 'function' ? new AbortController() : null;
+            let request = sbClient.from('app_data').upsert(updates, { onConflict: 'node_name' });
+            if (controller && typeof request.abortSignal === 'function') {
+                request = request.abortSignal(controller.signal);
+            }
+            let timeoutId;
+            const { error } = await Promise.race([
+                request,
+                new Promise((_, reject) => {
+                    timeoutId = setTimeout(() => {
+                        if (controller) controller.abort();
+                        reject(new Error('Supabase save timeout (15000ms)'));
+                    }, 15000);
+                })
+            ]).finally(() => clearTimeout(timeoutId));
 
             if (error) {
                 throw error;
@@ -303,6 +338,7 @@ async function flushPendingFbWrites() {
             _fbQuotaStats.writesSent += updates.length;
             _fbQuotaStats.lastWriteAt = nowTs;
             _fbQuotaStats.lastError = '';
+            _fbRetryAttempt = 0;
             updateFbSyncIndicator();
 
             if (Object.keys(_pendingFbWrites).length > 0) {
@@ -320,6 +356,7 @@ async function flushPendingFbWrites() {
             });
             _persistDirtyMap();
             updateFbSyncIndicator();
+            _scheduleFbRetry();
             return false;
         } finally {
             _fbFlushInFlight = null;
@@ -335,25 +372,31 @@ function _safeFbSet(node, val) {
         json = JSON.stringify(val === undefined ? null : val);
     } catch (e) {
         console.warn(`Serialize ${node} error:`, e);
-        return;
+        return false;
     }
 
-    _writeStorageStr('uts_' + node, json);
+    const savedLocally = _writeStorageStr('uts_' + node, json);
 
     if (_lastSyncedJson[node] === json && !_dirtyFbNodes[node] && _pendingFbWrites[node] === undefined) {
         _fbQuotaStats.writesSkipped++;
         updateFbSyncIndicator();
-        return;
+        return savedLocally;
     }
 
     if (_pendingFbWrites[node] !== undefined) {
         _fbQuotaStats.writesBatched++;
+    }
+    _fbRetryAttempt = 0;
+    if (_fbRetryTimer) {
+        clearTimeout(_fbRetryTimer);
+        _fbRetryTimer = null;
     }
     _pendingFbWrites[node] = json;
     _dirtyFbNodes[node] = true;
     _persistDirtyMap();
     updateFbSyncIndicator();
     _scheduleFbFlush();
+    return savedLocally;
 }
 
 if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
@@ -372,7 +415,7 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
     });
 }
 
-function svR() { _safeFbSet('records', records); }
+function svR() { return _safeFbSet('records', records); }
 function svDR() { _safeFbSet('deletedRecords', deletedRecords); }
 function svPy() { _safeFbSet('payments', payments); }
 function svP() { _safeFbSet('parties', parties); }
